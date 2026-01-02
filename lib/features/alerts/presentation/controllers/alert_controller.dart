@@ -1,0 +1,67 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/utils/result.dart';
+import '../../../../shared/providers/repositories_provider.dart';
+import '../../../products/domain/product.dart';
+import '../../domain/alert.dart';
+import 'alert_provider.dart';
+
+
+class AlertController extends Notifier<void> {
+  @override
+  void build() {}
+
+  /// إضافة تنبيه
+  Future<Result<int>> addAlert({
+    required Product product,
+    required int daysBeforeExpiry,
+    required Priority importance,
+  }) async {
+    final repository = ref.read(alertRepositoryProvider);
+    final alert = Alert(
+      product: product,
+      daysBeforeExpiry: daysBeforeExpiry,
+      importance: importance,
+      isRead: false,
+      createdAt: DateTime.now(),
+    );
+
+    final result = await repository.addAlert(alert);
+
+    if (result is SuccessState<int>) _invalidate();
+
+    return result;
+  }
+
+  /// تحديد التنبيه كمقروء
+  Future<Result<void>> markAsRead(int id) async {
+    final repository = ref.read(alertRepositoryProvider);
+    final result = await repository.markAlertAsRead(id);
+
+    if (result is SuccessState<void>) _invalidate();
+
+    return result;
+  }
+
+  /// حذف تنبيه
+  Future<Result<void>> deleteAlert(String id) async {
+    final repository = ref.read(alertRepositoryProvider);
+    final result = await repository.deleteAlert(id);
+
+    if (result is SuccessState<void>) _invalidate();
+
+    return result;
+  }
+
+  /// تحديث قائمة التنبيهات
+  void _invalidate() {
+    ref.invalidate(alertsProvider);
+    ref.invalidate(unreadAlertsProvider);
+  }
+}
+
+/// Provider للـ AlertController
+final alertControllerProvider = NotifierProvider<AlertController, void>(() {
+  return AlertController();
+});
