@@ -1,4 +1,3 @@
-
 import '../../../core/constants/enums.dart';
 import '../domain/product.dart';
 

@@ -69,7 +69,10 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                         // shimmer أثناء التحميل
                         final fakeProducts =
                             List.generate(8, (_) => Product.fake());
-                        return ProductsList(products: fakeProducts,isLoading: true,);
+                        return ProductsList(
+                          products: fakeProducts,
+                          isLoading: true,
+                        );
                       },
                       error: (error, stack) {
                         return Center(

@@ -22,9 +22,9 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Skeletonizer(
-      enabled: isShimmerLoading,
-      child: Expanded(
+    return Expanded(
+      child: Skeletonizer(
+        enabled: isShimmerLoading,
         child: SizedBox(
           height: 150,
           child: Card(

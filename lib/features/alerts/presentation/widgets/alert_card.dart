@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/utils/result.dart';
 import '../../../../shared/presentation/theme/app_theme.dart';
+import '../../../../shared/providers/repositories_provider.dart';
+import '../../../products/domain/product.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../domain/alert.dart';
 import '../controllers/alert_controller.dart';
@@ -42,7 +45,7 @@ class AlertCard extends ConsumerWidget {
           ),
         ),
         title: Text(
-          alert.product.name,
+          alert.productName,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: alert.isRead ? FontWeight.normal : FontWeight.bold,
               ),
@@ -52,7 +55,7 @@ class AlertCard extends ConsumerWidget {
           children: [
             const SizedBox(height: 4),
             Text(
-              'ينتهي في ${DateFormat('yyyy-MM-dd').format(alert.product.expiryDate)}',
+              'ينتهي في ${DateFormat('yyyy-MM-dd').format(alert.expiryDate)}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 4),
@@ -95,9 +98,16 @@ class AlertCard extends ConsumerWidget {
           },
         ),
         onTap: () async {
-          await context.pushTo(
-            ProductDetailsScreen(product: alert.product),
-          );
+          final product = await ref
+              .read(productRepositoryProvider)
+              .getProductById(alert.productId);
+          if (product is SuccessState<Product>) {
+            await context.pushTo(
+              ProductDetailsScreen(product: product.data),
+            );
+          } else {
+            context.showSnakbar('لا يمكن عرض تفاصيل هذا المنتج لانه غير موجود');
+          }
         },
       ),
     );

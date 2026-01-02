@@ -30,7 +30,9 @@ class AlertsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               itemCount: alerts.length,
               itemBuilder: (context, index) {
-                return AlertCard(alert: alerts[index]);
+                return AlertCard(
+                  alert: alerts[index],
+                );
               },
             ),
           );

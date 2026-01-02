@@ -6,7 +6,6 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../../core/utils/result.dart';
 import '../../../../shared/presentation/theme/app_theme.dart';
-import '../../../alerts/presentation/controllers/alert_service.dart';
 import '../../domain/product.dart';
 import '../controllers/product_controller.dart';
 import 'add_product_screen.dart';
@@ -27,12 +26,6 @@ class ProductDetailsScreen extends ConsumerWidget {
             : AppTheme.validColor;
 
     return Scaffold(
-      floatingActionButton: ElevatedButton(
-        onPressed: () async{
-          await ref.read(alertServiceProvider).testScheduledNotification();
-        },
-        child: const Text('اختبار تنبيه انتهاء المنتج'),
-      ),
       appBar: AppBar(
         title: const Text('تفاصيل المنتج'),
         actions: [
