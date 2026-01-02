@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:workmanager/workmanager.dart';
 
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/providers/repositories_provider.dart';
+import '../../../products/data/product_model.dart';
 import '../../../products/domain/product.dart';
 import '../../../settings/domain/settings.dart';
 import '../../../settings/domain/settings_repository.dart';
+import '../../data/alert_background_params.dart';
 import 'alert_controller.dart';
 
 final alertServiceProvider = Provider<AlertService>((ref) {
@@ -23,10 +26,8 @@ final alertServiceProvider = Provider<AlertService>((ref) {
 // top-level function
 @pragma('vm:entry-point')
 void notificationBackground(NotificationResponse details) {
-  print('Background notification received!');
-  print(details.payload);
+  // TODO: notificationBackground
 }
-
 
 /// خدمة التنبيهات
 class AlertService {
@@ -47,9 +48,7 @@ class AlertService {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
       final currentZone = timezoneInfo.localizedName?.name ?? defaultTimezone;
       tz.setLocalLocation(tz.getLocation(currentZone));
-      print('currentZone: $currentZone');
     } catch (e) {
-      print(e);
       tz.setLocalLocation(tz.getLocation(defaultTimezone));
     }
 
@@ -63,12 +62,9 @@ class AlertService {
 
     await _notifications.initialize(
       initSettings,
-      onDidReceiveBackgroundNotificationResponse: notificationBackground ,
+      onDidReceiveBackgroundNotificationResponse: notificationBackground,
       onDidReceiveNotificationResponse: (details) {
         // TODO: Handle notification tap
-        print('---------- tap -----------');
-        print(details.payload);
-        print('---------- tap -----------');
       },
     );
   }
@@ -140,34 +136,41 @@ class AlertService {
         daysBefore: daysBefore,
         importance: importance,
       );
-    } else {
-      // جدولة التنبيه
-      await _notifications.zonedSchedule(
-        _notificationId(product, daysBefore),
-        'تنبيه صلاحية',
-        '${product.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
-        tz.TZDateTime.from(alertDate, tz.local),
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'product_alerts',
-            'تنبيهات المنتجات',
-            channelDescription: 'تنبيهات صلاحية المنتجات',
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
-          iOS: DarwinNotificationDetails(),
-        ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
-      );
-
-      // إضافة التنبيه إلى قاعدة البيانات
-      await controller.addAlert(
-        product: product,
-        daysBeforeExpiry: daysBefore,
-        importance: importance,
-      );
+      return;
     }
+    final scheduleDate = tz.TZDateTime.from(alertDate, tz.local);
+    // جدولة التنبيه
+    await _notifications.zonedSchedule(
+      _notificationId(product, daysBefore),
+      'تنبيه صلاحية',
+      '${product.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
+      scheduleDate,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'product_alerts',
+          'تنبيهات المنتجات',
+          channelDescription: 'تنبيهات صلاحية المنتجات',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+
+    final delay = scheduleDate.difference(DateTime.now());
+    final productModel = ProductModel.fromEntity(product);
+    final alertParams = AlertBackgroundParams(
+      product: productModel,
+      daysBeforeExpire: daysBefore,
+    );
+    await Workmanager().registerOneOffTask(
+      '${product.id}',
+      'AlertProduct',
+      initialDelay: delay,
+      inputData: alertParams.toMap(),
+    );
   }
 
   int _notificationId(Product product, int daysBefore) {
@@ -220,31 +223,6 @@ class AlertService {
       await _notifications.cancel(
         _notificationId(product, daysBefore),
       );
-    }
-  }
-
-  Future<void> testScheduledNotification() async {
-    final date = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5));
-    try {
-      await _notifications.zonedSchedule(
-        9999,
-        '⏰ اختبار جدولة',
-        'سيظهر بعد 5 ثواني',
-        date,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'test_schedule',
-            'اختبار الجدولة',
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
-        ),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
-        payload: '10|7',
-      );
-    } catch (e) {
-      print(e);
     }
   }
 }

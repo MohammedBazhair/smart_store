@@ -1,35 +1,33 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../../products/domain/product.dart';
-
-/// كيان التنبيه
 class Alert extends Equatable {
-
   const Alert({
-     this.id,
-
-    required this.product,
+    this.id,
+    required this.productId,
     required this.daysBeforeExpiry,
     required this.importance,
     required this.isRead,
     required this.createdAt,
+    required this.productName,
+    required this.expiryDate,
   });
   final int? id;
-  final Product product;
+  final int productId;
+  final String productName;
   final int daysBeforeExpiry;
-  final Priority importance; 
+  final Priority importance;
   final bool isRead;
   final DateTime createdAt;
+  final DateTime expiryDate;
 
   @override
   List<Object?> get props => [
         id,
-        product.id,
+        productId,
         daysBeforeExpiry,
         importance,
         isRead,
         createdAt,
       ];
 }
-

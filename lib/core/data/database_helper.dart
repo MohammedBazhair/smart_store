@@ -53,7 +53,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE alerts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        product_id TEXT NOT NULL,
+        product_id INTEGER NOT NULL,
         product_name TEXT NOT NULL,
         expiry_date TEXT NOT NULL,
         days_before_expiry INTEGER NOT NULL,

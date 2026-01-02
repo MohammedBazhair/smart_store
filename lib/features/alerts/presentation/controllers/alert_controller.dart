@@ -7,7 +7,6 @@ import '../../../products/domain/product.dart';
 import '../../domain/alert.dart';
 import 'alert_provider.dart';
 
-
 class AlertController extends Notifier<void> {
   @override
   void build() {}
@@ -20,18 +19,23 @@ class AlertController extends Notifier<void> {
   }) async {
     final repository = ref.read(alertRepositoryProvider);
     final alert = Alert(
-      product: product,
+      productId: product.id!,
       daysBeforeExpiry: daysBeforeExpiry,
       importance: importance,
       isRead: false,
       createdAt: DateTime.now(),
+      expiryDate: product.expiryDate,
+      productName: product.name,
     );
 
     final result = await repository.addAlert(alert);
 
-    if (result is SuccessState<int>) _invalidate();
+    if (result is SuccessState<int>) {
+      _invalidate();
+      return result;
+    }
 
-    return result;
+    return result as ErrorState<int>;
   }
 
   /// تحديد التنبيه كمقروء

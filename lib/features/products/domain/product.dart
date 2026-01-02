@@ -19,7 +19,7 @@ class Product extends Equatable {
   factory Product.fake() {
     final date = DateTime.now().add(const Duration(days: 50000));
     return Product(
-      name: 'منتج جديد',
+      name: 'new_product',
       quantity: 50,
       barcode: '87861',
       expiryDate: date,
@@ -27,7 +27,7 @@ class Product extends Equatable {
       notes: 'mhjhjh',
       createdAt: date,
       updatedAt: date,
-      id: -4,
+      id: 1,
       currency: Currency.YER,
       price: 1500,
     );
@@ -59,8 +59,6 @@ class Product extends Equatable {
 
   @override
   bool get stringify => true;
-
- 
 
   Product copyWith({
     int? id,

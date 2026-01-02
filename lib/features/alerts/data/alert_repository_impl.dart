@@ -47,10 +47,10 @@ class AlertRepositoryImpl implements AlertRepository {
     try {
       final db = await _dbHelper.database;
       final model = AlertModel.fromEntity(alert);
-      await db.insert('alerts', model.toMap());
-      return SuccessState(alert.id!);
+      final id = await db.insert('alerts', model.toMap());
+      return SuccessState(id);
     } catch (e) {
-      return ErrorState('فشل في إضافة التنبيه: ${e.toString()}');
+      return const ErrorState('فشل في إضافة التنبيه');
     }
   }
 
