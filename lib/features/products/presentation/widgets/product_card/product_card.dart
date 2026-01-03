@@ -95,7 +95,7 @@ class AnimatedProductCardBody extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
         minVerticalPadding: 10,
-        onTap: () => context.pushTo(ProductDetailsScreen(product: product)),
+        onTap: () => context.pushTo(ProductDetailsScreen(productId: product.id!)),
         leading: StatusIcon(status),
         title: ProductTitle(product.name),
         subtitle: Column(

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/constants/enums.dart';
+import '../../../domain/product_details.dart';
+import '../../screens/add_product_screen.dart';
 
-class ProductCategoryDropdown extends StatelessWidget {
+class ProductCategoryDropdown extends ConsumerWidget {
   const ProductCategoryDropdown({
     super.key,
     required this.value,
@@ -12,10 +15,10 @@ class ProductCategoryDropdown extends StatelessWidget {
   final ValueChanged<ProductCategory?> onChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     return DropdownButtonFormField<ProductCategory>(
       value: value,
-      
+      focusNode: ref.read(focusNodesProvider)[ProductDetailsType.category],
       decoration: const InputDecoration(
         labelText: 'الفئة *',
         prefixIcon: Icon(Icons.category),

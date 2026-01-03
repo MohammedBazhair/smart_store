@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/constants/enums.dart';
+import '../../../domain/product_details.dart';
+import '../../screens/add_product_screen.dart';
 
-class ProductPriceField extends StatelessWidget {
+class ProductPriceField extends ConsumerWidget {
   const ProductPriceField({
     super.key,
     required this.controller,
@@ -15,12 +18,13 @@ class ProductPriceField extends StatelessWidget {
   final Currency currency;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     return Row(
       spacing: 16,
       children: [
         Expanded(
           child: TextFormField(
+            focusNode: ref.read(focusNodesProvider)[ProductDetailsType.price],
             controller: controller,
             textInputAction: TextInputAction.next,
             keyboardType: TextInputType.number,

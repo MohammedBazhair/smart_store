@@ -54,6 +54,7 @@ class ProductController extends Notifier<void> {
     }
 
     _invalidate();
+    ref.invalidate(productByIdProvider(updatedProduct.id!));
 
     return result;
   }
@@ -73,6 +74,15 @@ class ProductController extends Notifier<void> {
     return result;
   }
 }
+
+final productByIdProvider = FutureProvider.family<Product?, int>(
+  (ref, id) async {
+    final result =
+        await ref.watch(productRepositoryProvider).getProductById(id);
+    if (result is SuccessState<Product>) return result.data;
+    return null;
+  },
+);
 
 /// Provider للـ ProductController
 final productControllerProvider = NotifierProvider<ProductController, void>(() {

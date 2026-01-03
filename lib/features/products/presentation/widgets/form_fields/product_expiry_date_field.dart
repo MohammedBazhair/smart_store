@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProductExpiryDateField extends StatefulWidget {
+import '../../../domain/product_details.dart';
+import '../../screens/add_product_screen.dart';
+
+class ProductExpiryDateField extends ConsumerWidget {
   const ProductExpiryDateField({
     super.key,
     required this.controller,
@@ -10,35 +14,10 @@ class ProductExpiryDateField extends StatefulWidget {
   final VoidCallback onSelectDate;
 
   @override
-  State<ProductExpiryDateField> createState() => _ProductExpiryDateFieldState();
-}
-
-class _ProductExpiryDateFieldState extends State<ProductExpiryDateField> {
-  late final FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) return;
-
-      _focusNode.unfocus();
-      widget.onSelectDate();
-    });
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     return TextFormField(
-      controller: widget.controller,
-      focusNode: _focusNode,
+      controller: controller,
+      focusNode: ref.read(focusNodesProvider)[ProductDetailsType.expiryDate],
       keyboardType: TextInputType.none,
       decoration: const InputDecoration(
         labelText: 'تاريخ الانتهاء *',

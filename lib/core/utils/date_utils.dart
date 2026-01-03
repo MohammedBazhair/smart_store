@@ -9,6 +9,36 @@ class DateUtils {
     return difference.inDays;
   }
 
+  /// ترجع المدة المتبقية بصيغة مناسبة (أيام / أشهر / سنين)
+  static String timeUntilExpiry(DateTime expiryDate) {
+    final now = DateTime.now();
+
+    if (expiryDate.isBefore(now)) {
+      return 'منتهي';
+    }
+
+    int years = expiryDate.year - now.year;
+    int months = expiryDate.month - now.month;
+    int days = expiryDate.day - now.day;
+
+    if (days < 0) {
+      months -= 1;
+      final previousMonth = DateTime(expiryDate.year, expiryDate.month, 0).day;
+      days += previousMonth;
+    }
+
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    if (years > 0) {
+      return months > 0 ? '$years سنة و $months شهر' : '$years سنة';
+    }
+
+    return months > 0 ? '$months شهور' : '$days أيام';
+  }
+
   /// التحقق من انتهاء المنتج
   static bool isExpired(DateTime expiryDate) {
     return daysUntilExpiry(expiryDate) < 0;

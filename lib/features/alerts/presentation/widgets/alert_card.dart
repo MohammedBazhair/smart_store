@@ -103,7 +103,7 @@ class AlertCard extends ConsumerWidget {
               .getProductById(alert.productId);
           if (product is SuccessState<Product>) {
             await context.pushTo(
-              ProductDetailsScreen(product: product.data),
+              ProductDetailsScreen(productId: product.data.id!),
             );
           } else {
             context.showSnakbar('لا يمكن عرض تفاصيل هذا المنتج لانه غير موجود');

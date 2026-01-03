@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/permissions.dart';
+import '../../../domain/product_details.dart';
+import '../../screens/add_product_screen.dart';
 
-class ProductBarcodeField extends StatelessWidget {
+class ProductBarcodeField extends ConsumerWidget {
   const ProductBarcodeField({
     super.key,
     required this.controller,
     required this.onScan,
-    required this.isReadOnly,
   });
   final TextEditingController controller;
   final VoidCallback onScan;
-  final bool isReadOnly;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return TextFormField(
+      focusNode: ref.read(focusNodesProvider)[ProductDetailsType.barcode],
       controller: controller,
       textInputAction: TextInputAction.next,
-      readOnly: isReadOnly,
       keyboardType: TextInputType.number,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,

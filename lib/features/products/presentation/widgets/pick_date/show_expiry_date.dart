@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'pick_number.dart';
 import 'picker_button.dart';
 
-Future<DateTime?> showExpiryDatePicker(BuildContext context) {
-  int? selectedDay;
-  int? selectedMonth;
-  int? selectedYear;
+Future<DateTime?> showExpiryDatePicker(BuildContext context,DateTime ?date) {
+  int? selectedDay=date?.day;
+  int? selectedMonth=date?.month;
+  int? selectedYear=date?.year;
 
   final now = DateTime.now();
 

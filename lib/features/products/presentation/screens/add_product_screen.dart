@@ -8,7 +8,9 @@ import '../../../../core/utils/result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
 import '../../domain/product.dart';
+import '../../domain/product_details.dart';
 import '../controllers/product_controller.dart';
+import '../controllers/product_provider.dart';
 import '../widgets/form_fields/product_barcode_field.dart';
 import '../widgets/form_fields/product_category_dropdown.dart';
 import '../widgets/form_fields/product_expiry_date_field.dart';
@@ -19,15 +21,27 @@ import '../widgets/form_fields/product_quantity_field.dart';
 import '../widgets/pick_date/show_expiry_date.dart';
 import '../widgets/save_product_button.dart';
 
+final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {
+  final mapEntries =
+      ProductDetailsType.values.map((t) => MapEntry(t, FocusNode()));
+
+  final map = Map.fromEntries(mapEntries);
+
+  ref.onDispose(map.values.map((f) => f.dispose()).toList);
+  return map;
+});
+
 /// شاشة إضافة منتج جديد
 class AddProductScreen extends ConsumerStatefulWidget {
   const AddProductScreen({
     super.key,
     this.barcode,
     this.product,
+    this.detailsType,
   });
   final String? barcode;
   final Product? product;
+  final ProductDetailsType? detailsType;
 
   @override
   ConsumerState<AddProductScreen> createState() => _AddProductScreenState();
@@ -59,11 +73,17 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     _quantityController.text = product.quantity.toString();
     _priceController.text = product.price.toString();
     _notesController.text = product.notes ?? '';
+    _barcodeController.text = product.barcode ?? '';
     _expiryDateController.text =
         DateFormat('yyyy-MM-dd').format(product.expiryDate);
     setState(() {
       _selectedCategory = product.category;
     });
+
+    if (widget.detailsType == null) return;
+
+    final currentFocusNode = ref.read(focusNodesProvider)[widget.detailsType];
+    FocusScope.of(context).requestFocus(currentFocusNode);
   }
 
   @override
@@ -78,7 +98,11 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   }
 
   Future<void> _selectDate() async {
-    final picked = await showExpiryDatePicker(context);
+    final date = DateTime.tryParse(_expiryDateController.text);
+    final picked = await showExpiryDatePicker(
+      context,
+      date,
+    );
 
     _expiryDateController.text = picked != null
         ? DateFormat('yyyy-MM-dd').format(picked)
@@ -164,6 +188,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     if (result is SuccessState<void>) {
       context.showSnakbar('تم إضافة المنتج بنجاح');
       Navigator.pop(context);
+      ref.invalidate(productsProvider);
     } else if (result is ErrorState<void>) {
       context.showSnakbar(result.message);
     }
@@ -206,7 +231,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 ProductBarcodeField(
                   controller: _barcodeController,
                   onScan: _scanBarcode,
-                  isReadOnly: isEditingProduct,
                 ),
                 ProductPriceField(
                   controller: _priceController,
