@@ -10,7 +10,7 @@ class ProductTitle extends StatelessWidget {
     return Text(
       name,
       maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      overflow: TextOverflow.fade,
       style: Theme.of(context).textTheme.titleLarge,
     );
   }

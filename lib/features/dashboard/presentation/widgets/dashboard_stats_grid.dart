@@ -9,7 +9,6 @@ import '../../../alerts/presentation/screens/alerts_screen.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/products_screen.dart';
 
-/// شبكة بطاقات الإحصائيات
 class DashboardStatsGrid extends StatelessWidget {
   const DashboardStatsGrid({
     super.key,
@@ -34,7 +33,11 @@ class DashboardStatsGrid extends StatelessWidget {
                   icon: Icons.inventory_2,
                   color: AppTheme.primaryColor,
                   onTap: () {
-                    context.pushTo(const ProductsScreen());
+                    context.pushTo(
+                      ProductsScreen(
+                        productsProvider: productsProvider,
+                      ),
+                    );
                   },
                 );
               },
@@ -50,7 +53,12 @@ class DashboardStatsGrid extends StatelessWidget {
                   icon: Icons.cancel,
                   color: AppTheme.expiredColor,
                   onTap: () {
-                    context.pushTo(const ProductsScreen());
+                    context.pushTo(
+                      ProductsScreen(
+                        productsProvider: expiredProductsProvider,
+                        title: 'المنتجات منهية الصلاحية',
+                      ),
+                    );
                   },
                 );
               },
@@ -62,16 +70,21 @@ class DashboardStatsGrid extends StatelessWidget {
           children: [
             Consumer(
               builder: (_, ref, __) {
-                final unreadAlertsAsync = ref.watch(unreadAlertsProvider);
+                final newAlertsAsync = ref.watch(newAlertsProvider);
 
                 return StatCard(
-                  isShimmerLoading: unreadAlertsAsync.isLoading,
+                  isShimmerLoading: newAlertsAsync.isLoading,
                   title: 'تنبيهات جديدة',
-                  value: unreadAlertsAsync.value?.length.toString() ?? '0',
+                  value: newAlertsAsync.value?.length.toString() ?? '0',
                   icon: Icons.notifications,
                   color: AppTheme.primaryColor,
                   onTap: () {
-                    context.pushTo(const AlertsScreen());
+                    context.pushTo(
+                      AlertsScreen(
+                        title: 'التنبيهات الجديدة',
+                        alertsProvider: newAlertsProvider,
+                      ),
+                    );
                   },
                 );
               },
@@ -88,7 +101,12 @@ class DashboardStatsGrid extends StatelessWidget {
                       nearExpiryProductsAsync.value?.length.toString() ?? '0',
                   icon: Icons.warning,
                   color: AppTheme.nearExpiryColor,
-                  onTap: () => context.pushTo(const ProductsScreen()),
+                  onTap: () => context.pushTo(
+                    ProductsScreen(
+                      productsProvider: nearExpiryProductsProvider,
+                      title: 'المنتجات قريبة الانتهاء',
+                    ),
+                  ),
                 );
               },
             ),

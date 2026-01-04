@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../shared/presentation/widgets/common/loading_widget.dart';
 import '../../domain/product.dart';
 import '../controllers/product_controller.dart';
 import '../widgets/product_details/delete_product_dialog.dart';
@@ -27,36 +28,39 @@ class ProductDetailsScreen extends ConsumerWidget {
         });
       },
     );
-    
-    return productAsync.when(
-      data: (product) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('تفاصيل المنتج'),
-            actions: [
-              CircleAvatar(
-                backgroundColor: Colors.red.shade300,
-                child: IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () {
-                    if (product == null) {
-                      return context.showSnakbar('لايمكن حذف منتج غير موجود');
-                    }
-                    showDialog(
-                      context: context,
-                      builder: (_) => DeleteProductDialog(product: product),
-                    );
-                  },
-                ),
-              ),
-            ],
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('تفاصيل المنتج'),
+        actions: [
+          IconButton(
+            tooltip: 'حذف المنتج',
+            icon: const Icon(
+              Icons.delete_outline,
+            ),
+            onPressed: () {
+              final product = ref.read(currentProductProvider);
+              if (product == null) {
+                return context.showSnakbar(
+                  'لايمكن حذف منتج غير موجود',
+                  type: SnackBarType.error,
+                );
+              }
+              showDialog(
+                context: context,
+                builder: (_) => DeleteProductDialog(product: product),
+              );
+            },
           ),
-          body: ProductDetailsBody(product: product),
-        );
-      },
-      loading: LoadingWidget.new,
-      error: (_, __) => const Center(
-        child: Text('حدث خطأ أثناء عرض المنتج'),
+        ],
+      ),
+      body: productAsync.when(
+        data: (product) => ProductDetailsBody(product: product),
+        loading: () =>
+            Skeletonizer(child: ProductDetailsBody(product: Product.fake())),
+        error: (_, __) => const Center(
+          child: Text('حدث خطأ أثناء عرض المنتج'),
+        ),
       ),
     );
   }
@@ -75,7 +79,8 @@ class ProductDetailsBody extends ConsumerWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      shrinkWrap: true,
       children: [
         ProductHeaderInfo(product: product!),
         const SizedBox(height: 10),

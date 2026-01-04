@@ -32,7 +32,7 @@ class DashboardScreen extends ConsumerWidget {
           ref.invalidate(productsProvider);
           ref.invalidate(expiredProductsProvider);
           ref.invalidate(nearExpiryProductsProvider);
-          ref.invalidate(unreadAlertsProvider);
+          ref.invalidate(newAlertsProvider);
         },
         child: const SingleChildScrollView(
           physics: AlwaysScrollableScrollPhysics(),

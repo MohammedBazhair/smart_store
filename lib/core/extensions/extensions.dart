@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
 
+import '../constants/enums.dart';
+
 extension ShowSnackbar on BuildContext {
-  void showSnakbar(String msg, [Duration duration= const Duration(milliseconds: 1300)]) {
+  void showSnakbar(
+    String msg, {
+    required SnackBarType type,
+  }) {
     ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(content: Text(msg), duration: duration),
-      
+      SnackBar(
+        content: Text(
+          msg,
+          style: TextStyle(
+            color: type.foregroundColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+        ),
+        duration: type.duration,
+        backgroundColor: type.backgroundColor,
+      ),
     );
   }
 }
@@ -23,7 +38,6 @@ extension RoutesNavigators on BuildContext {
     return Navigator.pushReplacement(
       this,
       MaterialPageRoute(builder: (context) => screen),
-      
     );
   }
 
@@ -31,4 +45,3 @@ extension RoutesNavigators on BuildContext {
     Navigator.pop(this, result);
   }
 }
-

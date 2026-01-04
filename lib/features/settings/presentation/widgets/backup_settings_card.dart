@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/presentation/theme/app_theme.dart';
@@ -15,19 +16,19 @@ class BackupSettingsCard extends ConsumerWidget {
   });
 
   Future<void> _createBackup(WidgetRef ref, BuildContext context) async {
-    ref.read(isLoadingProvider.notifier).update((i) => true);
+    ref.read(isLoadingProvider(IsLoading.backup).notifier).update((i) => true);
 
     final controller = ref.read(backupControllerProvider.notifier);
     final result = await controller.createBackup();
 
-    ref.read(isLoadingProvider.notifier).update((i) => false);
+    ref.read(isLoadingProvider(IsLoading.backup).notifier).update((i) => false);
 
     if (!context.mounted) return;
 
     if (result is SuccessState<String>) {
-      context.showSnakbar('تم إنشاء النسخة الاحتياطية: \n${result.data}');
+      context.showSnakbar('تم إنشاء النسخة الاحتياطية: \n${result.data}',type: SnackBarType.success);
     } else if (result is ErrorState<String>) {
-      context.showSnakbar(result.message);
+      context.showSnakbar(result.message,type: SnackBarType.error);
     }
   }
 
@@ -61,21 +62,21 @@ class BackupSettingsCard extends ConsumerWidget {
       );
 
       if (confirmed == true) {
-        ref.read(isLoadingProvider.notifier).update((i) => true);
+        ref.read(isLoadingProvider(IsLoading.backup).notifier).update((i) => true);
 
         final controller = ref.read(backupControllerProvider.notifier);
         final restoreResult = await controller.restoreBackup(backupPath);
 
-        ref.read(isLoadingProvider.notifier).update((i) => false);
+        ref.read(isLoadingProvider(IsLoading.backup).notifier).update((i) => false);
 
         if (!context.mounted) return;
 
         if (restoreResult is SuccessState<void>) {
-          context.showSnakbar('تم استعادة النسخة الاحتياطية');
+          context.showSnakbar('تم استعادة النسخة الاحتياطية',type: SnackBarType.success);
           // إعادة تحميل البيانات
           ref.invalidate(appSettingsProvider);
         } else if (restoreResult is ErrorState<void>) {
-          context.showSnakbar(restoreResult.message);
+          context.showSnakbar(restoreResult.message,type: SnackBarType.error);
         }
       }
     }
@@ -83,7 +84,7 @@ class BackupSettingsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final isLoading = ref.read(isLoadingProvider);
+    final isLoading = ref.read(isLoadingProvider(IsLoading.backup));
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),

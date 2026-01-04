@@ -27,9 +27,9 @@ class CurrencySettingsCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (result is SuccessState<void>) {
-      context.showSnakbar('تم تحديث الإعدادات');
+      context.showSnakbar('تم تحديث الإعدادات',type: SnackBarType.success);
     } else if (result is ErrorState<void>) {
-      context.showSnakbar(result.message);
+      context.showSnakbar(result.message,type: SnackBarType.error);
     }
   }
 

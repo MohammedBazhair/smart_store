@@ -1,30 +1,43 @@
 import 'package:app_settings/app_settings.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'result.dart';
+
 class PermissionsService {
-  static Future<bool> requestCamera() async {
-    final status = await Permission.camera.request();
+  static Future<Result<bool>> requestCamera() async {
+    try {
+      final status = await Permission.camera.request();
+      if (status.isGranted) {
+        return const SuccessState(true);
+      }
 
-    if (status.isGranted) {
-      return true;
+      if (status.isPermanentlyDenied) {
+        await AppSettings.openAppSettings(type: AppSettingsType.camera);
+      }
+      
+      return const SuccessState(false);
+    } on MissingPluginException catch (e) {
+      final result = await openAppSettings();
+      return result ? SuccessState(result) : ErrorState(e.toString());
+    } catch (e) {
+      return ErrorState(e.toString());
     }
-
-    if (status.isPermanentlyDenied) {
-      await AppSettings.openAppSettings(type: AppSettingsType.camera);
-    }
-    return false;
   }
 
-  static Future<bool> requestNotification() async {
-    final status = await Permission.notification.request();
+  static Future<Result<bool>> requestNotification() async {
+    try {
+      final status = await Permission.notification.request();
+      if (status.isGranted) {
+        return const SuccessState(true);
+      }
 
-    if (status.isGranted) {
-      return true;
+      if (status.isPermanentlyDenied) {
+        await AppSettings.openAppSettings(type: AppSettingsType.notification);
+      }
+      return const SuccessState(false);
+    } catch (e) {
+      return ErrorState(e.toString());
     }
-
-    if (status.isPermanentlyDenied) {
-      await AppSettings.openAppSettings(type: AppSettingsType.notification);
-    }
-    return false;
   }
 }

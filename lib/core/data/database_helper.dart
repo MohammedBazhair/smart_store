@@ -38,7 +38,7 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         quantity INTEGER,
         barcode TEXT UNIQUE ,
-        expiry_date TEXT NOT NULL,
+        expiry_date TEXT,
         category TEXT NOT NULL,
         price REAL NOT NULL,
         currency TEXT NOT NULL,

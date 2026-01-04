@@ -4,7 +4,6 @@ import '../../../core/constants/enums.dart';
 
 /// كيان الإعدادات
 class Settings extends Equatable {
-
   const Settings({
     required this.id,
     required this.defaultCurrency,
@@ -14,6 +13,18 @@ class Settings extends Equatable {
     required this.alertDays1,
     required this.enableNotifications,
   });
+
+  factory Settings.fake() {
+    return const Settings(
+      id: '3',
+      defaultCurrency: Currency.YER,
+      exchangeRate: 300,
+      alertDays30: 30,
+      alertDays7: 7,
+      alertDays1: 1,
+      enableNotifications: true,
+    );
+  }
   final String id;
   final Currency defaultCurrency;
   final double exchangeRate; // 1 SAR = ? YER
@@ -54,4 +65,3 @@ class Settings extends Equatable {
     );
   }
 }
-

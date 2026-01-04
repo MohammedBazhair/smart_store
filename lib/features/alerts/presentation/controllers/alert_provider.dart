@@ -13,10 +13,9 @@ final alertsProvider = FutureProvider<List<Alert>>((ref) async {
   return [];
 });
 
-/// Provider للحصول على التنبيهات غير المقروءة
-final unreadAlertsProvider = FutureProvider<List<Alert>>((ref) async {
+final newAlertsProvider = FutureProvider<List<Alert>>((ref) async {
   final repository = ref.watch(alertRepositoryProvider);
-  final result = await repository.getUnreadAlerts();
+  final result = await repository.getNewAlerts();
   if (result is SuccessState<List<Alert>>) {
     return result.data;
   }

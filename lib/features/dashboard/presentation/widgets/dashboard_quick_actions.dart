@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../shared/presentation/theme/app_theme.dart';
+import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../alerts/presentation/screens/alerts_screen.dart';
 import '../../../products/presentation/screens/add_product_screen.dart';
 import 'dashboard_quick_action_card.dart';
@@ -37,7 +38,12 @@ class DashboardQuickActions extends StatelessWidget {
                 icon: Icons.notifications_outlined,
                 color: AppTheme.warningColor,
                 onTap: () {
-                  context.pushTo(const AlertsScreen());
+                  context.pushTo(
+                    AlertsScreen(
+                      title: 'التنبيهات',
+                      alertsProvider: alertsProvider,
+                    ),
+                  );
                 },
               ),
             ),

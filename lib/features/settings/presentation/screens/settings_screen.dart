@@ -1,23 +1,21 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/presentation/widgets/common/error_widget.dart';
-import '../../../../shared/presentation/widgets/common/loading_widget.dart';
 import '../../domain/settings.dart';
 import '../controllers/settings_controller.dart';
 import '../controllers/settings_provider.dart';
-import '../widgets/backup_settings_card.dart';
-import '../widgets/currency_settings_card.dart';
-import '../widgets/notifications_settings_card.dart';
 import '../widgets/settings_app_bar.dart';
+import '../widgets/settings_form.dart';
 
-final isLoadingProvider = StateProvider.autoDispose((ref) => false);
+final isLoadingProvider =
+    StateProvider.family<bool, IsLoading>((ref, type) => false);
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -42,23 +40,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Scaffold(
       appBar: const SettingsAppBar(),
       body: settingsAsync.when(
-        data: (settings) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            CurrencySettingsCard(
-              settings: settings,
+        data: (settings) => SettingsForm(
+            settings: settings,
+            onChanged: _updateSettings,
+            exchangeRateController: _exchangeRateController,
+          ),
+        loading: () => Skeletonizer(
+            child: SettingsForm(
+              settings: Settings.fake(),
+              onChanged: (_) {},
               exchangeRateController: _exchangeRateController,
             ),
-            const SizedBox(height: 16),
-            NotificationsSettingsCard(
-              settings: settings,
-              onChanged: _updateSettings,
-            ),
-            const SizedBox(height: 16),
-            const BackupSettingsCard(),
-          ],
-        ),
-        loading: () => const LoadingWidget(),
+          ),
         error: (e, _) => ErrorDisplayWidget(
           message: e.toString(),
           onRetry: () => ref.invalidate(appSettingsProvider),
@@ -74,9 +67,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (!context.mounted) return;
 
     if (result is SuccessState<void>) {
-      context.showSnakbar('تم تحديث الإعدادات', Durations.medium4);
+      context.showSnakbar('تم تحديث الإعدادات', type: SnackBarType.success);
     } else if (result is ErrorState<void>) {
-      context.showSnakbar(result.message);
+      context.showSnakbar(result.message, type: SnackBarType.error);
     }
   }
 }

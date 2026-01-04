@@ -19,7 +19,7 @@ class Alert extends Equatable {
   final Priority importance;
   final bool isRead;
   final DateTime createdAt;
-  final DateTime expiryDate;
+  final DateTime? expiryDate;
 
   @override
   List<Object?> get props => [

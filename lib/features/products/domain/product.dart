@@ -36,13 +36,15 @@ class Product extends Equatable {
   final String name;
   final int? quantity;
   final String? barcode;
-  final DateTime expiryDate;
+  final DateTime? expiryDate;
   final ProductCategory category;
   final double price;
   final Currency currency;
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  String get quantityText => quantity?.toString() ?? 'غير محددة';
 
   @override
   List<Object?> get props => [

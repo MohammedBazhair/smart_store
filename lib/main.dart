@@ -1,10 +1,13 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:workmanager/workmanager.dart';
 
+import 'core/utils/permissions.dart';
 import 'core/utils/result.dart';
 import 'features/alerts/data/alert_background_params.dart';
 import 'features/alerts/data/alert_repository_impl.dart';
@@ -21,7 +24,7 @@ void callbackDispatcher() {
     final backgroundParams = AlertBackgroundParams.fromMap(inputData);
 
     if (backgroundParams.product.id == null) return Future.value(false);
-    
+
     await addAlertInBackground(backgroundParams);
 
     return Future.value(true);
@@ -45,6 +48,14 @@ void main() async {
     isInDebugMode: true,
   );
 
+  final result = await PermissionsService.requestNotification();
+  
+  if (result is ErrorState<bool>) exit(0);
+
+  if (result is SuccessState<bool> && !result.data) {
+    exit(0);
+  }
+
   runApp(
     UncontrolledProviderScope(
       container: container,
@@ -61,8 +72,8 @@ class SmartStoreApp extends StatelessWidget {
     return MaterialApp(
       locale: const Locale('ar'),
       supportedLocales: const [
-        Locale('en'), // الإنجليزية
-        Locale('ar'), // العربية
+        Locale('en'),
+        Locale('ar'),
       ],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

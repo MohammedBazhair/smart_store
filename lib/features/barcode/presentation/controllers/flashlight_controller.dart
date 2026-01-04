@@ -1,11 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-final mobileScannerControllerProvider =
-    Provider<MobileScannerController>((ref) {
-  final controller = MobileScannerController();
-
-  ref.onDispose(controller.dispose);
+final mobileScannerControllerProvider = Provider((ref) {
+  final controller = MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates);
+  
+  ref.onDispose(() {
+    controller.stop();
+    controller.dispose();
+    print('---------------------------');
+    print('disposed');
+    print('---------------------------');
+  });
 
   return controller;
 });

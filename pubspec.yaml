@@ -42,6 +42,7 @@ dependencies:
   # Utilities
   equatable: ^2.0.5
   workmanager: ^0.9.0+3
+  rename: ^3.1.0
 
 dev_dependencies:
   flutter_test:

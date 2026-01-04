@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,20 +72,25 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final product = widget.product!;
 
     _nameController.text = product.name;
-    _quantityController.text = product.quantity.toString();
+    _quantityController.text = product.quantity?.toString() ?? '';
     _priceController.text = product.price.toString();
     _notesController.text = product.notes ?? '';
     _barcodeController.text = product.barcode ?? '';
-    _expiryDateController.text =
-        DateFormat('yyyy-MM-dd').format(product.expiryDate);
+    _expiryDateController.text = product.expiryDate != null
+        ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
+        : '';
     setState(() {
       _selectedCategory = product.category;
     });
 
     if (widget.detailsType == null) return;
 
-    final currentFocusNode = ref.read(focusNodesProvider)[widget.detailsType];
-    FocusScope.of(context).requestFocus(currentFocusNode);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final focusNode = ref.read(focusNodesProvider)[widget.detailsType];
+      if (focusNode != null && mounted) {
+        FocusScope.of(context).requestFocus(focusNode);
+      }
+    });
   }
 
   @override
@@ -125,13 +132,15 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final isFormValid = _formKey.currentState?.validate() ?? false;
     if (!isFormValid) return;
 
-    ref.read(isLoadingProvider.notifier).update((_) => true);
+    ref
+        .read(isLoadingProvider(IsLoading.saveProduct).notifier)
+        .update((_) => true);
 
     final controller = ref.read(productControllerProvider.notifier);
 
     final product = Product(
       name: _nameController.text.trim(),
-      quantity: int.parse(_quantityController.text),
+      quantity: int.tryParse(_quantityController.text),
       barcode: _barcodeController.text,
       expiryDate: DateTime.parse(_expiryDateController.text),
       category: _selectedCategory,
@@ -144,15 +153,17 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
     final result = await controller.addProduct(product);
 
-    ref.read(isLoadingProvider.notifier).update((_) => false);
+    ref
+        .read(isLoadingProvider(IsLoading.saveProduct).notifier)
+        .update((_) => false);
 
     if (!context.mounted) return;
 
     if (result is SuccessState<int>) {
-      context.showSnakbar('تم إضافة المنتج بنجاح');
+      context.showSnakbar('تم إضافة المنتج بنجاح', type: SnackBarType.success);
       _clearForm();
     } else if (result is ErrorState<int>) {
-      context.showSnakbar(result.message);
+      context.showSnakbar(result.message, type: SnackBarType.error);
     }
   }
 
@@ -160,20 +171,23 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final isFormValid = _formKey.currentState?.validate() ?? false;
     if (!isFormValid) return;
 
-    ref.read(isLoadingProvider.notifier).update((_) => true);
+    ref
+        .read(isLoadingProvider(IsLoading.saveProduct).notifier)
+        .update((_) => true);
 
     final controller = ref.read(productControllerProvider.notifier);
+    log(_expiryDateController.text);
     final oldProduct = widget.product!;
     final updatedProduct = oldProduct.copyWith(
       name: _nameController.text.trim(),
-      quantity: int.parse(_quantityController.text),
+      quantity: int.tryParse(_quantityController.text),
       barcode: _barcodeController.text,
-      expiryDate: DateTime.parse(_expiryDateController.text),
+      expiryDate: DateTime.tryParse(_expiryDateController.text),
       category: _selectedCategory,
       notes: _notesController.text,
       updatedAt: DateTime.now(),
       currency: _selectedCurrency,
-      price: double.tryParse(_priceController.text) ?? 0,
+      price: double.tryParse(_priceController.text),
     );
 
     final result = await controller.updateProduct(
@@ -181,16 +195,18 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       newProduct: updatedProduct,
     );
 
-    ref.read(isLoadingProvider.notifier).update((_) => false);
+    ref
+        .read(isLoadingProvider(IsLoading.saveProduct).notifier)
+        .update((_) => false);
 
     if (!context.mounted) return;
 
     if (result is SuccessState<void>) {
-      context.showSnakbar('تم إضافة المنتج بنجاح');
+      context.showSnakbar('تم تعديل المنتج بنجاح', type: SnackBarType.success);
       Navigator.pop(context);
       ref.invalidate(productsProvider);
     } else if (result is ErrorState<void>) {
-      context.showSnakbar(result.message);
+      context.showSnakbar(result.message, type: SnackBarType.error);
     }
   }
 
@@ -207,10 +223,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: _clearForm,
-        child: const Text('Clear'),
-      ),
       appBar: AppBar(
         title: isEditingProduct
             ? const Text('تعديل منتج')
@@ -255,8 +267,27 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 ),
                 ProductNotesField(controller: _notesController),
                 const SizedBox(height: 16),
-                SaveProductButton(
-                  onPressed: isEditingProduct ? _onEditProduct : _onAddProduct,
+                Row(
+                  spacing: 8,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: SaveProductButton(
+                        onPressed:
+                            isEditingProduct ? _onEditProduct : _onAddProduct,
+                      ),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueGrey.shade500,
+                      ),
+                      onPressed: _clearForm,
+                      child: const Icon(
+                        Icons.clear,
+                        size: 24,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

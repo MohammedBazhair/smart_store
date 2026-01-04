@@ -6,8 +6,8 @@ import '../../../../shared/presentation/theme/app_theme.dart';
 import '../../../../shared/presentation/widgets/common/error_widget.dart';
 import '../../../../shared/presentation/widgets/common/loading_widget.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
+import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../products/presentation/screens/products_screen.dart';
-
 
 class DashboardNearExpirySection extends ConsumerWidget {
   const DashboardNearExpirySection({super.key});
@@ -28,7 +28,12 @@ class DashboardNearExpirySection extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () {
-                context.pushTo(const ProductsScreen());
+                context.pushTo(
+                  ProductsScreen(
+                    productsProvider: nearExpiryProductsProvider,
+                    title: 'المنتجات قريبة الانتهاء',
+                  ),
+                );
               },
               child: const Text('عرض الكل'),
             ),
@@ -52,7 +57,6 @@ class DashboardNearExpirySection extends ConsumerWidget {
                 ),
               );
             }
-
             return Column(
               children: products.take(3).map((product) {
                 return ListTile(
@@ -61,12 +65,18 @@ class DashboardNearExpirySection extends ConsumerWidget {
                     color: AppTheme.nearExpiryColor,
                   ),
                   title: Text(product.name),
-                  subtitle: Text(
-                    'ينتهي في ${DateTime.now().difference(product.expiryDate).inDays.abs()} أيام',
-                  ),
+                  subtitle: product.expiryDate == null
+                      ? null
+                      : Text(
+                          'ينتهي في ${DateTime.now().difference(product.expiryDate!).inDays.abs()} أيام',
+                        ),
                   trailing: const Icon(Icons.chevron_left),
                   onTap: () {
-                    context.pushTo(const ProductsScreen());
+                    context.pushTo(
+                      ProductDetailsScreen(
+                        productId: product.id!,
+                      ),
+                    );
                   },
                 );
               }).toList(),

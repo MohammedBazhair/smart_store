@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/constants/enums.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/result.dart';
 import '../../../../../shared/presentation/theme/app_theme.dart';
@@ -34,8 +35,8 @@ class DeleteProductDialog extends ConsumerWidget {
             Navigator.pop(context);
 
             result is SuccessState
-                ? context.showSnakbar('تم الحذف بنجاح')
-                : context.showSnakbar((result as ErrorState).message);
+                ? context.showSnakbar('تم الحذف بنجاح',type: SnackBarType.success)
+                : context.showSnakbar((result as ErrorState).message,type: SnackBarType.error);
 
             if (result is SuccessState) Navigator.pop(context);
           },

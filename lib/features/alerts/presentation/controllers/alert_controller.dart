@@ -61,7 +61,7 @@ class AlertController extends Notifier<void> {
   /// تحديث قائمة التنبيهات
   void _invalidate() {
     ref.invalidate(alertsProvider);
-    ref.invalidate(unreadAlertsProvider);
+    ref.invalidate(newAlertsProvider);
   }
 }
 

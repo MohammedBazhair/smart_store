@@ -3,14 +3,16 @@ import 'package:intl/intl.dart';
 /// أدوات للتعامل مع التواريخ
 class DateUtils {
   /// حساب الأيام المتبقية حتى تاريخ الانتهاء
-  static int daysUntilExpiry(DateTime expiryDate) {
+  static int? daysUntilExpiry(DateTime? expiryDate) {
+    if (expiryDate == null) return null;
     final now = DateTime.now();
     final difference = expiryDate.difference(now);
     return difference.inDays;
   }
 
   /// ترجع المدة المتبقية بصيغة مناسبة (أيام / أشهر / سنين)
-  static String timeUntilExpiry(DateTime expiryDate) {
+  static String? timeUntilExpiry(DateTime? expiryDate) {
+    if (expiryDate == null) return null;
     final now = DateTime.now();
 
     if (expiryDate.isBefore(now)) {
@@ -40,19 +42,20 @@ class DateUtils {
   }
 
   /// التحقق من انتهاء المنتج
-  static bool isExpired(DateTime expiryDate) {
-    return daysUntilExpiry(expiryDate) < 0;
+  static bool? isExpired(DateTime? expiryDate) {
+    if (expiryDate == null) return null;
+    return daysUntilExpiry(expiryDate)! < 0;
   }
 
   /// التحقق من قرب انتهاء المنتج
   static bool isNearExpiry(DateTime expiryDate, int daysThreshold) {
     final days = daysUntilExpiry(expiryDate);
-    return days >= 0 && days <= daysThreshold;
+    return days! >= 0 && days <= daysThreshold;
   }
 
   /// تنسيق التاريخ للعرض
   static String formatDate(DateTime date) {
-    return DateFormat('yyyy-MM', 'en').format(date);
+    return DateFormat('yyyy-MM-dd', 'en').format(date);
   }
 
   /// تنسيق التاريخ والوقت

@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/utils/result.dart';
 import '../../../../shared/presentation/theme/app_theme.dart';
@@ -54,10 +55,11 @@ class AlertCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(
-              'ينتهي في ${DateFormat('yyyy-MM-dd').format(alert.expiryDate)}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+            if (alert.expiryDate != null)
+              Text(
+                'ينتهي في ${DateFormat('yyyy-MM-dd').format(alert.expiryDate!)}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             const SizedBox(height: 4),
             Row(
               children: [
@@ -106,7 +108,10 @@ class AlertCard extends ConsumerWidget {
               ProductDetailsScreen(productId: product.data.id!),
             );
           } else {
-            context.showSnakbar('لا يمكن عرض تفاصيل هذا المنتج لانه غير موجود');
+            context.showSnakbar(
+              'لا يمكن عرض تفاصيل هذا المنتج لانه غير موجود',
+              type: SnackBarType.error,
+            );
           }
         },
       ),

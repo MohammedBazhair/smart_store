@@ -3,21 +3,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/presentation/widgets/common/error_widget.dart';
 import '../../../../shared/presentation/widgets/common/loading_widget.dart';
-import '../controllers/alert_provider.dart';
+import '../../domain/alert.dart';
 import '../widgets/alert_card.dart';
-import '../widgets/alerts_app_bar.dart';
 import '../widgets/alerts_empty_state.dart';
 
-/// شاشة التنبيهات
 class AlertsScreen extends ConsumerWidget {
-  const AlertsScreen({super.key});
+  const AlertsScreen({super.key, this.title, required this.alertsProvider});
+  final String? title;
+  final FutureProvider<List<Alert>> alertsProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final alertsAsync = ref.watch(alertsProvider);
 
     return Scaffold(
-      appBar: const AlertsAppBar(),
+      appBar: AppBar(
+        title: title != null ? Text(title!) : const Text('التنبيهات'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              ref.invalidate(alertsProvider);
+            },
+          ),
+        ],
+      ),
       body: alertsAsync.when(
         data: (alerts) {
           if (alerts.isEmpty) return const AlertsEmptyState();

@@ -12,44 +12,43 @@ class ProductExpiryStatus {
 
   factory ProductExpiryStatus.from(DateTime expiryDate) {
     final days = date_utils.DateUtils.daysUntilExpiry(expiryDate);
+    final text = date_utils.DateUtils.timeUntilExpiry(expiryDate) ?? 'صالح';
+    if (days == null) {
+      return ProductExpiryStatus(
+        color: AppTheme.validColor,
+        text: text,
+        icon: Icons.check_circle,
+      );
+    }
 
     if (days < 0) {
-      return const ProductExpiryStatus(
+      return ProductExpiryStatus(
         color: AppTheme.expiredColor,
-        text: 'منتهي',
+        text: text,
         icon: Icons.cancel,
       );
     } else if (days <= 7) {
-      return const ProductExpiryStatus(
+      return ProductExpiryStatus(
         color: AppTheme.nearExpiryColor,
-        text: 'قريب الانتهاء',
+        text: text,
         icon: Icons.warning,
       );
     } else if (days <= 29) {
       return ProductExpiryStatus(
         color: AppTheme.validColor,
-        text: '$days أيام متبقية',
+        text: text,
         icon: Icons.check_circle,
       );
     } else if (days ~/ 30 >= 12) {
-      final months = days ~/ 30;
-      final years = months ~/ 12;
-
       return ProductExpiryStatus(
         color: AppTheme.validColor,
-        text: years == 1 ? 'سنة متبقية' : '$years سنوات متبقية',
+        text: text,
         icon: Icons.check_circle,
       );
     } else {
-      final months = days ~/ 30;
-
       return ProductExpiryStatus(
         color: AppTheme.validColor,
-        text: months == 1
-            ? 'شهر متبقي'
-            : months == 2
-                ? 'شهرين متبقيين'
-                : '$months أشهر متبقية',
+        text: text,
         icon: Icons.check_circle,
       );
     }

@@ -26,19 +26,24 @@ class ExpiryRow extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const Spacer(),
-        Skeleton.leaf(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: status.color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              status.text,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: status.color,
-                    fontWeight: FontWeight.w600,
-                  ),
+        Expanded(
+          flex: 4,
+          child: Skeleton.leaf(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: status.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '${status.text} ' * 2,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: status.color,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
             ),
           ),
         ),

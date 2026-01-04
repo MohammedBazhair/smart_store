@@ -15,16 +15,16 @@ class ProductStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final remainingDays =
         date_utils.DateUtils.daysUntilExpiry(product.expiryDate);
-    final isExpired = date_utils.DateUtils.isExpired(product.expiryDate);
+    final isExpired = date_utils.DateUtils.isExpired(product.expiryDate)??false;
     final color = isExpired
         ? AppTheme.expiredColor
-        : remainingDays <= 7
+        : remainingDays!=null && remainingDays<= 7
             ? AppTheme.nearExpiryColor
             : AppTheme.validColor;
 
     final text = isExpired
         ? 'منتهي'
-        : remainingDays <= 30
+        : remainingDays != null && remainingDays <= 30
             ? 'قريب الانتهاء'
             : 'صالح';
 

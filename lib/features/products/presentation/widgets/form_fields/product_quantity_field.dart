@@ -22,6 +22,13 @@ class ProductQuantityField extends ConsumerWidget {
       ),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      validator: (value) {
+        final reg = RegExp(r'^\d+$');
+        if (value == null || value.trim().isEmpty) return null;
+
+        if (reg.hasMatch(value)) return null;
+        return 'لا يمكن أن تحتوي على حروف. استعمل أرقام فقط';
+      },
     );
   }
 }

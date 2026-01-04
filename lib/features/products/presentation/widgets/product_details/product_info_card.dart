@@ -1,87 +1,112 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/extensions/extensions.dart';
 import '../../../../../shared/presentation/theme/app_theme.dart';
 import '../../../domain/product_details.dart';
+import '../../screens/add_product_screen.dart';
+import '../../screens/product_details_screen.dart';
 
-class BaseProductInfoCard extends StatelessWidget {
+class BaseProductInfoCard extends ConsumerWidget {
   const BaseProductInfoCard({
     super.key,
     required this.icon,
     required this.label,
     required this.value,
     required this.detailsType,
+    required this.iconColor,
   });
 
   final IconData icon;
   final String label;
   final String value;
   final ProductDetailsType detailsType;
+  final Color iconColor;
 
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () {
-        if (detailsType == ProductDetailsType.price) {
-          // context.pushTo(const AddProductScreen(product: ,));
-        }
-      },
-      title: Row(
-        spacing: 8,
-        children: [
-          Icon(icon),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 15, color: AppTheme.textSecondary),
+  Widget build(BuildContext context, ref) {
+    return Card(
+      child: ListTile(
+        onTap: () {
+          final product = ref.read(currentProductProvider);
+          context.pushTo(
+            AddProductScreen(
+              product: product,
+              detailsType: detailsType,
+            ),
+          );
+        },
+        title: Row(
+          spacing: 8,
+          children: [
+            Icon(
+              icon,
+              color: iconColor,
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        subtitle: Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            height: 1.8,
           ),
-        ],
-      ),
-      subtitle: Text(
-        value,
-        style: const TextStyle(fontSize: 25),
+        ),
       ),
     );
   }
 }
 
-class ProductInfoCard extends StatelessWidget {
+class ProductInfoCard extends ConsumerWidget {
   const ProductInfoCard({
     super.key,
     required this.icon,
     required this.label,
     required this.value,
     required this.detailsType,
+    required this.iconColor,
   });
 
   final IconData icon;
   final String label;
   final String value;
   final ProductDetailsType detailsType;
+  final Color iconColor;
 
   @override
-  Widget build(BuildContext context) {
-    return Expanded(
+  Widget build(BuildContext context, ref) {
+    return Card(
       child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         onTap: () {
-          switch (detailsType) {
-            case ProductDetailsType.price:
-
-            case ProductDetailsType.quantity:
-
-            case ProductDetailsType.category:
-
-            case ProductDetailsType.barcode:
-
-            case ProductDetailsType.expiryDate:
-
-            case ProductDetailsType.notes:
-
-            case ProductDetailsType.name:
-          }
+          final product = ref.read(currentProductProvider);
+          context.pushTo(
+            AddProductScreen(
+              product: product,
+              detailsType: detailsType,
+            ),
+          );
         },
         title: Column(
           spacing: 8,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(child: Icon(icon)),
+            CircleAvatar(
+              backgroundColor: iconColor.withOpacity(0.08),
+              child: Icon(
+                icon,
+                color: iconColor,
+              ),
+            ),
             Text(
               label,
               style:
@@ -91,7 +116,11 @@ class ProductInfoCard extends StatelessWidget {
         ),
         subtitle: Text(
           value,
-          style: const TextStyle(fontSize: 20),
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            height: 1.8,
+          ),
         ),
       ),
     );

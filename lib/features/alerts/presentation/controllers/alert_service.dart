@@ -80,11 +80,12 @@ class AlertService {
     final settings = result.data;
 
     if (!settings.enableNotifications) return;
+    if (product.expiryDate == null) return;
 
     final daysUntilExpiry = DateUtils.daysUntilExpiry(product.expiryDate);
 
     // تنبيه قبل 30 يوم
-    if (daysUntilExpiry <= settings.alertDays30 &&
+    if (daysUntilExpiry !<= settings.alertDays30 &&
         daysUntilExpiry > settings.alertDays7) {
       await _scheduleAlert(
         product: product,
@@ -127,7 +128,8 @@ class AlertService {
     required int daysBefore,
     required Priority importance,
   }) async {
-    final alertDate = product.expiryDate.subtract(Duration(days: daysBefore));
+    if (product.expiryDate == null) return;
+    final alertDate = product.expiryDate!.subtract(Duration(days: daysBefore));
 
     if (alertDate.isBefore(DateTime.now())) {
       // إذا كان التاريخ في الماضي، أرسل التنبيه فورًا
@@ -155,7 +157,7 @@ class AlertService {
         ),
         iOS: DarwinNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
 

@@ -97,4 +97,22 @@ class AlertRepositoryImpl implements AlertRepository {
       );
     }
   }
+
+  @override
+  Future<Result<List<Alert>>> getNewAlerts() async {
+    try {
+      final db = await _dbHelper.database;
+      final maps = await db.query(
+        'alerts',
+        orderBy: 'created_at DESC',
+        limit: 3,
+      );
+      final alerts = maps.map(AlertModel.fromMap).toList();
+      return SuccessState(alerts);
+    } catch (e) {
+      return const ErrorState(
+        'فشل في جلب التنبيهات الجديدة',
+      );
+    }
+  }
 }

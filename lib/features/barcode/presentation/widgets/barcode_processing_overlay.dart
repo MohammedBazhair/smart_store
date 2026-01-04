@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/enums.dart';
 import '../../../../shared/presentation/widgets/common/conditional_builder.dart';
 import '../../../settings/presentation/screens/settings_screen.dart';
 
@@ -11,7 +12,7 @@ class BarcodeProcessingOverlay extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final isProcessing = ref.watch(isLoadingProvider);
+    final isProcessing = ref.watch(isLoadingProvider(IsLoading.processBarcode));
 
     return ConditionalBuilder(
       condition: isProcessing,
