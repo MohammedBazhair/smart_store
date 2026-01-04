@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/product_details.dart';
-import '../../screens/add_product_screen.dart';
+import '../../controllers/product_provider.dart';
 
 class ProductExpiryDateField extends ConsumerWidget {
   const ProductExpiryDateField({

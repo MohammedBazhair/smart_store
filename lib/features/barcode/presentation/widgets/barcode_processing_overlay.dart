@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../shared/presentation/widgets/common/conditional_builder.dart';
-import '../../../settings/presentation/screens/settings_screen.dart';
+import '../../../../shared/providers/ui_providers.dart';
 
 class BarcodeProcessingOverlay extends ConsumerWidget {
   const BarcodeProcessingOverlay({

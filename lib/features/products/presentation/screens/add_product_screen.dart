@@ -7,8 +7,8 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/utils/result.dart';
+import '../../../../shared/providers/ui_providers.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
-import '../../../settings/presentation/screens/settings_screen.dart';
 import '../../domain/product.dart';
 import '../../domain/product_details.dart';
 import '../controllers/product_controller.dart';
@@ -23,15 +23,6 @@ import '../widgets/form_fields/product_quantity_field.dart';
 import '../widgets/pick_date/show_expiry_date.dart';
 import '../widgets/save_product_button.dart';
 
-final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {
-  final mapEntries =
-      ProductDetailsType.values.map((t) => MapEntry(t, FocusNode()));
-
-  final map = Map.fromEntries(mapEntries);
-
-  ref.onDispose(map.values.map((f) => f.dispose()).toList);
-  return map;
-});
 
 /// شاشة إضافة منتج جديد
 class AddProductScreen extends ConsumerStatefulWidget {

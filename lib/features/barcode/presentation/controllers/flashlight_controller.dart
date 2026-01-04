@@ -7,9 +7,6 @@ final mobileScannerControllerProvider = Provider((ref) {
   ref.onDispose(() {
     controller.stop();
     controller.dispose();
-    print('---------------------------');
-    print('disposed');
-    print('---------------------------');
   });
 
   return controller;

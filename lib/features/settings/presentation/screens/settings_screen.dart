@@ -14,8 +14,6 @@ import '../controllers/settings_provider.dart';
 import '../widgets/settings_app_bar.dart';
 import '../widgets/settings_form.dart';
 
-final isLoadingProvider =
-    StateProvider.family<bool, IsLoading>((ref, type) => false);
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});

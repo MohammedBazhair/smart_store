@@ -6,11 +6,11 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../domain/product.dart';
 import '../controllers/product_controller.dart';
+import '../controllers/product_provider.dart';
 import '../widgets/product_details/delete_product_dialog.dart';
 import '../widgets/product_details/product_header_card.dart';
 import '../widgets/product_details/product_info_section.dart';
 
-final currentProductProvider = StateProvider<Product?>((ref) => null);
 
 class ProductDetailsScreen extends ConsumerWidget {
   const ProductDetailsScreen({super.key, required this.productId});

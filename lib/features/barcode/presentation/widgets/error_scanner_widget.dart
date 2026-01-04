@@ -54,7 +54,6 @@ class ErrorScannerWidget extends ConsumerWidget {
               final controller = ref.read(mobileScannerControllerProvider);
               switch (error.errorCode) {
                 case MobileScannerErrorCode.permissionDenied:
-                  print('take');
                   final result = await PermissionsService.requestCamera();
                   if (result is ErrorState<bool>) {
                     context.showSnakbar(
@@ -68,9 +67,6 @@ class ErrorScannerWidget extends ConsumerWidget {
                 case MobileScannerErrorCode.controllerAlreadyInitialized:
                 case MobileScannerErrorCode.genericError:
                   ref.invalidate(mobileScannerControllerProvider);
-                  print('stopped ok');
-                  print(controller.value.isInitialized);
-                  print(controller.value.isRunning);
                   context.pop();
                 case MobileScannerErrorCode.unsupported:
               }

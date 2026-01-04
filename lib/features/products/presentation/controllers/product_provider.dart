@@ -1,8 +1,10 @@
-﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/result.dart';
 import '../../../../shared/providers/repositories_provider.dart';
 import '../../domain/product.dart';
+import '../../domain/product_details.dart';
 
 /// Provider للحصول على جميع المنتجات
 final productsProvider = FutureProvider<List<Product>>((ref) async {
@@ -52,3 +54,16 @@ final nearExpiryProductsProvider = FutureProvider<List<Product>>((ref) async {
   }
   return [];
 });
+
+
+final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {
+  final mapEntries =
+      ProductDetailsType.values.map((t) => MapEntry(t, FocusNode()));
+
+  final map = Map.fromEntries(mapEntries);
+
+  ref.onDispose(map.values.map((f) => f.dispose()).toList);
+  return map;
+});
+
+final currentProductProvider = StateProvider<Product?>((ref) => null);

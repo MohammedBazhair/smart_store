@@ -4,7 +4,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../settings/presentation/screens/settings_screen.dart';
+import '../../../../shared/providers/ui_providers.dart';
 import '../../domain/product.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/products_widgets/product_filter_dialog.dart';
