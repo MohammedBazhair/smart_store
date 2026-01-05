@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../core/constants/enums.dart';
 import '../domain/product.dart';
 
@@ -16,6 +18,11 @@ class ProductModel extends Product {
     required super.price,
     required super.currency,
   });
+
+  factory ProductModel.fromJson(String source) {
+    final map = jsonDecode(source);
+    return ProductModel.fromMap(map);
+  }
 
   /// تحويل من Entity إلى Model
   factory ProductModel.fromEntity(Product product) {
@@ -41,7 +48,7 @@ class ProductModel extends Product {
       name: map['name'] as String,
       quantity: map['quantity'] as int?,
       barcode: map['barcode'] as String?,
-      expiryDate: DateTime.tryParse((map['expiry_date'] as String?)??''),
+      expiryDate: DateTime.tryParse((map['expiry_date'] as String?) ?? ''),
       category: ProductCategory.values.byName(map['category'] as String),
       notes: map['notes'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
@@ -70,4 +77,6 @@ class ProductModel extends Product {
 
     return map;
   }
+
+  String toJson() => jsonEncode(toMap());
 }

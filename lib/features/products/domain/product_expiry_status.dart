@@ -11,8 +11,8 @@ class ProductExpiryStatus {
   });
 
   factory ProductExpiryStatus.from(DateTime expiryDate) {
-    final days = date_utils.DateUtils.daysUntilExpiry(expiryDate);
-    final text = date_utils.DateUtils.timeUntilExpiry(expiryDate) ?? 'صالح';
+    final days = date_utils.DateTimeUtils.daysUntilExpiry(expiryDate);
+    final text = date_utils.DateTimeUtils.timeUntilExpiry(expiryDate) ?? 'صالح';
     if (days == null) {
       return ProductExpiryStatus(
         color: AppTheme.validColor,

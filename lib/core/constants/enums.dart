@@ -53,3 +53,5 @@ enum SnackBarType {
 }
 
 enum IsLoading { settings, saveProduct, processBarcode, search, backup }
+
+enum BackgroundTask { dailyExpiryCheck, addAlertForProduct }

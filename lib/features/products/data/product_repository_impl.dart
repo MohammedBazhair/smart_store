@@ -39,7 +39,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final product = ProductModel.fromMap(maps.first);
       return SuccessState(product);
     } catch (e) {
-      return ErrorState('فشل في جلب المنتج: ${e.toString()}');
+      return const ErrorState('فشل في جلب المنتج');
     }
   }
 

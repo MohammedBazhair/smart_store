@@ -154,9 +154,11 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          elevation: 0,
+          elevation: 2,
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
+          shadowColor:AppTheme.primaryColor.withOpacity(0.35),
+          
           padding: const EdgeInsets.all(7),
           fixedSize: const Size.fromHeight(50),
           shape: RoundedRectangleBorder(
@@ -168,7 +170,17 @@ class AppTheme {
           ),
         ),
       ),
-      iconTheme: const IconThemeData(size: 24),
+      iconTheme: IconThemeData(
+        size: 24,
+        shadows: [
+          BoxShadow(
+            color: AppTheme.accentColor.withOpacity(0.08),
+            blurRadius: 5,
+            spreadRadius: 2,
+            offset: const Offset(1, 1),
+          ),
+        ],
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceColor,

@@ -8,9 +8,6 @@ class Settings extends Equatable {
     required this.id,
     required this.defaultCurrency,
     required this.exchangeRate,
-    required this.alertDays30,
-    required this.alertDays7,
-    required this.alertDays1,
     required this.enableNotifications,
   });
 
@@ -19,18 +16,13 @@ class Settings extends Equatable {
       id: '3',
       defaultCurrency: Currency.YER,
       exchangeRate: 300,
-      alertDays30: 30,
-      alertDays7: 7,
-      alertDays1: 1,
       enableNotifications: true,
     );
   }
   final String id;
   final Currency defaultCurrency;
   final double exchangeRate; // 1 SAR = ? YER
-  final int alertDays30;
-  final int alertDays7;
-  final int alertDays1;
+ 
   final bool enableNotifications;
 
   @override
@@ -38,9 +30,6 @@ class Settings extends Equatable {
         id,
         defaultCurrency,
         exchangeRate,
-        alertDays30,
-        alertDays7,
-        alertDays1,
         enableNotifications,
       ];
 
@@ -49,18 +38,12 @@ class Settings extends Equatable {
     String? id,
     Currency? defaultCurrency,
     double? exchangeRate,
-    int? alertDays30,
-    int? alertDays7,
-    int? alertDays1,
     bool? enableNotifications,
   }) {
     return Settings(
       id: id ?? this.id,
       defaultCurrency: defaultCurrency ?? this.defaultCurrency,
       exchangeRate: exchangeRate ?? this.exchangeRate,
-      alertDays30: alertDays30 ?? this.alertDays30,
-      alertDays7: alertDays7 ?? this.alertDays7,
-      alertDays1: alertDays1 ?? this.alertDays1,
       enableNotifications: enableNotifications ?? this.enableNotifications,
     );
   }

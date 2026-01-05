@@ -7,9 +7,6 @@ class SettingsModel extends Settings {
     required super.id,
     required super.defaultCurrency,
     required super.exchangeRate,
-    required super.alertDays30,
-    required super.alertDays7,
-    required super.alertDays1,
     required super.enableNotifications,
   });
 
@@ -19,9 +16,6 @@ class SettingsModel extends Settings {
       id: settings.id,
       defaultCurrency: settings.defaultCurrency,
       exchangeRate: settings.exchangeRate,
-      alertDays30: settings.alertDays30,
-      alertDays7: settings.alertDays7,
-      alertDays1: settings.alertDays1,
       enableNotifications: settings.enableNotifications,
     );
   }
@@ -33,9 +27,6 @@ class SettingsModel extends Settings {
       defaultCurrency:
           Currency.values.byName(map['default_currency'] as String),
       exchangeRate: (map['exchange_rate'] as num).toDouble(),
-      alertDays30: map['alert_days_30'] as int,
-      alertDays7: map['alert_days_7'] as int,
-      alertDays1: map['alert_days_1'] as int,
       enableNotifications: (map['enable_notifications'] as int) == 1,
     );
   }
@@ -46,9 +37,6 @@ class SettingsModel extends Settings {
       'id': id,
       'default_currency': defaultCurrency.name,
       'exchange_rate': exchangeRate,
-      'alert_days_30': alertDays30,
-      'alert_days_7': alertDays7,
-      'alert_days_1': alertDays1,
       'enable_notifications': enableNotifications ? 1 : 0,
     };
   }

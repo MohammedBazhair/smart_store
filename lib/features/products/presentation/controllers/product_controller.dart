@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/utils/result.dart';
 import '../../../../shared/providers/repositories_provider.dart';
-import '../../../alerts/presentation/controllers/alert_service.dart';
+import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../domain/product.dart';
 import 'product_provider.dart';
 

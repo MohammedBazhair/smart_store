@@ -13,8 +13,8 @@ class ProductInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final remainingTime =
-        date_utils.DateUtils.timeUntilExpiry(product.expiryDate);
-    final isExpired = date_utils.DateUtils.isExpired(product.expiryDate);
+        date_utils.DateTimeUtils.timeUntilExpiry(product.expiryDate);
+    final isExpired = date_utils.DateTimeUtils.isExpired(product.expiryDate);
     const spacing = 10.0;
 
     return Column(

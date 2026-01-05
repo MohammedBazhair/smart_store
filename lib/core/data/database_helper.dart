@@ -68,9 +68,6 @@ class DatabaseHelper {
         id TEXT PRIMARY KEY,
         default_currency TEXT NOT NULL,
         exchange_rate REAL NOT NULL,
-        alert_days_30 INTEGER NOT NULL,
-        alert_days_7 INTEGER NOT NULL,
-        alert_days_1 INTEGER NOT NULL,
         enable_notifications INTEGER NOT NULL DEFAULT 1
       )
     ''');
@@ -80,9 +77,6 @@ class DatabaseHelper {
       'id': 'default',
       'default_currency': AppConstants.defaultCurrency,
       'exchange_rate': AppConstants.defaultExchangeRate,
-      'alert_days_30': AppConstants.alertDays30,
-      'alert_days_7': AppConstants.alertDays7,
-      'alert_days_1': AppConstants.alertDays1,
       'enable_notifications': 1,
     });
   }
