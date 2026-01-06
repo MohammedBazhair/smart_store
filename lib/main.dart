@@ -6,7 +6,6 @@ import 'package:workmanager/workmanager.dart';
 
 import 'core/constants/enums.dart';
 import 'core/screen/smart_store_app.dart';
-import 'core/utils/permissions.dart';
 import 'core/utils/top_level_fuctions.dart';
 import 'features/alerts/presentation/controllers/alert_provider.dart';
 
@@ -37,8 +36,6 @@ Future<void> _setupMain(ProviderContainer container) async {
     backoffPolicy: BackoffPolicy.linear,
     backoffPolicyDelay: const Duration(minutes: 5),
   );
-
- await PermissionsService.requestNotification();
 
 
 

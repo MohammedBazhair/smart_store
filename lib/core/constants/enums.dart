@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../shared/presentation/theme/app_theme.dart';
 
 enum ProductCategory {
+  all(label: 'الكل'),
   dairy(label: 'ألبان ومنتجاتها'),
   medicine(label: 'أدوية ومستحضرات طبية'),
   drinks(label: 'مشروبات'),
@@ -52,6 +53,6 @@ enum SnackBarType {
   final Duration duration;
 }
 
-enum IsLoading { settings, saveProduct, processBarcode, search, backup }
+enum IsLoading { settings, saveProduct, processBarcode, backup }
 
 enum BackgroundTask { dailyExpiryCheck, addAlertForProduct }

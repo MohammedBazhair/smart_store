@@ -5,6 +5,7 @@ import '../../../../core/utils/result.dart';
 import '../../../../shared/providers/repositories_provider.dart';
 import '../../domain/product.dart';
 import '../../domain/product_details.dart';
+import '../../domain/product_query.dart';
 
 /// Provider للحصول على جميع المنتجات
 final productsProvider = FutureProvider<List<Product>>((ref) async {
@@ -16,23 +17,27 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
   return [];
 });
 
-/// Provider للبحث عن المنتجات
-final searchProductsProvider =
-    FutureProvider.family<List<Product>, String>((ref, query) async {
-  if (query.isEmpty) {
-    final repository = ref.watch(productRepositoryProvider);
-    final result = await repository.getAllProducts();
-    if (result is SuccessState<List<Product>>) {
-      return result.data;
-    }
-    return [];
-  }
+final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
+  (ref) => ProductQuery(),
+);
+
+final searchFilterProductsProvider = FutureProvider.autoDispose<List<Product>>((ref) async {
+  final query = ref.watch(productQueryProvider);
+  if (!query.hasQuery) return [];
+
   final repository = ref.watch(productRepositoryProvider);
-  final result = await repository.searchProducts(query);
-  if (result is SuccessState<List<Product>>) {
-    return result.data;
-  }
-  return [];
+
+  final result = query.isSearching
+      ? await repository.searchProducts(query.search)
+      : await repository.getAllProducts();
+
+  if (result is! SuccessState<List<Product>>) return [];
+
+  final products = result.data;
+
+  if (!query.hasCategory) return products;
+
+  return products.where((p) => p.category == query.category).toList();
 });
 
 /// Provider للمنتجات المنتهية
@@ -54,7 +59,6 @@ final nearExpiryProductsProvider = FutureProvider<List<Product>>((ref) async {
   }
   return [];
 });
-
 
 final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {
   final mapEntries =

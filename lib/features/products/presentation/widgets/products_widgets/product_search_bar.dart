@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/product_query.dart';
 
-class ProductSearchBar extends ConsumerWidget {
+class ProductSearchBar extends StatelessWidget {
   const ProductSearchBar({
     super.key,
     required this.controller,
-    required this.searchQuery,
+    required this.query,
     required this.onChanged,
     required this.onClear,
   });
   final TextEditingController controller;
-  final String searchQuery;
+  final ProductQuery query;
   final ValueChanged<String> onChanged;
   final VoidCallback onClear;
 
-
-
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
         hintText: 'بحث عن منتج...',
         prefixIcon: const Icon(Icons.search),
-        suffixIcon: searchQuery.isNotEmpty
+        suffixIcon: query.isSearching
             ? IconButton(
                 icon: const Icon(Icons.clear),
                 onPressed: onClear,

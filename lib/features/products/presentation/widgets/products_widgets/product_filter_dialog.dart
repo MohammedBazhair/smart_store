@@ -24,15 +24,7 @@ class ProductFilterDialog extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              RadioListTile<ProductCategory?>(
-                title: const Text('الكل'),
-                value: null,
-                groupValue: initialCategory,
-                onChanged: (value) {
-                  onApply(value);
-                  Navigator.pop(context);
-                },
-              ),
+              
               ...ProductCategory.values.map(
                 (category) => RadioListTile<ProductCategory?>(
                   title: Text(category.label),
