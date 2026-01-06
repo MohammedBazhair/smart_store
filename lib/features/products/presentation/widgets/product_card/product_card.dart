@@ -96,9 +96,7 @@ class AnimatedProductCardBody extends StatelessWidget {
       child: ListTile(
         onTap: () =>
             context.pushTo(ProductDetailsScreen(productId: product.id!)),
-        leading: status != null
-            ? StatusIcon(status)
-            : const Icon(Icons.check_circle),
+        leading: StatusIcon(status ?? ProductExpiryStatus.valid()),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           spacing: 10,

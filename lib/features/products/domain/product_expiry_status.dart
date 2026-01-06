@@ -10,6 +10,14 @@ class ProductExpiryStatus {
     required this.icon,
   });
 
+  factory ProductExpiryStatus.valid() {
+    return const ProductExpiryStatus(
+      color: AppTheme.validColor,
+      text: 'صالح',
+      icon: Icons.check_circle,
+    );
+  }
+
   factory ProductExpiryStatus.from(DateTime expiryDate) {
     final days = date_utils.DateTimeUtils.daysUntilExpiry(expiryDate);
     final text = date_utils.DateTimeUtils.timeUntilExpiry(expiryDate) ?? 'صالح';

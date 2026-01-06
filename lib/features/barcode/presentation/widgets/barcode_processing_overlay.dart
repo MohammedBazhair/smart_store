@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../shared/presentation/widgets/common/conditional_builder.dart';
+import '../../../../shared/presentation/widgets/common/loading_widget.dart';
 import '../../../../shared/providers/ui_providers.dart';
 
 class BarcodeProcessingOverlay extends ConsumerWidget {
@@ -16,7 +17,7 @@ class BarcodeProcessingOverlay extends ConsumerWidget {
 
     return ConditionalBuilder(
       condition: isProcessing,
-      builder: (context) => const CircularProgressIndicator(),
+      builder: (context) => const LoadingWidget(),
     );
   }
 }

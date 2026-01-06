@@ -12,9 +12,9 @@ import '../../domain/barcode_scan_result.dart';
 import '../controllers/barcode_controller.dart';
 import '../controllers/flashlight_controller.dart';
 import '../widgets/barcode_camera_view.dart';
-import '../widgets/barcode_price_dialog.dart';
 import '../widgets/barcode_processing_overlay.dart';
 import '../widgets/flashlight_button.dart';
+import '../widgets/price_dialog/barcode_price_dialog.dart';
 
 class BarcodeScannerScreen extends ConsumerStatefulWidget {
   const BarcodeScannerScreen({super.key, this.isPopRequired = false});
@@ -72,21 +72,22 @@ class _BarcodeScannerScreenState extends ConsumerState<BarcodeScannerScreen> {
     final barcodeResult = (result as SuccessState<BarcodeScanResult>).data;
 
     if (barcodeResult.hasPrice) {
-      await showBarcodePriceDialog(
+      ref.read(isLoadingProvider(IsLoading.processBarcode).notifier).state =
+          false;
+      await scannerController.start();
+      await showProductPriceDialog(
         context: context,
-        ref: ref,
-        result: barcodeResult,
+        scanResult: barcodeResult,
       );
     } else {
       await ref.read(flashlightProvider.notifier).off();
+      ref.read(isLoadingProvider(IsLoading.processBarcode).notifier).state =
+          false;
+      await scannerController.start();
       await context.pushTo(
         AddProductScreen(barcode: barcodeResult.barcode),
       );
     }
-
-    ref.read(isLoadingProvider(IsLoading.processBarcode).notifier).state =
-        false;
-    await scannerController.start();
   }
 
   @override

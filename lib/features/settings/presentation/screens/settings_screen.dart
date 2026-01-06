@@ -47,7 +47,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: SettingsForm(
               settings: Settings.fake(),
               onChanged: (_) {},
-              exchangeRateController: _exchangeRateController,
             ),
           ),
         error: (e, _) => ErrorDisplayWidget(

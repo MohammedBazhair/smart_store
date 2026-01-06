@@ -133,7 +133,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       name: _nameController.text.trim(),
       quantity: int.tryParse(_quantityController.text),
       barcode: _barcodeController.text,
-      expiryDate: DateTime.parse(_expiryDateController.text),
+      expiryDate: DateTime.tryParse(_expiryDateController.text),
       category: _selectedCategory,
       notes: _notesController.text,
       createdAt: DateTime.now(),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/enums.dart';
-import '../../../../shared/presentation/theme/app_theme.dart';
-import '../../../products/domain/product.dart';
+import '../../../../../core/constants/enums.dart';
+import '../../../../../shared/presentation/theme/app_theme.dart';
+import '../../../../products/domain/product.dart';
 
 class AnimatedPrice extends StatefulWidget {
   const AnimatedPrice(this.product, {super.key});

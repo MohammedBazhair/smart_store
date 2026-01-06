@@ -5,7 +5,7 @@ import '../../domain/settings.dart';
 
 /// Provider للحصول على الإعدادات
 final appSettingsProvider = FutureProvider<Settings>((ref) async {
-  final repository = ref.watch(settingsRepositoryProvider);
+  final repository = ref.read(settingsRepositoryProvider);
   final result = await repository.getSettings();
   if (result is SuccessState<Settings>) {
     return result.data;

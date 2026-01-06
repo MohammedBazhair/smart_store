@@ -37,7 +37,7 @@ enum SnackBarType {
     duration: Duration(seconds: 2),
   ),
   success(
-    backgroundColor: AppTheme.successColor,
+    backgroundColor: AppTheme.accentColor,
     foregroundColor: Colors.white,
     duration: Duration(seconds: 1),
   );

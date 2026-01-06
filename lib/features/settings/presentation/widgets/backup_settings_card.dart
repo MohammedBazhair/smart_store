@@ -26,9 +26,12 @@ class BackupSettingsCard extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (result is SuccessState<String>) {
-      context.showSnakbar('تم إنشاء النسخة الاحتياطية: \n${result.data}',type: SnackBarType.success);
+      context.showSnakbar(
+        'تم إنشاء النسخة الاحتياطية: \n${result.data}',
+        type: SnackBarType.success,
+      );
     } else if (result is ErrorState<String>) {
-      context.showSnakbar(result.message,type: SnackBarType.error);
+      context.showSnakbar(result.message, type: SnackBarType.error);
     }
   }
 
@@ -62,21 +65,28 @@ class BackupSettingsCard extends ConsumerWidget {
       );
 
       if (confirmed == true) {
-        ref.read(isLoadingProvider(IsLoading.backup).notifier).update((i) => true);
+        ref
+            .read(isLoadingProvider(IsLoading.backup).notifier)
+            .update((i) => true);
 
         final controller = ref.read(backupControllerProvider.notifier);
         final restoreResult = await controller.restoreBackup(backupPath);
 
-        ref.read(isLoadingProvider(IsLoading.backup).notifier).update((i) => false);
+        ref
+            .read(isLoadingProvider(IsLoading.backup).notifier)
+            .update((i) => false);
 
         if (!context.mounted) return;
 
         if (restoreResult is SuccessState<void>) {
-          context.showSnakbar('تم استعادة النسخة الاحتياطية',type: SnackBarType.success);
+          context.showSnakbar(
+            'تم استعادة النسخة الاحتياطية',
+            type: SnackBarType.success,
+          );
           // إعادة تحميل البيانات
           ref.invalidate(appSettingsProvider);
         } else if (restoreResult is ErrorState<void>) {
-          context.showSnakbar(restoreResult.message,type: SnackBarType.error);
+          context.showSnakbar(restoreResult.message, type: SnackBarType.error);
         }
       }
     }
@@ -87,15 +97,15 @@ class BackupSettingsCard extends ConsumerWidget {
     final isLoading = ref.read(isLoadingProvider(IsLoading.backup));
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               'النسخ الاحتياطي',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 30),
             AbsorbPointer(
               absorbing: isLoading,
               child: ElevatedButton.icon(
@@ -107,9 +117,9 @@ class BackupSettingsCard extends ConsumerWidget {
             const SizedBox(height: 12),
             AbsorbPointer(
               absorbing: isLoading,
-              child: OutlinedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: () => _restoreBackup(ref, context),
-                icon: const Icon(Icons.restore),
+                icon: const Icon(Icons.model_training_rounded),
                 label: const Text('استعادة نسخة احتياطية'),
               ),
             ),
