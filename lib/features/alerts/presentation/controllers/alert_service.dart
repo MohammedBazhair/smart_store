@@ -1,126 +1,111 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
-import 'package:workmanager/workmanager.dart';
-
+import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../core/utils/result.dart';
-import '../../../../shared/providers/repositories_provider.dart';
+import '../../../../main.dart';
 import '../../../products/data/product_model.dart';
+import '../../../products/data/product_repository_impl.dart';
 import '../../../products/domain/product.dart';
-import '../../../settings/domain/settings.dart';
+import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../settings/domain/settings_repository.dart';
-import '../../data/alert_background_params.dart';
+import '../../domain/expiry_reminder.dart';
 import 'alert_controller.dart';
+import 'alert_scheduler.dart';
+import 'notification_service.dart';
 
-final alertServiceProvider = Provider<AlertService>((ref) {
-  final repository = ref.read(settingsRepositoryProvider);
-  final controller = ref.read(alertControllerProvider.notifier);
+/// handle tap on notification
+void onDidReceiveNotificationResponse(NotificationResponse response) async {
+  if (response.payload == null) return;
+  final rawString = response.payload!;
+  final product = ProductModel.fromJson(rawString);
 
-  return AlertService(repository, controller);
-});
+  final productId = product.id;
+  if (productId == null) return;
 
-// top-level function
-@pragma('vm:entry-point')
-void notificationBackground(NotificationResponse details) {
-  // TODO: notificationBackground
+  final repo = ProductRepositoryImpl();
+  final result = await repo.getProductById(productId);
+
+  switch (result) {
+    case SuccessState<Product>():
+      final detatailsScreen = ProductDetailsScreen(productId: productId);
+      await navigatorKey.currentState
+          ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
+    case ErrorState<Product>():
+  }
 }
 
-/// خدمة التنبيهات
 class AlertService {
-  AlertService(this.repository, this.controller);
+  AlertService(this.settingsRepo, this.alertController, this._notifications);
 
-  final SettingsRepository repository;
-  final AlertController controller;
-  final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  final SettingsRepository settingsRepo;
+  final AlertController alertController;
+  final NotificationService _notifications;
 
-  /// تهيئة خدمة التنبيهات
   Future<void> initialize() async {
     await PermissionsService.requestNotification();
-    // تهيئة الوقت
-    tz.initializeTimeZones();
-    const defaultTimezone = 'Asia/Aden';
-    try {
-      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-      final currentZone = timezoneInfo.localizedName?.name ?? defaultTimezone;
-      tz.setLocalLocation(tz.getLocation(currentZone));
-    } catch (e) {
-      tz.setLocalLocation(tz.getLocation(defaultTimezone));
-    }
-
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings();
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-
-    await _notifications.initialize(
-      initSettings,
-      onDidReceiveBackgroundNotificationResponse: notificationBackground,
-      onDidReceiveNotificationResponse: (details) {
-        // TODO: Handle notification tap
-      },
-    );
+    await _notifications.initialize();
   }
 
-  /// إنشاء تنبيهات للمنتج
-  Future<void> scheduleProductAlerts(
-    Product product,
-  ) async {
-    await PermissionsService.requestNotification();
+  Future<void> scheduleProductAlerts(Product product) async {
+    final result = await settingsRepo.getSettings();
+    if (!result.enableNotifications) return;
 
-    final result = await repository.getSettings();
-    if (result is! SuccessState<Settings>) return;
-    final settings = result.data;
-
-    if (!settings.enableNotifications) return;
     if (product.expiryDate == null) return;
 
-    final daysUntilExpiry = DateUtils.daysUntilExpiry(product.expiryDate);
+    final alerts = [
+      ExpiryReminder(daysBefore: 30, importance: Priority.high),
+      ExpiryReminder(daysBefore: 15, importance: Priority.high),
+      ExpiryReminder(daysBefore: 7, importance: Priority.max),
+      ExpiryReminder(daysBefore: 0, importance: Priority.max),
+    ];
 
-    // تنبيه قبل 30 يوم
-    if (daysUntilExpiry !<= settings.alertDays30 &&
-        daysUntilExpiry > settings.alertDays7) {
+    final isExpired = DateTimeUtils.isExpired(product.expiryDate)!;
+
+    for (final alert in alerts) {
+      final days = alert.daysBefore;
+      final importance = alert.importance;
+      final isNearExpired =
+          DateTimeUtils.isNearExpiry(product.expiryDate!, days);
+     
+      final isAlertDuplicated = await alertController.isAlertDuplicated(
+        productId: product.id!,
+        expiryDate: product.expiryDate!,
+        daysBeforeExpiry: days,
+      );
+
+      if (isAlertDuplicated) continue;
+      if (!isNearExpired && !isExpired) continue;
+
       await _scheduleAlert(
         product: product,
-        daysBefore: settings.alertDays30,
-        importance: Priority.defaultPriority,
+        daysBefore: days,
+        importance: importance,
       );
     }
+  }
 
-    // تنبيه قبل 7 أيام
-    if (daysUntilExpiry <= settings.alertDays7 &&
-        daysUntilExpiry > settings.alertDays1) {
-      await _scheduleAlert(
-        product: product,
-        daysBefore: settings.alertDays7,
-        importance: Priority.high,
-      );
-    }
+  Future<void> _showNotification({
+    required Product product,
+    required int daysBefore,
+    required Priority importance,
+  }) async {
+    final payload = product.id?.toString();
 
-    // تنبيه قبل يوم واحد
-    if (daysUntilExpiry <= settings.alertDays1 && daysUntilExpiry > 0) {
-      await _scheduleAlert(
-        product: product,
-        daysBefore: settings.alertDays1,
-        importance: Priority.high,
-      );
-    }
+    await _notifications.show(
+      id: AlertUtils.notificationId(product, daysBefore),
+      title: 'تنبيه صلاحية: ${product.name}',
+      body:
+          '${product.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
+      payload: payload,
+    );
 
-    // تنبيه عند الانتهاء
-    if (daysUntilExpiry <= 0) {
-      await _scheduleAlert(
-        product: product,
-        daysBefore: 0,
-        importance: Priority.high,
-      );
-    }
+    await alertController.addAlert(
+      product: product,
+      daysBeforeExpiry: daysBefore,
+      importance: importance,
+    );
   }
 
   Future<void> _scheduleAlert({
@@ -140,91 +125,27 @@ class AlertService {
       );
       return;
     }
-    final scheduleDate = tz.TZDateTime.from(alertDate, tz.local);
-    // جدولة التنبيه
-    await _notifications.zonedSchedule(
-      _notificationId(product, daysBefore),
-      'تنبيه صلاحية',
-      '${product.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
-      scheduleDate,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'product_alerts',
-          'تنبيهات المنتجات',
-          channelDescription: 'تنبيهات صلاحية المنتجات',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
+    final payload = product.id?.toString();
+
+    await _notifications.schedule(
+      id: AlertUtils.notificationId(product, daysBefore),
+      title: 'تنبيه صلاحية',
+      body:
+          '${product.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
+      date: alertDate,
+      payload: payload,
     );
 
-    final delay = scheduleDate.difference(DateTime.now());
-    final productModel = ProductModel.fromEntity(product);
-    final alertParams = AlertBackgroundParams(
-      product: productModel,
-      daysBeforeExpire: daysBefore,
-    );
-    await Workmanager().registerOneOffTask(
-      '${product.id}',
-      'AlertProduct',
-      initialDelay: delay,
-      inputData: alertParams.toMap(),
-    );
-  }
-
-  int _notificationId(Product product, int daysBefore) {
-    return product.id.hashCode ^ daysBefore;
-  }
-
-  Future<void> _showNotification({
-    required Product product,
-    required int daysBefore,
-    required Priority importance,
-  }) async {
-    await _notifications.show(
-      _notificationId(product, daysBefore),
-      'تنبيه صلاحية',
-      '${product.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'product_alerts',
-          'تنبيهات المنتجات',
-          channelDescription: 'تنبيهات صلاحية المنتجات',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(),
-      ),
-    );
-
-    // إضافة التنبيه إلى قاعدة البيانات
-    await controller.addAlert(
-      product: product,
-      daysBeforeExpiry: daysBefore,
-      importance: importance,
-    );
+    final delay = alertDate.difference(DateTime.now());
+    await scheduleWorkManagerAlert(product, daysBefore, delay);
   }
 
   Future<void> cancelProductAlerts(Product product) async {
-    final settingsResult = await repository.getSettings();
-    if (settingsResult is! SuccessState<Settings>) return;
-
-    final settings = settingsResult.data;
-
-    final daysList = <int>{
-      settings.alertDays30,
-      settings.alertDays7,
-      settings.alertDays1,
-      0, // تنبيه الانتهاء
-    };
+    final daysList = {30, 15, 7, 0};
 
     for (final daysBefore in daysList) {
-      await _notifications.cancel(
-        _notificationId(product, daysBefore),
-      );
+      final notificationId = AlertUtils.notificationId(product, daysBefore);
+      await _notifications.cancel(notificationId);
     }
   }
 }

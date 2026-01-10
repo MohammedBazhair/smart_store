@@ -6,8 +6,8 @@ import 'currency_settings_card.dart';
 import 'notifications_settings_card.dart';
 
 class SettingsForm extends StatelessWidget {
-  const SettingsForm({super.key, required this.settings, required this.onChanged, required this.exchangeRateController});
-  final TextEditingController exchangeRateController;
+  const SettingsForm({super.key, required this.settings, required this.onChanged,  this.exchangeRateController});
+  final TextEditingController? exchangeRateController;
   final Settings settings;
   final ValueChanged<Settings> onChanged;
 

@@ -14,20 +14,21 @@ class ProductMetaColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          spacing: 4,
-          children: [
-            const Icon(
-              Icons.inventory_2_outlined,
-              size: 14,
-              color: AppTheme.textSecondary,
-            ),
-            Text(
-              'الكمية: ${product.quantityText}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
+        if (product.quantity != null)
+          Row(
+            spacing: 4,
+            children: [
+              const Icon(
+                Icons.inventory_2_outlined,
+                size: 14,
+                color: AppTheme.textSecondary,
+              ),
+              Text(
+                'الكمية: ${product.quantityText}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
         if (product.expiryDate != null)
           Row(
             spacing: 4,
@@ -38,7 +39,7 @@ class ProductMetaColumn extends StatelessWidget {
                 color: AppTheme.textSecondary,
               ),
               Text(
-                date_utils.DateUtils.formatDate(product.expiryDate!),
+                date_utils.DateTimeUtils.formatDate(product.expiryDate!),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],

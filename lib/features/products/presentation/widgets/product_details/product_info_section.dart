@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../domain/product.dart';
 import '../../../domain/product_details.dart';
@@ -12,9 +13,9 @@ class ProductInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final remainingTime =
-        date_utils.DateUtils.timeUntilExpiry(product.expiryDate);
-    final isExpired = date_utils.DateUtils.isExpired(product.expiryDate);
+    final remainingTimeFormatted =
+        date_utils.DateTimeUtils.timeUntilExpiry(product.expiryDate);
+    final isExpired = date_utils.DateTimeUtils.isExpired(product.expiryDate);
     const spacing = 10.0;
 
     return Column(
@@ -28,7 +29,8 @@ class ProductInfoSection extends StatelessWidget {
               child: BaseProductInfoCard(
                 icon: Icons.attach_money,
                 label: 'السعر',
-                value: product.price.toString(),
+                value: product.price.formatDouble(),
+                secondaryValue: product.currency.label,
                 detailsType: ProductDetailsType.price,
                 iconColor: const Color(0xFF0FA4AF),
               ),
@@ -67,7 +69,7 @@ class ProductInfoSection extends StatelessWidget {
             ),
           ],
         ),
-        if (remainingTime != null && isExpired != null)
+        if (remainingTimeFormatted != null && isExpired != null)
           Row(
             spacing: 10,
             children: [
@@ -84,7 +86,7 @@ class ProductInfoSection extends StatelessWidget {
                 child: ProductInfoCard(
                   icon: Icons.schedule,
                   label: 'المدة المتبقية',
-                  value: isExpired ? 'منتهي' : remainingTime,
+                  value: isExpired ? 'منتهي' : remainingTimeFormatted,
                   detailsType: ProductDetailsType.expiryDate,
                   iconColor: const Color(0xFF3B82F6),
                 ),

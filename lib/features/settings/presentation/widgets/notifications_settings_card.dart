@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/presentation/theme/app_theme.dart';
 import '../../domain/settings.dart';
 
 class NotificationsSettingsCard extends StatelessWidget {
@@ -14,7 +15,7 @@ class NotificationsSettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -23,9 +24,14 @@ class NotificationsSettingsCard extends StatelessWidget {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
+
+            
             SwitchListTile(
-              title: const Text('تفعيل التنبيهات'),
               value: settings.enableNotifications,
+              
+              title: const Text('تفعيل الإشعارات'),
+              secondary:
+                  NotificationIcon(isEnabled: settings.enableNotifications),
               onChanged: (value) {
                 onChanged(settings.copyWith(enableNotifications: value));
               },
@@ -33,6 +39,28 @@ class NotificationsSettingsCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class NotificationIcon extends StatelessWidget {
+  const NotificationIcon({super.key, required this.isEnabled});
+  final bool isEnabled;
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedCrossFade(
+      crossFadeState:
+          isEnabled ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+      firstChild: const Icon(
+        Icons.notifications_active,
+        color: AppTheme.primaryColor,
+      ),
+      secondChild: const Icon(
+        Icons.notifications_none,
+      ),
+      duration: const Duration(milliseconds: 300),
+      firstCurve: Curves.fastEaseInToSlowEaseOut,
+      secondCurve: Curves.fastOutSlowIn,
     );
   }
 }

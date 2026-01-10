@@ -17,6 +17,13 @@ abstract class AlertRepository {
   /// تحديث حالة التنبيه (مقروء/غير مقروء)
   Future<Result<void>> markAlertAsRead(int id);
 
+  /// تحقق إذا التبيه موجود مسبقًا
+  Future<bool> isAlertDuplicated({
+    required int productId,
+    required DateTime expiryDate,
+    required int daysBeforeExpiry,
+  });
+
   /// حذف تنبيه
   Future<Result<void>> deleteAlert(String id);
 

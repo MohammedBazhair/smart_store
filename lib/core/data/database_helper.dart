@@ -33,7 +33,7 @@ class DatabaseHelper {
 
   Future<void> _createDB(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE products (
+      CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         quantity INTEGER,
@@ -51,7 +51,7 @@ class DatabaseHelper {
   
 
     await db.execute('''
-      CREATE TABLE alerts (
+      CREATE TABLE IF NOT EXISTS alerts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id INTEGER NOT NULL,
         product_name TEXT NOT NULL,
@@ -59,32 +59,12 @@ class DatabaseHelper {
         days_before_expiry INTEGER NOT NULL,
         importance TEXT NOT NULL,
         is_read INTEGER NOT NULL DEFAULT 0,
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+        UNIQUE(product_id, expiry_date,days_before_expiry)
       )
     ''');
 
-    await db.execute('''
-      CREATE TABLE settings (
-        id TEXT PRIMARY KEY,
-        default_currency TEXT NOT NULL,
-        exchange_rate REAL NOT NULL,
-        alert_days_30 INTEGER NOT NULL,
-        alert_days_7 INTEGER NOT NULL,
-        alert_days_1 INTEGER NOT NULL,
-        enable_notifications INTEGER NOT NULL DEFAULT 1
-      )
-    ''');
 
-    // إدراج الإعدادات الافتراضية
-    await db.insert('settings', {
-      'id': 'default',
-      'default_currency': AppConstants.defaultCurrency,
-      'exchange_rate': AppConstants.defaultExchangeRate,
-      'alert_days_30': AppConstants.alertDays30,
-      'alert_days_7': AppConstants.alertDays7,
-      'alert_days_1': AppConstants.alertDays1,
-      'enable_notifications': 1,
-    });
   }
 
   Future<void> close() async {

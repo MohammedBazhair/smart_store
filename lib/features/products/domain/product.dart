@@ -32,6 +32,7 @@ class Product extends Equatable {
       price: 1500,
     );
   }
+
   final int? id;
   final String name;
   final int? quantity;
@@ -45,6 +46,9 @@ class Product extends Equatable {
   final DateTime updatedAt;
 
   String get quantityText => quantity?.toString() ?? 'غير محددة';
+
+static final fakeProducts = List.generate(8, (_) => Product.fake());
+
 
   @override
   List<Object?> get props => [

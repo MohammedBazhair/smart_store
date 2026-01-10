@@ -22,7 +22,7 @@ class ExpiryRow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          date_utils.DateUtils.formatDate(date),
+          date_utils.DateTimeUtils.formatDate(date),
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const Spacer(),

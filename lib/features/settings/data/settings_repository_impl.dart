@@ -1,4 +1,6 @@
-import '../../../core/data/database_helper.dart';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../core/utils/result.dart';
 import '../domain/settings.dart';
 import '../domain/settings_repository.dart';
@@ -6,39 +8,37 @@ import 'settings_model.dart';
 
 /// تنفيذ مستودع الإعدادات
 class SettingsRepositoryImpl implements SettingsRepository {
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final SharedPreferences _prefs;
+  SettingsRepositoryImpl(
+    this._prefs,
+  );
+  final _settingsKey = 'app_settings';
 
   @override
-  Future<Result<Settings>> getSettings() async {
+  Future<Settings> getSettings() async {
     try {
-      final db = await _dbHelper.database;
-      final maps = await db.query('settings', limit: 1);
-      if (maps.isEmpty) {
-        return const ErrorState('الإعدادات غير موجودة');
+      final raw = _prefs.get(_settingsKey) as String?;
+
+      if (raw == null) {
+        throw Exception('No settings found');
       }
-      final settings = SettingsModel.fromMap(maps.first);
-      return SuccessState(settings);
+
+      return SettingsModel.fromJson(raw);
     } catch (e) {
-      return ErrorState('فشل في جلب الإعدادات: ${e.toString()}');
+      return Settings.theDefault();
     }
   }
 
   @override
   Future<Result<void>> updateSettings(Settings settings) async {
     try {
-      final db = await _dbHelper.database;
       final model = SettingsModel.fromEntity(settings);
 
-      await db.update(
-        'settings',
-        model.toMap(),
-        where: 'id = ?',
-        whereArgs: [settings.id],
-      );
+      await _prefs.setString(_settingsKey, model.toJson());
 
       return const SuccessState(null);
     } catch (e) {
-      return ErrorState('فشل في تحديث الإعدادات: ${e.toString()}');
+      return const ErrorState('فشل في تحديث الإعدادات: ');
     }
   }
 }

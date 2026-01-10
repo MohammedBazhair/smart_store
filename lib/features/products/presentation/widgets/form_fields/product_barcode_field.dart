@@ -19,11 +19,12 @@ class ProductBarcodeField extends ConsumerWidget {
     return TextFormField(
       focusNode: ref.read(focusNodesProvider)[ProductDetailsType.barcode],
       controller: controller,
-      textInputAction: TextInputAction.next,
+      textInputAction: TextInputAction.go,
       keyboardType: TextInputType.number,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
       ],
+      onFieldSubmitted: (value) => onScan(),
       decoration: InputDecoration(
         labelText: 'كود المنتج (باركود)',
         prefixIcon: const Icon(Icons.qr_code),

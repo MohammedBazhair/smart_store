@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +20,6 @@ import '../widgets/form_fields/product_price_field.dart';
 import '../widgets/form_fields/product_quantity_field.dart';
 import '../widgets/pick_date/show_expiry_date.dart';
 import '../widgets/save_product_button.dart';
-
 
 /// شاشة إضافة منتج جديد
 class AddProductScreen extends ConsumerStatefulWidget {
@@ -59,29 +56,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     super.initState();
     _barcodeController.text = widget.barcode ?? '';
 
-    if (!isEditingProduct) return;
-    final product = widget.product!;
-
-    _nameController.text = product.name;
-    _quantityController.text = product.quantity?.toString() ?? '';
-    _priceController.text = product.price.toString();
-    _notesController.text = product.notes ?? '';
-    _barcodeController.text = product.barcode ?? '';
-    _expiryDateController.text = product.expiryDate != null
-        ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
-        : '';
-    setState(() {
-      _selectedCategory = product.category;
-    });
-
-    if (widget.detailsType == null) return;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final focusNode = ref.read(focusNodesProvider)[widget.detailsType];
-      if (focusNode != null && mounted) {
-        FocusScope.of(context).requestFocus(focusNode);
-      }
-    });
+    _initializeFields();
+    _requestFocusAfterEdit();
   }
 
   @override
@@ -93,6 +69,53 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     _priceController.dispose();
     _expiryDateController.dispose();
     super.dispose();
+  }
+
+  void _initializeFields() {
+    if (!isEditingProduct) return;
+
+    final product = widget.product!;
+
+    _nameController.text = product.name;
+    _quantityController.text = product.quantity?.toString() ?? '';
+    _priceController.text = product.price.formatDouble();
+    _notesController.text = product.notes ?? '';
+    _barcodeController.text = product.barcode ?? '';
+
+    _expiryDateController.text = product.expiryDate != null
+        ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
+        : '';
+    _selectedCategory = product.category;
+    _selectedCurrency = product.currency;
+  }
+
+  void _requestFocusAfterEdit() {
+    if (widget.detailsType == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final focusNode = ref.read(focusNodesProvider)[widget.detailsType];
+      if (focusNode != null && mounted) {
+        FocusScope.of(context).requestFocus(focusNode);
+      }
+    });
+  }
+
+  Product _buildProductFromFields({Product? oldProduct}) {
+    final now = DateTime.now();
+
+    return Product(
+      id: oldProduct?.id,
+      name: _nameController.text.trim(),
+      quantity: int.tryParse(_quantityController.text),
+      barcode: _barcodeController.text,
+      expiryDate: DateTime.tryParse(_expiryDateController.text),
+      category: _selectedCategory,
+      notes: _notesController.text,
+      createdAt: oldProduct?.createdAt ?? now,
+      updatedAt: now,
+      currency: _selectedCurrency,
+      price: double.tryParse(_priceController.text) ?? 0,
+    );
   }
 
   Future<void> _selectDate() async {
@@ -120,27 +143,14 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   }
 
   Future<void> _onAddProduct() async {
-    final isFormValid = _formKey.currentState?.validate() ?? false;
-    if (!isFormValid) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
     ref
         .read(isLoadingProvider(IsLoading.saveProduct).notifier)
         .update((_) => true);
-
     final controller = ref.read(productControllerProvider.notifier);
 
-    final product = Product(
-      name: _nameController.text.trim(),
-      quantity: int.tryParse(_quantityController.text),
-      barcode: _barcodeController.text,
-      expiryDate: DateTime.parse(_expiryDateController.text),
-      category: _selectedCategory,
-      notes: _notesController.text,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-      currency: _selectedCurrency,
-      price: double.tryParse(_priceController.text) ?? 0,
-    );
+    final product = _buildProductFromFields();
 
     final result = await controller.addProduct(product);
 
@@ -148,7 +158,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
         .read(isLoadingProvider(IsLoading.saveProduct).notifier)
         .update((_) => false);
 
-    if (!context.mounted) return;
+    if (!mounted) return;
 
     if (result is SuccessState<int>) {
       context.showSnakbar('تم إضافة المنتج بنجاح', type: SnackBarType.success);
@@ -159,27 +169,15 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   }
 
   Future<void> _onEditProduct() async {
-    final isFormValid = _formKey.currentState?.validate() ?? false;
-    if (!isFormValid) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
     ref
         .read(isLoadingProvider(IsLoading.saveProduct).notifier)
         .update((_) => true);
-
     final controller = ref.read(productControllerProvider.notifier);
-    log(_expiryDateController.text);
+
     final oldProduct = widget.product!;
-    final updatedProduct = oldProduct.copyWith(
-      name: _nameController.text.trim(),
-      quantity: int.tryParse(_quantityController.text),
-      barcode: _barcodeController.text,
-      expiryDate: DateTime.tryParse(_expiryDateController.text),
-      category: _selectedCategory,
-      notes: _notesController.text,
-      updatedAt: DateTime.now(),
-      currency: _selectedCurrency,
-      price: double.tryParse(_priceController.text),
-    );
+    final updatedProduct = _buildProductFromFields(oldProduct: oldProduct);
 
     final result = await controller.updateProduct(
       oldProduct: oldProduct,
@@ -190,7 +188,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
         .read(isLoadingProvider(IsLoading.saveProduct).notifier)
         .update((_) => false);
 
-    if (!context.mounted) return;
+    if (!mounted) return;
 
     if (result is SuccessState<void>) {
       context.showSnakbar('تم تعديل المنتج بنجاح', type: SnackBarType.success);

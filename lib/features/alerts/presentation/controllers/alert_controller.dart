@@ -58,6 +58,20 @@ class AlertController extends Notifier<void> {
     return result;
   }
 
+  Future<bool> isAlertDuplicated({
+    required int productId,
+    required DateTime expiryDate,
+    required int daysBeforeExpiry,
+  }) async {
+    final repository = ref.read(alertRepositoryProvider);
+    final isDuplicated = await repository.isAlertDuplicated(
+      productId: productId,
+      expiryDate: expiryDate,
+      daysBeforeExpiry: daysBeforeExpiry,
+    );
+    return isDuplicated;
+  }
+
   /// تحديث قائمة التنبيهات
   void _invalidate() {
     ref.invalidate(alertsProvider);

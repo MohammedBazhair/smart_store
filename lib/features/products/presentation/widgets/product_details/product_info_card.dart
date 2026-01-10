@@ -15,6 +15,7 @@ class BaseProductInfoCard extends ConsumerWidget {
     required this.value,
     required this.detailsType,
     required this.iconColor,
+    this.secondaryValue,
   });
 
   final IconData icon;
@@ -22,6 +23,7 @@ class BaseProductInfoCard extends ConsumerWidget {
   final String value;
   final ProductDetailsType detailsType;
   final Color iconColor;
+  final String? secondaryValue;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -42,22 +44,35 @@ class BaseProductInfoCard extends ConsumerWidget {
             Icon(
               icon,
               color: iconColor,
+              size: 18,
             ),
             Text(
               label,
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 13,
                 color: AppTheme.textSecondary,
               ),
             ),
           ],
         ),
-        subtitle: Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            height: 1.8,
+        subtitle: Text.rich(
+          TextSpan(
+            text: value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              height: 1.8,
+            ),
+            children: [
+              const TextSpan(text: '  '),
+              TextSpan(
+                text: secondaryValue,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -101,23 +116,25 @@ class ProductInfoCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
+              radius: 18,
               backgroundColor: iconColor.withOpacity(0.08),
               child: Icon(
                 icon,
                 color: iconColor,
+                size: 18,
               ),
             ),
             Text(
               label,
               style:
-                  const TextStyle(fontSize: 15, color: AppTheme.textSecondary),
+                  const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
             ),
           ],
         ),
         subtitle: Text(
           value,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             height: 1.8,
           ),

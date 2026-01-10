@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../shared/presentation/theme/app_theme.dart';
 
 enum ProductCategory {
+  all(label: 'الكل'),
   dairy(label: 'ألبان ومنتجاتها'),
   medicine(label: 'أدوية ومستحضرات طبية'),
   drinks(label: 'مشروبات'),
@@ -22,8 +23,8 @@ enum ProductCategory {
 }
 
 enum Currency {
-  YER(label: 'ريال يمني'),
-  SAR(label: 'ريال سعودي');
+  YER(label: 'يمني'),
+  SAR(label: 'سعودي');
 
   const Currency({required this.label});
   final String label;
@@ -36,7 +37,7 @@ enum SnackBarType {
     duration: Duration(seconds: 2),
   ),
   success(
-    backgroundColor: AppTheme.successColor,
+    backgroundColor: AppTheme.accentColor,
     foregroundColor: Colors.white,
     duration: Duration(seconds: 1),
   );
@@ -52,4 +53,6 @@ enum SnackBarType {
   final Duration duration;
 }
 
-enum IsLoading { settings, saveProduct, processBarcode, search, backup }
+enum IsLoading { settings, saveProduct, processBarcode, backup }
+
+enum BackgroundTask { dailyExpiryCheck, addAlertForProduct }

@@ -1,10 +1,10 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../shared/providers/ui_providers.dart';
 import '../../domain/product.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/products_widgets/product_filter_dialog.dart';
@@ -14,54 +14,74 @@ import '../widgets/products_widgets/products_list.dart';
 import 'add_product_screen.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
-  const ProductsScreen({super.key, required this.productsProvider, this.title});
+  const ProductsScreen({
+    super.key,
+    required this.productsProvider,
+    this.title,
+  });
+
   final FutureProvider<List<Product>> productsProvider;
   final String? title;
+
   @override
   ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
 }
 
 class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   final _searchController = TextEditingController();
-  String _searchQuery = '';
-  ProductCategory? _selectedCategory;
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isSearching = _searchQuery.isNotEmpty;
+    final query = ref.watch(productQueryProvider);
+
+    final productsAsync = query.hasQuery
+        ? ref.watch(searchFilterProductsProvider)
+        : ref.watch(widget.productsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? 'المنتجات'),
       ),
-      body: GestureDetector(
-        onTap: FocusScope.of(context).unfocus,
+      body: Skeletonizer(
+        enabled: productsAsync.isLoading,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
-          child: Skeletonizer(
-            enabled: ref.watch(isLoadingProvider(IsLoading.search)),
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
             child: Column(
               children: [
-                // شريط البحث
+                // 🔍 شريط البحث
                 Row(
                   spacing: 5,
                   children: [
                     Expanded(
                       child: ProductSearchBar(
                         controller: _searchController,
-                        searchQuery: _searchQuery,
-                        onChanged: (value) =>
-                            setState(() => _searchQuery = value),
-                        onClear: () => setState(() {
+                        query: query,
+                        onChanged: (value) {
+                          _debounceTimer?.cancel();
+                          _debounceTimer =
+                              Timer(const Duration(milliseconds: 800), () {
+                            ref.read(productQueryProvider.notifier).update(
+                                  (q) => q.copyWith(search: value.trim()),
+                                );
+                          });
+                        },
+                        onClear: () {
                           _searchController.clear();
-                          _searchQuery = '';
-                        }),
+                          _debounceTimer?.cancel();
+                          ref
+                              .read(productQueryProvider.notifier)
+                              .update((q) => q.copyWith(search: ''));
+                        },
                       ),
                     ),
                     IconButton(
@@ -74,46 +94,36 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
                 const SizedBox(height: 16),
 
-                // قائمة المنتجات
                 Expanded(
-                  child: Builder(
-                    builder: (context) {
-                      // اختيار الـ Provider المناسب
-                      final productsAsync = isSearching
-                          ? ref.watch(searchProductsProvider(_searchQuery))
-                          : ref.watch(widget.productsProvider);
+                  child: productsAsync.when(
+                    loading: () {
+                      final fakeProducts = Product.fakeProducts;
 
-                      return productsAsync.when(
-                        loading: () {
-                          // shimmer أثناء التحميل
-                          final fakeProducts =
-                              List.generate(8, (_) => Product.fake());
-                          return ProductsList(
-                            products: fakeProducts,
-                            isLoading: true,
-                          );
+                      return ProductsList(
+                        products: fakeProducts,
+                        onRefresh: () async {
+                          ref.invalidate(productsProvider);
+                          ref.invalidate(searchFilterProductsProvider);
                         },
-                        error: (error, stack) {
-                          return Center(
-                            child: Text(
-                              'حدث خطأ أثناء تحميل المنتجات',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          );
-                        },
-                        data: (data) {
-                          // فلترة حسب الكاتيجوري
-                          final filteredProducts = _selectedCategory == null
-                              ? data
-                              : data
-                                  .where((p) => p.category == _selectedCategory)
-                                  .toList();
-
-                          if (filteredProducts.isEmpty) {
-                            return ProductsEmptyState(isSearching: isSearching);
-                          }
-
-                          return ProductsList(products: filteredProducts);
+                      );
+                    },
+                    error: (error, stack) {
+                      return Center(
+                        child: Text(
+                          'حدث خطأ أثناء تحميل المنتجات',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      );
+                    },
+                    data: (products) {
+                      if (products.isEmpty) {
+                        return ProductsEmptyState(text: query.uiNotFoundText);
+                      }
+                      return ProductsList(
+                        products: products,
+                        onRefresh: () async {
+                          ref.invalidate(productsProvider);
+                          ref.invalidate(searchFilterProductsProvider);
                         },
                       );
                     },
@@ -136,8 +146,12 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     showDialog(
       context: context,
       builder: (_) => ProductFilterDialog(
-        initialCategory: _selectedCategory,
-        onApply: (category) => setState(() => _selectedCategory = category),
+        initialCategory: ref.watch(productQueryProvider).category,
+        onApply: (category) {
+          ref.read(productQueryProvider.notifier).update(
+                (q) => q.copyWith(category: category),
+              );
+        },
       ),
     );
   }
