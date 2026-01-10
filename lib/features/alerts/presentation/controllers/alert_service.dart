@@ -9,7 +9,6 @@ import '../../../products/data/product_model.dart';
 import '../../../products/data/product_repository_impl.dart';
 import '../../../products/domain/product.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
-import '../../../settings/domain/settings.dart';
 import '../../../settings/domain/settings_repository.dart';
 import '../../domain/expiry_reminder.dart';
 import 'alert_controller.dart';
@@ -50,12 +49,8 @@ class AlertService {
   }
 
   Future<void> scheduleProductAlerts(Product product) async {
-    await PermissionsService.requestNotification();
-
     final result = await settingsRepo.getSettings();
-    if (result is! SuccessState<Settings> || !result.data.enableNotifications) {
-      return;
-    }
+    if (!result.enableNotifications) return;
 
     if (product.expiryDate == null) return;
 
@@ -73,7 +68,14 @@ class AlertService {
       final importance = alert.importance;
       final isNearExpired =
           DateTimeUtils.isNearExpiry(product.expiryDate!, days);
+     
+      final isAlertDuplicated = await alertController.isAlertDuplicated(
+        productId: product.id!,
+        expiryDate: product.expiryDate!,
+        daysBeforeExpiry: days,
+      );
 
+      if (isAlertDuplicated) continue;
       if (!isNearExpired && !isExpired) continue;
 
       await _scheduleAlert(

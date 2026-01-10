@@ -43,6 +43,7 @@ class ConvertedPriceText extends StatelessWidget {
       padding: const EdgeInsets.only(top: 12),
       child: Text(
         '≈ $converted ${settings.defaultCurrency.label}',
+        textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppTheme.textSecondary,
             ),

@@ -4,12 +4,12 @@ import 'enums.dart';
 class AppConstants {
   AppConstants._();
   // Database
-  static const String databaseName = 'SmartStore.db';
+  static const String databaseName = 'SmartStore1.1.db';
   static const int databaseVersion =1;
 
   // Currency
-  static  String defaultCurrency = Currency.YER.name;
-  static const double defaultExchangeRate = 400.0; // 1 SAR = 300 YER
+  static const  defaultCurrency = Currency.YER;
+  static const  defaultExchangeRate = 400.0; // 1 SAR = 300 YER
 
   // Barcode Types
   static const List<String> supportedBarcodeTypes = ['EAN-13', 'UPC'];

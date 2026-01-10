@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/data/alert_repository_impl.dart';
@@ -18,10 +19,7 @@ class BackgroundUtils {
 
   static BackgroundUtils? _instance;
 
-
-
-  
-Future<Result<int>> addAlertInBackground(AlertBackgroundParams params) {
+  Future<Result<int>> addAlertInBackground(AlertBackgroundParams params) {
     final product = params.product;
     final repository = AlertRepositoryImpl();
     final alert = Alert(
@@ -39,10 +37,11 @@ Future<Result<int>> addAlertInBackground(AlertBackgroundParams params) {
   Future<void> dailyExpiryCheck() async {
     final repository = ProductRepositoryImpl();
 
-    final result = await repository.getAllProducts();
+    final result = await repository.getNearExpiryProducts(30);
 
     if (result is! SuccessState<List<Product>>) return;
-    final settingsRepo = SettingsRepositoryImpl();
+    final prefs = await SharedPreferences.getInstance();
+    final settingsRepo = SettingsRepositoryImpl(prefs);
     final alertController = AlertController();
     final notifications = NotificationService.instance;
 
@@ -62,5 +61,4 @@ Future<Result<int>> addAlertInBackground(AlertBackgroundParams params) {
 
     await Future.wait(futures);
   }
-
 }

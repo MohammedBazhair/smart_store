@@ -70,6 +70,21 @@ class AlertRepositoryImpl implements AlertRepository {
     }
   }
 
+  Future<bool> isAlertDuplicated({
+    required int productId,
+    required DateTime expiryDate,
+    required int daysBeforeExpiry,
+  }) async {
+    final db = await _dbHelper.database;
+    final result = await db.query(
+      'alerts',
+      where: 'product_id = ? AND expiry_date = ? AND days_before_expiry = ?',
+      whereArgs: [productId, expiryDate.toIso8601String(), daysBeforeExpiry],
+    );
+
+    return result.isNotEmpty; // true إذا موجود مسبقًا
+  }
+
   @override
   Future<Result<void>> deleteAlert(String id) async {
     try {

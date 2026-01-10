@@ -39,7 +39,7 @@ class DateTimeUtils {
       return months > 0 ? '$years سنة و $months شهر' : '$years سنة';
     }
 
-    return months > 0 ? '$months شهر' : '$days يوم';
+    return months > 0 ? '$months شهر و $days يوم' : '$days يوم';
   }
 
   /// التحقق من انتهاء المنتج

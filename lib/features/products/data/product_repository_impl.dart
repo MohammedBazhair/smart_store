@@ -68,7 +68,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final db = await _dbHelper.database;
       final maps = await db.query(
         'products',
-        where: 'name LIKE ? OR barcode LIKE ?',
+        where: 'LOWER(name) LIKE LOWER(?) OR LOWER(barcode) LIKE LOWER(?)',
         whereArgs: ['%$query%', '%$query%'],
         orderBy: 'created_at DESC',
       );
@@ -124,13 +124,11 @@ class ProductRepositoryImpl implements ProductRepository {
       final db = await _dbHelper.database;
       final now = DateTime.now();
       final threshold = now.add(Duration(days: days)).toIso8601String();
-      final maps = await db.rawQuery(
-        '''
-        SELECT * FROM products 
-        WHERE expiry_date <= ? AND expiry_date >= ?
-        ORDER BY expiry_date ASC
-      ''',
-        [threshold, now.toIso8601String()],
+      final maps = await db.query(
+        'products',
+        where: 'DATE(expiry_date) BETWEEN DATE(?) AND DATE(?)',
+        whereArgs: [threshold, now.toIso8601String()],
+        orderBy: 'expiry_date ASC',
       );
       final products = maps.map(ProductModel.fromMap).toList();
       return SuccessState(products);
@@ -183,6 +181,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<Result<void>> updateProduct(Product product) async {
     try {
       final db = await _dbHelper.database;
+
       final model = ProductModel.fromEntity(product);
       await db.update(
         'products',
@@ -192,7 +191,7 @@ class ProductRepositoryImpl implements ProductRepository {
       );
       return const SuccessState(null);
     } catch (e) {
-      return ErrorState('فشل في تحديث المنتج: ${e.toString()}');
+      return const ErrorState('فشل في تحديث المنتج');
     }
   }
 

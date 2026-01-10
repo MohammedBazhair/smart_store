@@ -14,7 +14,6 @@ import '../controllers/settings_provider.dart';
 import '../widgets/settings_app_bar.dart';
 import '../widgets/settings_form.dart';
 
-
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -39,16 +38,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: const SettingsAppBar(),
       body: settingsAsync.when(
         data: (settings) => SettingsForm(
-            settings: settings,
-            onChanged: _updateSettings,
-            exchangeRateController: _exchangeRateController,
-          ),
+          settings: settings,
+          onChanged: _updateSettings,
+          exchangeRateController: _exchangeRateController,
+        ),
         loading: () => Skeletonizer(
-            child: SettingsForm(
-              settings: Settings.fake(),
-              onChanged: (_) {},
-            ),
+          child: SettingsForm(
+            settings: Settings.theDefault(),
+            onChanged: (_) {},
           ),
+        ),
         error: (e, _) => ErrorDisplayWidget(
           message: e.toString(),
           onRetry: () => ref.invalidate(appSettingsProvider),

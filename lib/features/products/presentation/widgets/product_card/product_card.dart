@@ -125,26 +125,29 @@ class AnimatedProductCardBody extends StatelessWidget {
           padding: const EdgeInsets.only(top: 8),
           child: Row(
             spacing: 15,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               ProductMetaColumn(product),
-              const Spacer(),
               if (product.expiryDate != null && status?.text != null)
-                Container(
-                  height: 30,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 3, horizontal: 20),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: status?.color.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    status!.text,
-                    style: TextStyle(
-                      color: status.color.withOpacity(0.9),
-                      fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Container(
+                    height: 30,
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 3, horizontal: 20),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: status?.color.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    textAlign: TextAlign.center,
+                    child: Text(
+                      status!.text,
+                      overflow: TextOverflow.fade,
+                      style: TextStyle(
+                        color: status.color.withOpacity(0.9),
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
             ],

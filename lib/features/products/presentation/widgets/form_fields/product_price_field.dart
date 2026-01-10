@@ -18,7 +18,7 @@ class ProductPriceField extends ConsumerWidget {
   final Currency currency;
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     return Row(
       spacing: 16,
       children: [
@@ -29,7 +29,9 @@ class ProductPriceField extends ConsumerWidget {
             textInputAction: TextInputAction.next,
             keyboardType: TextInputType.number,
             inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
+              FilteringTextInputFormatter.allow(
+                RegExp(r'^\d+\.?\d{0,2}'),
+              ),
             ],
             decoration: const InputDecoration(
               labelText: 'سعر المنتج *',

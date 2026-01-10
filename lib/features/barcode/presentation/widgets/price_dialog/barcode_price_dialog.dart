@@ -49,7 +49,7 @@ class ProductPriceDialog extends ConsumerWidget {
           loading: () => Skeletonizer(
             child: ProductPriceContent(
               product: Product.fake(),
-              settings: Settings.fake(),
+              settings: Settings.theDefault(),
             ),
           ),
           error: (_, __) => const Text('خطأ في تحميل الإعدادات'),

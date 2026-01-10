@@ -74,11 +74,11 @@ class _BarcodeScannerScreenState extends ConsumerState<BarcodeScannerScreen> {
     if (barcodeResult.hasPrice) {
       ref.read(isLoadingProvider(IsLoading.processBarcode).notifier).state =
           false;
-      await scannerController.start();
       await showProductPriceDialog(
         context: context,
         scanResult: barcodeResult,
       );
+      await scannerController.start();
     } else {
       await ref.read(flashlightProvider.notifier).off();
       ref.read(isLoadingProvider(IsLoading.processBarcode).notifier).state =

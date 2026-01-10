@@ -141,7 +141,7 @@ class AppTheme {
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: primaryColor,
         circularTrackColor: Colors.white,
-        strokeWidth: 3,
+        strokeWidth: 2,
       ),
       scrollbarTheme: ScrollbarThemeData(
         thumbVisibility: const MaterialStatePropertyAll(false),

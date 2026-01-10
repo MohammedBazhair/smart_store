@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../../../../core/constants/enums.dart';
+import '../../../../../core/extensions/extensions.dart';
 import '../../../../../shared/presentation/theme/app_theme.dart';
 import '../../../../products/domain/product.dart';
 
@@ -78,29 +77,28 @@ class _AnimatedPriceState extends State<AnimatedPrice>
           child: AnimatedBuilder(
             animation: _glow,
             builder: (context, child) {
-              return SizedBox(child: child);
+              return SizedBox(
+                child: Column(
+                  children: [
+                    Text(
+                      widget.product.price.formatDouble(),
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.primaryColor,
+                            letterSpacing: -0.5,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.product.currency.label,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.primaryColor,
+                          ),
+                    ),
+                  ],
+                ),
+              );
             },
-            child: Column(
-              children: [
-                Text(
-                  widget.product.currency == Currency.YER
-                      ? widget.product.price.toInt().toString()
-                      : widget.product.price.toStringAsFixed(2),
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.primaryColor,
-                        letterSpacing: -0.5,
-                      ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  widget.product.currency.label,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

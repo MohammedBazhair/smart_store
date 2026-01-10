@@ -45,3 +45,8 @@ extension RoutesNavigators on BuildContext {
     Navigator.pop(this, result);
   }
 }
+
+extension Number on double {
+  String  formatDouble() =>
+      this == truncateToDouble() ? toStringAsFixed(0) : toString();
+}

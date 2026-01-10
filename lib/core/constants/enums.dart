@@ -23,8 +23,8 @@ enum ProductCategory {
 }
 
 enum Currency {
-  YER(label: 'ريال يمني'),
-  SAR(label: 'ريال سعودي');
+  YER(label: 'يمني'),
+  SAR(label: 'سعودي');
 
   const Currency({required this.label});
   final String label;

@@ -13,10 +13,14 @@ class ConditionalBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (condition) {
-      return builder(context);
-    } else {
-      return fallback?.call(context) ?? const SizedBox.shrink();
-    }
+    return AnimatedCrossFade(
+      firstChild: builder(context),
+      secondChild: fallback?.call(context) ?? const SizedBox.shrink(),
+      crossFadeState:
+          condition ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+      duration: const Duration(milliseconds: 600),
+      firstCurve: Curves.easeInOutExpo,
+      secondCurve: Curves.easeInQuad,
+    );
   }
 }

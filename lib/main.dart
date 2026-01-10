@@ -2,20 +2,27 @@
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'core/constants/enums.dart';
 import 'core/screen/smart_store_app.dart';
 import 'core/utils/top_level_fuctions.dart';
 import 'features/alerts/presentation/controllers/alert_provider.dart';
+import 'shared/providers/repositories_provider.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  final sharedPrefs = await SharedPreferences.getInstance();
 
-  final container = ProviderContainer();
+  final container = ProviderContainer(
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+    ],
+  );
 
   await _setupMain(container);
 }
@@ -36,8 +43,6 @@ Future<void> _setupMain(ProviderContainer container) async {
     backoffPolicy: BackoffPolicy.linear,
     backoffPolicyDelay: const Duration(minutes: 5),
   );
-
-
 
   runApp(
     UncontrolledProviderScope(
