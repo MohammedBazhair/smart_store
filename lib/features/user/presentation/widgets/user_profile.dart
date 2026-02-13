@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../shared/presentation/theme/app_theme.dart';
-import '../../../../shared/providers/core_providers.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../domain/entities/profile.dart';
 import '../controllers/user_controller.dart';
 import '../controllers/user_state.dart';
@@ -23,13 +24,17 @@ class _UserProfileWidgetState extends ConsumerState<UserProfileWidget> {
     ref.listenManual(userControllerProvider, (previous, next) {
       switch (next) {
         case UserInitialState():
-        case UserUpdateProfileState():
-          context.showSnakbar('تم تحديث البروفايل بنجاح', type: SnackBarType.success);
-        case UserLoadProfileState():
-        case UserLoadAvatarState():
+        case UserLoadingProfileState():
           break;
+        case UserUpdatedProfileState():
+          Logger.debugLog(message: 'تم تحديث البروفايل بنجاح');
+          context.showSnakbar(
+            'تم تحديث البروفايل بنجاح',
+            type: SnackBarType.success,
+          );
         case UserErrorState(:final message):
           context.showSnakbar(message, type: SnackBarType.error);
+        case UserLoadedProfileState():
       }
     });
   }
@@ -46,7 +51,7 @@ class _UserProfileWidgetState extends ConsumerState<UserProfileWidget> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Stack(
-            children: [                    
+            children: [
               if (profile.isEmailLogin)
                 const Positioned(
                   bottom: 0,
@@ -59,7 +64,6 @@ class _UserProfileWidgetState extends ConsumerState<UserProfileWidget> {
                 ),
             ],
           ),
-
           const SizedBox(height: 20),
           FittedBox(child: Text(profile.username)),
           const SizedBox(height: 5),

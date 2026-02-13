@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../shared/presentation/theme/app_theme.dart';
+import '../shared/presentation/theme/app_theme.dart';
 
 enum ProductCategory {
   all(label: 'الكل'),

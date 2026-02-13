@@ -14,5 +14,9 @@ enum Role {
   worker,
 
 // when user signup first time
-  guest,
+  guest;
+
+  static Role fromString(String role) {
+    return Role.values.byName(role);
+  }
 }

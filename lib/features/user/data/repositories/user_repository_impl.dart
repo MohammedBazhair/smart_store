@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../auth/data/model/app_user.dart';
-import '../../../auth/domain/entities/sub/auth_provider.dart';
+import '../../../../core/constants/log.dart';
 import '../../domain/entities/get_profile_params.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -23,32 +22,10 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<ProfileEntity> getProfile(GetProfileParams params) async {
     try {
-      final appUser = AppUserModel.fromSupabase(
-        userId: params.userId,
-        userMetadata: params.userMetadata,
-        appMetadata: params.appMetadata,
-      );
-      final providers = appUser.providers.toSet();
+      final profileModel = await _remoteDataSource.readProfile(params.userId);
 
-      final ProfileEntity profileEntity;
-      final profile = await _remoteDataSource.readProfile(params.userId);
-      switch (appUser.provider) {
-        case AuthProvider.email:
-          profileEntity = profile.copyWith(authProviders: providers);
-        case AuthProvider.google:
-          profileEntity = ProfileEntity(
-            userId: params.userId,
-            username: appUser.name,
-            authProviders: providers,
-            credits: profile.credits,
-          );
-
-        case AuthProvider.unknown:
-          throw Exception('unKnown provider, try again');
-      }
-
-      await _localDataSource.saveProfile(profileEntity);
-      return profileEntity;
+      await _localDataSource.saveProfile(profileModel);
+      return profileModel;
     } catch (e) {
       debugPrint(e.toString());
       return _localDataSource.readProfile();
@@ -60,7 +37,8 @@ class UserRepositoryImpl implements UserRepository {
     try {
       await _remoteDataSource.updateProfile(profile);
     } catch (e) {
-      throw Exception('Failed to update ${profile.username} profile');
+      Logger.debugLog(error: e);
+      rethrow;
     }
   }
 }

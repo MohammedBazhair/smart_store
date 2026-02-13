@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/constants/enums.dart';
 import '../../../../../core/extensions/extensions.dart';
+import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../errors/result.dart';
-import '../../../../../shared/presentation/theme/app_theme.dart';
 import '../../../domain/product.dart';
 import '../../controllers/product_controller.dart';
 

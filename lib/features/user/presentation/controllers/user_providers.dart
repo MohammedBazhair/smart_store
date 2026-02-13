@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/providers/core_providers.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 
 
 final isUserLoggedInProvider = Provider.autoDispose((ref) {

@@ -10,6 +10,10 @@ class AuthLoadingState extends AuthState {
   const AuthLoadingState();
 }
 
+class AuthGoogleLoadingState extends AuthState {
+  const AuthGoogleLoadingState();
+}
+
 class AuthSuccessfullState extends AuthState {
   const AuthSuccessfullState();
 }

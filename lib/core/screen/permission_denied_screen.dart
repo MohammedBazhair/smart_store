@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../errors/result.dart';
 import '../../features/dashboard/presentation/screen/dashboard_screen.dart';
-import '../../shared/presentation/theme/app_theme.dart';
 import '../extensions/extensions.dart';
+import '../shared/presentation/theme/app_theme.dart';
 import '../utils/permissions.dart';
 
 class PermissionDeniedScreen extends StatelessWidget {

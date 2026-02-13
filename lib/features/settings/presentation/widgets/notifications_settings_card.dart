@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../domain/settings.dart';
 
 class NotificationsSettingsCard extends StatelessWidget {

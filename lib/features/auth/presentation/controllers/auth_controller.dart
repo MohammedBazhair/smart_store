@@ -1,10 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/log.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
-import '../../../../shared/providers/core_providers.dart';
-import '../../../user/domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_state.dart';
 
@@ -18,9 +17,21 @@ class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _auth;
 
   Future<void> loginWithGoogle() async {
-    state = const AuthLoadingState();
-
-    await _auth.signInWithGoogle();
+    try {
+      state = const AuthGoogleLoadingState();
+      final userId = await _auth.signInWithGoogle();
+      if (userId == null) {
+        throw const AuthAppException('فشل تسجيل الدخول');
+      }
+      
+      state = const AuthSuccessfullState();
+    } on AuthAppException catch (e) {
+      Logger.debugLog(error: e.message);
+      state = AuthFailedState('فشل تسجيل الدخول');
+    } catch (e) {
+      Logger.debugLog(error: e);
+      state = AuthFailedState('فشل تسجيل الدخول');
+    }
   }
 
   Future<void> loginWithUri(Uri uri) async {
@@ -47,10 +58,10 @@ class AuthController extends StateNotifier<AuthState> {
     _handleState(error);
   }
 
-  Future<void> signUp(UserEntity user) async {
+  Future<void> signUp({required String email, required String password}) async {
     state = const AuthLoadingState();
 
-    final error = await _auth.signUp(user);
+    final error = await _auth.signUp(email: email, password: password);
 
     _handleState(error);
   }
@@ -72,8 +83,6 @@ class AuthController extends StateNotifier<AuthState> {
       state = AuthFailedState(e.message);
     } catch (e) {
       state = AuthFailedState('فشلت عملية استعادة الباسورد حاول مرة أخرى');
-    } finally {
-      reset();
     }
   }
 
@@ -94,24 +103,11 @@ class AuthController extends StateNotifier<AuthState> {
       state = AuthFailedState(e.message);
     } catch (e) {
       state = AuthFailedState('فشلت عملية استعادة الباسورد حاول مرة أخرى');
-    } finally {
-      reset();
     }
   }
 
   void _handleState(String? error) {
     state =
         error == null ? const AuthSuccessfullState() : AuthFailedState(error);
-  }
-
-  Future<void> startLoadingTimeout() async {
-    await Future.delayed(const Duration(seconds: 10));
-    if (mounted) {
-      reset();
-    }
-  }
-
-  void reset() {
-    state = const AuthInitialState();
   }
 }

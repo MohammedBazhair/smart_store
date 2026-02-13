@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/enums.dart';
-import '../../../../../shared/presentation/theme/app_theme.dart';
+import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../products/domain/product.dart';
 import '../../../../settings/domain/settings.dart';
 

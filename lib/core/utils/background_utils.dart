@@ -6,7 +6,7 @@ import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/domain/alert.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../features/products/domain/product.dart';
-import '../../shared/providers/repositories_provider.dart';
+import '../shared/providers/repositories_provider.dart';
 import 'date_utils.dart';
 
 class BackgroundUtils {

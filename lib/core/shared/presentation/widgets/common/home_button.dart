@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/extensions/extensions.dart';
-import '../../../../features/dashboard/presentation/screen/dashboard_screen.dart';
+import '../../../../../features/dashboard/presentation/screen/dashboard_screen.dart';
+import '../../../../extensions/extensions.dart';
 
 class HomeButton extends StatelessWidget {
   const HomeButton({super.key});

@@ -8,11 +8,12 @@ import 'core/screen/smart_store_app.dart';
 final navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
- final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   final container = await configureDependencies();
 
+  FlutterNativeSplash.remove();
   runApp(
     UncontrolledProviderScope(
       container: container,
@@ -20,4 +21,3 @@ Future<void> main() async {
     ),
   );
 }
-

@@ -4,18 +4,18 @@ import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../features/auth/data/datasources/auth_remote_data_source.dart';
-import '../../../features/auth/data/repositories/auth_repository_impl.dart';
-import '../../../features/auth/presentation/controllers/auth_controller.dart';
-import '../../../features/user/data/datasources/user_local_data_source.dart';
-import '../../../features/user/data/datasources/user_remote_data_source.dart';
-import '../../../features/user/data/repositories/user_repository_impl.dart';
-import '../../../features/user/presentation/controllers/user_controller.dart';
-import '../../../features/user/presentation/controllers/user_state.dart';
-import '../../core/database/local/cache_service.dart';
-import '../../core/database/remote/remote_database_service.dart';
-import '../../core/network/connectivity_service.dart';
-import '../../core/network/network_clinet.dart';
+import '../../../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../../../features/user/data/datasources/user_local_data_source.dart';
+import '../../../../features/user/data/datasources/user_remote_data_source.dart';
+import '../../../../features/user/data/repositories/user_repository_impl.dart';
+import '../../../../features/user/presentation/controllers/user_controller.dart';
+import '../../../../features/user/presentation/controllers/user_state.dart';
+import '../../database/local/cache_service.dart';
+import '../../database/remote/remote_database_service.dart';
+import '../../network/connectivity_service.dart';
+import '../../network/network_clinet.dart';
 import 'repositories_provider.dart';
 
 final networkProvider = Provider((_) {

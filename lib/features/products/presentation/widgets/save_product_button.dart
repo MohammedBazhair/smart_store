@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/enums.dart';
-import '../../../../shared/presentation/widgets/common/conditional_builder.dart';
-import '../../../../shared/presentation/widgets/common/loading_widget.dart';
-import '../../../../shared/providers/ui_providers.dart';
+import '../../../../core/shared/presentation/widgets/common/conditional_builder.dart';
+import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
+import '../../../../core/shared/providers/ui_providers.dart';
 
 class SaveProductButton extends ConsumerWidget {
   const SaveProductButton({

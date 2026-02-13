@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/extensions/extensions.dart';
-import '../../../../../shared/presentation/theme/app_theme.dart';
+import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../domain/product.dart';
 import '../../../domain/product_expiry_status.dart';
 import '../../screens/product_details_screen.dart';

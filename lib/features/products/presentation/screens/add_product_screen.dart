@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
-import '../../../../shared/providers/ui_providers.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../domain/product.dart';
 import '../../domain/product_details.dart';

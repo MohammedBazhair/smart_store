@@ -1,14 +1,15 @@
 import 'dart:async';
-
-import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../user/data/datasources/user_remote_data_source.dart';
-import '../../../user/domain/entities/user.dart';
 
 abstract interface class AuthRemoteDataSource {
-  Future<AuthResponse> signUp(UserEntity user);
+  Future<AuthResponse> signUp({
+    required String email,
+    required String password,
+  });
 
   Future<AuthResponse> signIn({
     required String email,
@@ -17,7 +18,7 @@ abstract interface class AuthRemoteDataSource {
 
   Future<void> signOut();
 
-  Future<void> signInWithGoogle();
+  Future<String?> signInWithGoogle();
 
   Future<AuthResponse> exchangeCodeForAuthSession(String code);
 
@@ -36,11 +37,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final UserRemoteDataSource _userRemote;
 
   @override
-  Future<AuthResponse> signUp(UserEntity user) {
+  Future<AuthResponse> signUp({
+    required String email,
+    required String password,
+  }) {
     return _auth.signUp(
-      email: user.email,
-      password: user.password,
-      data: {'full_name': user.username, 'avatar_url': null},
+      email: email,
+      password: password,
     );
   }
 
@@ -58,36 +61,48 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> signInWithGoogle() async {
+  Future<String?> signInWithGoogle() async {
     try {
+      Logger.debugLog(message: 'Google Sign In');
       const webClientId =
           '711796199152-i0iuh8rvglm0jcgsbae80m9m7cc02pqe.apps.googleusercontent.com';
 
-      final GoogleSignIn signIn = GoogleSignIn.instance;
+      const androidClientId =
+          '711796199152-05m93odsde25vu2v7vsr4p2p5i3bvaud.apps.googleusercontent.com';
 
-      unawaited(
-        signIn.initialize(serverClientId: webClientId),
+      final signIn = GoogleSignIn.instance;
+
+      await signIn.initialize(
+        serverClientId: webClientId,
+        clientId: androidClientId,
       );
 
       // Perform the sign in
-      final googleAccount = await signIn.authenticate();
-      final googleAuthorization =
-          await googleAccount.authorizationClient.authorizationForScopes([]);
-      final googleAuthentication = googleAccount.authentication;
+      final account = await signIn.authenticate();
+
+      final googleAuthentication = account.authentication;
       final idToken = googleAuthentication.idToken;
-      final accessToken = googleAuthorization?.accessToken;
 
-      if (idToken == null || accessToken == null) {
-        throw 'No ID Token or Access Token found.';
+      final googleAuthorization = await account.authorizationClient
+              .authorizationForScopes(['email', 'profile']) ??
+          await account.authorizationClient
+              .authorizeScopes(['email', 'profile']);
+
+      final accessToken = googleAuthorization.accessToken;
+
+      if (idToken == null) {
+        throw 'No ID Token found.';
       }
-
-       await _auth.signInWithIdToken(
+      final response = await _auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: idToken,
         accessToken: accessToken,
       );
+
+      return response.user?.id;
     } catch (e) {
-      debugPrint(e.toString());
+      Logger.debugLog(error: e);
+      return null;
     }
   }
 

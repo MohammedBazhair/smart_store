@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/presentation/widgets/common/error_widget.dart';
-import '../../../../shared/presentation/widgets/common/loading_widget.dart';
+import '../../../../core/shared/presentation/widgets/common/error_widget.dart';
+import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../domain/alert.dart';
 import '../widgets/alert_card.dart';
 import '../widgets/alerts_empty_state.dart';

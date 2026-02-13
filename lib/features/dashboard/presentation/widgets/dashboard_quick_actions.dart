@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../alerts/presentation/screens/alerts_screen.dart';
 import '../../../products/presentation/screens/add_product_screen.dart';

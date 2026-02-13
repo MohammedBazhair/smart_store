@@ -1,23 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/auth_state.dart';
 
 class SignGoogleButton extends ConsumerWidget {
   const SignGoogleButton({super.key});
 
   @override
   Widget build(BuildContext context, ref) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xEAFFFFFF).withOpacity(0.9),
-        foregroundColor: Colors.black,
+    final isLoading = ref.watch(authProvider) is AuthGoogleLoadingState;
+    return AbsorbPointer(
+      absorbing: isLoading,
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          side: const BorderSide(
+            width: 0.3,
+            color: Color.fromARGB(255, 112, 112, 112),
+          ),
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF172F55),
+          shadowColor: const Color.fromARGB(35, 141, 141, 141),
+          elevation: 1,
+        ),
+        onPressed: () async {
+          await ref.read(authProvider.notifier).loginWithGoogle();
+        },
+        label: isLoading
+            ? const LoadingWidget()
+            : const Text(
+                'المتابعة عبر Google',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+        icon: isLoading
+            ? const SizedBox.shrink()
+            : Image.asset('assets/icons/google.png', width: 24),
       ),
-      onPressed: () async {
-        await ref.read(authProvider.notifier).loginWithGoogle();
-      },
-      label: const Text('المتابعة عبر Google'),
-      icon: Image.asset('assets/icons/google.png', width: 24),
     );
   }
 }

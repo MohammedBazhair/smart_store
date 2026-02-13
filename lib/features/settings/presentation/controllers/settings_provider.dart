@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../shared/providers/repositories_provider.dart';
+import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../domain/settings.dart';
 
 /// Provider للحصول على الإعدادات

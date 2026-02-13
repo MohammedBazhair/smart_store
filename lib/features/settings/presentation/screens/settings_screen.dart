@@ -6,8 +6,8 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/presentation/widgets/common/error_widget.dart';
 import '../../../../errors/result.dart';
-import '../../../../shared/presentation/widgets/common/error_widget.dart';
 import '../../domain/settings.dart';
 import '../controllers/settings_controller.dart';
 import '../controllers/settings_provider.dart';

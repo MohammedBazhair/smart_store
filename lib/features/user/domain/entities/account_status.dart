@@ -11,5 +11,9 @@ enum AccountStatus {
 
   /// The account is pending verification.
   /// The user may not be allowed to log in until the account is verified.
-  pending,
+  pending;
+
+  static AccountStatus fromString(String status) {
+    return AccountStatus.values.byName(status);
+  }
 }

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
-import '../../../../shared/presentation/theme/app_theme.dart';
-import '../../../../shared/presentation/widgets/common/error_widget.dart';
-import '../../../../shared/presentation/widgets/common/loading_widget.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/error_widget.dart';
+import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../products/presentation/screens/products_screen.dart';

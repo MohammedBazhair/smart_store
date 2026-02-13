@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -7,7 +6,6 @@ import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
-import '../../../user/domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
 
@@ -18,9 +16,12 @@ class AuthRepositoryImpl implements AuthRepository {
   final LocalCacheService _cache;
 
   @override
-  Future<String?> signUp(UserEntity user) async {
+  Future<String?> signUp({
+    required String email,
+    required String password,
+  }) async {
     try {
-      final response = await _remote.signUp(user);
+      final response = await _remote.signUp(email: email, password: password);
       if (response.user == null) throw const AuthException('no id found');
 
       await _cache.setString(
@@ -65,11 +66,20 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithGoogle() async {
+  Future<String?> signInWithGoogle() async {
     try {
-      await _remote.signInWithGoogle();
+      final userId = await _remote.signInWithGoogle();
+
+      if (userId != null) {
+        await _cache.setString(
+          key: AppConstants.lastUserIdKey,
+          value: userId,
+        );
+      }
+      return userId;
     } catch (e) {
-      debugPrint(e.toString());
+      Logger.debugLog(error: e);
+      return null;
     }
   }
 

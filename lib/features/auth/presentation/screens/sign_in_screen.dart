@@ -1,13 +1,11 @@
-import 'dart:async';
-
-import 'package:app_links/app_links.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../shared/presentation/widgets/common/field_label.dart';
-import '../../../../shared/presentation/widgets/common/home_button.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/field_label.dart';
+import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../auth_listeners.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/auth_state.dart';
@@ -28,32 +26,21 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  late final ProviderSubscription<AuthState> _authSubscription;
-  late final StreamSubscription<Uri> _subscribtionsLinks;
 
   @override
   void initState() {
     super.initState();
     listenAuthStates();
-    initDeepLink();
   }
 
   void listenAuthStates() {
-    _authSubscription = ref.listenManual(authProvider, (previous, next) async {
+    ref.listenManual(authProvider, (previous, next) async {
       await authListener(
         context: context,
         previous: previous,
         next: next,
         ref: ref,
       );
-    });
-  }
-
-  void initDeepLink() {
-    final _appLinks = AppLinks();
-
-    _subscribtionsLinks = _appLinks.uriLinkStream.listen((uri) async {
-      await ref.read(authProvider.notifier).loginWithUri(uri);
     });
   }
 
@@ -74,149 +61,156 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _authSubscription.close();
-    _subscribtionsLinks.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: GestureDetector(
-          onTap: FocusScope.of(context).unfocus,
-          child: Column(
-            children: [
-              AppBar(
-                backgroundColor: Colors.transparent,
-                actions: const [HomeButton()],
-                actionsPadding: const EdgeInsets.symmetric(horizontal: 12),
-                automaticallyImplyLeading: false,
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-      
-                  child: Form(
-                    key: _formKey,
-                    child: AutofillGroup(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // عنوان الشاشة
-                          const Text(
-                            'أهلا بعودتك!',
-                            style: TextStyle(
-                              fontSize: 24,
+      body: GestureDetector(
+        onTap: FocusScope.of(context).unfocus,
+        child: SafeArea(
+          child: Center(
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(24),
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                const Text(
+                  'المتجر الذكي',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+                const SizedBox(
+                  height: 35,
+                ),
+                const Text(
+                  'أهلا بعودتك!',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'سجل دخولك إلى حسابك',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 50),
+                Form(
+                  key: _formKey,
+                  child: AutofillGroup(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const FieldLabel(text: 'البريد الإلكتروني'),
+
+                        const SizedBox(height: 8),
+
+                        CustomEmailField(_emailController),
+
+                        const SizedBox(height: 25),
+
+                        const FieldLabel(text: 'كلمة المرور'),
+
+                        const SizedBox(height: 8),
+
+                        CustomPasswordField(
+                          controller: _passwordController,
+                          hintText: 'أدخل كلمة المرور',
+                          onSubmit: onSubmit,
+                          textInputAction: TextInputAction.done,
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        // نسيت كلمة المرور
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            text: 'هل نسيت كلمة المرور؟',
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                context.pushTo(const ResetPasswordScreen());
+                              },
+                            style: const TextStyle(
+                              color: AppTheme.primaryColor,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF00FFFF),
+                              fontSize: 15,
                             ),
                           ),
-      
-                          const SizedBox(height: 10),
-      
-                          const Text(
-                            'سجل دخولك إلى حسابك',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(196, 255, 255, 255),
-                            ),
-                          ),
-      
-                          const SizedBox(height: 80),
-      
-                          const FieldLabel(text: 'البريد الإلكتروني'),
-      
-                          const SizedBox(height: 8),
-      
-                          CustomEmailField(_emailController),
-      
-                          const SizedBox(height: 25),
-      
-                          const FieldLabel(text: 'كلمة المرور'),
-      
-                          const SizedBox(height: 8),
-      
-                          CustomPasswordField(
-                            controller: _passwordController,
-                            hintText: 'أدخل كلمة المرور',
-                            onSubmit: onSubmit,
-                            textInputAction: TextInputAction.done,
-                          ),
-      
-                          const SizedBox(height: 25),
-      
-                          // نسيت كلمة المرور
-                          RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(
-                              text: 'هل نسيت كلمة المرور؟',
-      
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  context.pushTo(const ResetPasswordScreen());
-                                },
-                              style: const TextStyle(
-                                color: Color(0xFF00FFFF),
-                                fontWeight: FontWeight.bold,
+                        ),
+                        const SizedBox(height: 25),
+
+                        // زر تسجيل الدخول
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final isLoading =
+                                ref.watch(authProvider) is AuthLoadingState;
+                            return AbsorbPointer(
+                              absorbing: isLoading,
+                              child: ElevatedButton(
+                                onPressed: onSubmit,
+                                child: isLoading
+                                    ? const LoadingWidget()
+                                    : const Text('تسجيل الدخول'),
                               ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        AbsorbPointer(
+                          absorbing:
+                              ref.watch(authProvider) is AuthLoadingState,
+                          child: const SignGoogleButton(),
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        // الانتقال إلى التسجيل
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            text: 'ليس لديك حساب؟ ',
+                            style: const TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                          const SizedBox(height: 25),
-      
-                          // زر تسجيل الدخول
-                          AbsorbPointer(
-                            absorbing:
-                                ref.watch(authProvider) is AuthLoadingState,
-                            child: ElevatedButton(
-                              onPressed: onSubmit,
-                              child: const Text('تسجيل الدخول'),
-                            ),
-                          ),
-      
-                          const SizedBox(height: 15),
-      
-                          AbsorbPointer(
-                            absorbing:
-                                ref.watch(authProvider) is AuthLoadingState,
-      
-                            child: const SignGoogleButton(),
-                          ),
-      
-                          const SizedBox(height: 25),
-      
-                          // الانتقال إلى التسجيل
-                          RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(
-                              text: 'ليس لديك حساب؟ ',
-                              children: [
-                                const TextSpan(text: '  '),
-      
-                                TextSpan(
-                                  text: 'سجل الآن',
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      context.pushReplacementTo(
-                                        const SignUpScreen(),
-                                      );
-                                    },
-                                  style: const TextStyle(
-                                    color: Color(0xFF00FFFF),
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            children: [
+                              const TextSpan(text: '  '),
+                              TextSpan(
+                                text: 'سجل الآن',
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    context.pushReplacementTo(
+                                      const SignUpScreen(),
+                                    );
+                                  },
+                                style: const TextStyle(
+                                  color: AppTheme.primaryColor,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-      
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

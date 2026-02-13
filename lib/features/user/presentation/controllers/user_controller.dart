@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/constants/log.dart';
 import '../../domain/entities/get_profile_params.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -13,9 +14,10 @@ class UserController extends StateNotifier<UserState> {
 
   User? get currentUser => _userRepository.currentUser;
 
-  Future<void> loadProfile() async {
+  Future<ProfileEntity?> loadProfile() async {
     try {
-      if (currentUser?.id == null) return;
+      state = UserLoadingProfileState(state.profile);
+      if (currentUser?.id == null) return null;
 
       final profileParams = GetProfileParams(
         userId: currentUser!.id,
@@ -25,20 +27,21 @@ class UserController extends StateNotifier<UserState> {
 
       final newProfile = await _userRepository.getProfile(profileParams);
 
-      state = UserLoadProfileState(newProfile);
+      state = UserLoadedProfileState(newProfile);
+      return newProfile;
     } catch (e, _) {
       state = UserErrorState(state.profile, 'Can\'t get profile error');
+      return null;
     }
   }
 
   Future<void> updateProfile(ProfileEntity newProfile) async {
     try {
       await _userRepository.updateProfile(newProfile);
-
-      state = UserUpdateProfileState(newProfile);
+      state = UserUpdatedProfileState(newProfile);
     } catch (e) {
-      state = UserErrorState(state.profile, e.toString());
+      Logger.debugLog(error: e);
+      state = UserErrorState(state.profile, 'حصل خطا أثناء التحديث');
     }
   }
-
 }

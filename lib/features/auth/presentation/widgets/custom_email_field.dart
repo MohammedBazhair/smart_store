@@ -14,7 +14,6 @@ class CustomEmailField extends StatelessWidget {
       cursorRadius: const Radius.circular(20),
       cursorWidth: 1.3,
       textInputAction: TextInputAction.next,
-
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
       ],
@@ -25,24 +24,22 @@ class CustomEmailField extends StatelessWidget {
           child: Icon(Icons.email_outlined),
         ),
       ),
-
-    validator: (value) {
+      validator: (value) {
         if (value == null || value.isEmpty) {
           return 'البريد الإلكتروني مطلوب';
         }
-
+    
         // Regular Email Pattern
         final emailRegExp = RegExp(
           r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
         );
-
+    
         if (!emailRegExp.hasMatch(value)) {
           return 'أدخل عنوان بريد إلكتروني صحيح';
         }
-
+    
         return null;
-
-    },
+      },
     );
   }
 }

@@ -1,16 +1,15 @@
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../errors/result.dart';
-import '../../../user/domain/entities/user.dart';
 
 abstract interface class AuthRepository {
-  Future<String?> signUp(UserEntity user);
+  Future<String?> signUp({required String email, required String password});
 
   Future<String?> signIn({required String email, required String password});
 
   Future<void> signOut();
 
-  Future<void> signInWithGoogle();
+  Future<String?> signInWithGoogle();
     
   Future<Result<AuthResponse>> signInWithUrl(Uri uri);
 

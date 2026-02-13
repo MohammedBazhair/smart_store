@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/extensions/extensions.dart';
-import '../../../../../shared/presentation/theme/app_theme.dart';
+import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../products/domain/product.dart';
 
 class AnimatedPrice extends StatefulWidget {

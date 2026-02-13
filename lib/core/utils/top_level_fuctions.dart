@@ -5,8 +5,8 @@ import 'package:workmanager/workmanager.dart';
 
 import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/presentation/controllers/notification_cache.dart';
-import '../../shared/providers/repositories_provider.dart';
 import '../constants/enums.dart';
+import '../shared/providers/repositories_provider.dart';
 import 'background_utils.dart';
 
 @pragma('vm:entry-point')

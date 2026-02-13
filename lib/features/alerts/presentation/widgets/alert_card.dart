@@ -5,9 +5,9 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
-import '../../../../shared/presentation/theme/app_theme.dart';
-import '../../../../shared/providers/repositories_provider.dart';
 import '../../../products/domain/product.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../domain/alert.dart';

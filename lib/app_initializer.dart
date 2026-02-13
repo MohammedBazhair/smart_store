@@ -7,7 +7,7 @@ import 'package:workmanager/workmanager.dart';
 import '../../core/constants/enums.dart';
 import '../../core/utils/top_level_fuctions.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
-import '../../shared/providers/repositories_provider.dart';
+import 'core/shared/providers/repositories_provider.dart';
 
 Future<ProviderContainer> configureDependencies() async {
   await initializeDateFormatting('ar');

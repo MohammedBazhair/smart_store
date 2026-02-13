@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
-import '../../features/dashboard/presentation/screen/dashboard_screen.dart';
 import '../../main.dart';
-import '../../shared/presentation/theme/app_theme.dart';
+import '../shared/presentation/theme/app_theme.dart';
+import 'auth_gate.dart';
 
 class SmartStoreApp extends StatelessWidget {
-  const SmartStoreApp({super.key,});
+  const SmartStoreApp({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class SmartStoreApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       navigatorKey: navigatorKey,
-      home: const DashboardScreen(),
+      home: const AuthGate(),
     );
   }
 }

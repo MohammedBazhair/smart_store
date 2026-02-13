@@ -4,14 +4,11 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/database/remote/remote_database_service.dart';
 import '../../domain/entities/profile.dart';
-import '../models/profile_model.dart';
 
 abstract interface class UserRemoteDataSource {
-  Future<void> createProfile(ProfileEntity profile);
-
   Future<ProfileEntity> readProfile(String? userId);
 
-  Future<void> updateProfile(ProfileEntity profile, [String? avatrPath]);
+  Future<void> updateProfile(ProfileEntity profile);
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
@@ -25,21 +22,6 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   final LocalCacheService _locaCache;
 
   @override
-  Future<void> createProfile(ProfileEntity profile) {
-    final profileModel = ProfileModel(
-      userId: profile.userId,
-      username: profile.username,
-      updatedAt: profile.updatedAt,
-      credits: 10,
-    );
-
-    return _remoteDatabase.insertRow(
-      map: profileModel.toMap(),
-      table: AppConstants.profilesTable,
-    );
-  }
-
-  @override
   Future<ProfileEntity> readProfile(String? userId) async {
     try {
       if (userId == null) throw ArgumentError.notNull('userId');
@@ -50,16 +32,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         table: AppConstants.profilesTable,
       );
 
-      final profileModel = ProfileModel.fromMap(map);
-
-      final profileEntity = ProfileEntity(
-        userId: userId,
-        username: profileModel.username,
-        updatedAt: profileModel.updatedAt,
-        credits: profileModel.credits,
-      );
-
-      return profileEntity;
+      return ProfileEntity.fromMap(map);
     } catch (e) {
       debugPrint(e.toString());
 
@@ -68,7 +41,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   }
 
   @override
-  Future<void> updateProfile(ProfileEntity profile, [String? avatrPath]) async {
+  Future<void> updateProfile(ProfileEntity profile) async {
     if (profile.userId.isEmpty) throw ArgumentError.value(profile.userId);
 
     final profileMap = await _remoteDatabase.readRow(
@@ -77,11 +50,12 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       table: AppConstants.profilesTable,
     );
 
-    final profileModel = ProfileModel.fromMap(profileMap);
+    final profileModel = ProfileEntity.fromMap(profileMap);
 
     final updatedModel = profileModel.copyWith(
       authProviders: profile.authProviders,
       username: profile.username,
+      phone: profile.phone,
       updatedAt: DateTime.now().toUtc(),
     );
 

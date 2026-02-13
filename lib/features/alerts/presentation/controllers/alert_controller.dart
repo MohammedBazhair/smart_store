@@ -1,8 +1,8 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
-import '../../../../shared/providers/repositories_provider.dart';
 import '../../../products/domain/product.dart';
 import '../../domain/alert.dart';
 import 'alert_provider.dart';

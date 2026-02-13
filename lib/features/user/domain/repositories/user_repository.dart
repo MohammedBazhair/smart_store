@@ -10,5 +10,4 @@ abstract interface class UserRepository {
   Future<ProfileEntity> getProfile(GetProfileParams params);
 
   Future<void> updateProfile(ProfileEntity profile);
-
 }
