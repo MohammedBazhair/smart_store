@@ -5,14 +5,11 @@ class AppConstants {
   AppConstants._();
   // Database
   static const String databaseName = 'SmartStore1.1.db';
-  static const int databaseVersion =1;
+  static const int databaseVersion = 1;
 
   // Currency
-  static const  defaultCurrency = Currency.YER;
-  static const  defaultExchangeRate = 400.0; // 1 SAR = 300 YER
-
-  // Barcode Types
-  static const List<String> supportedBarcodeTypes = ['EAN-13', 'UPC'];
+  static const defaultCurrency = Currency.YER;
+  static const defaultExchangeRate = 400.0; // 1 SAR = 300 YER
 
   // Notification IDs
   static const int notificationIdExpired = 1000;
@@ -21,4 +18,10 @@ class AppConstants {
   static const int notificationId1Day = 1003;
 
   static const String fontFamily = 'cairo';
+
+  static const String lastUserIdKey = 'last_user_id';
+
+  static const String profilesTable = 'profiles';
+
+  static const String profileUserKey = 'profile_user';
 }

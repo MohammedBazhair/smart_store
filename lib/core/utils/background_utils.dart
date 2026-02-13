@@ -1,17 +1,13 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../errors/result.dart';
 import '../../features/alerts/data/alert_background_params.dart';
-import '../../features/alerts/data/alert_repository_impl.dart';
 import '../../features/alerts/domain/alert.dart';
-import '../../features/alerts/presentation/controllers/alert_controller.dart';
-import '../../features/alerts/presentation/controllers/alert_service.dart';
-import '../../features/alerts/presentation/controllers/notification_service.dart';
-import '../../features/products/data/product_repository_impl.dart';
+import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../features/products/domain/product.dart';
-import '../../features/settings/data/settings_repository_impl.dart';
+import '../../shared/providers/repositories_provider.dart';
 import 'date_utils.dart';
-import 'result.dart';
 
 class BackgroundUtils {
   factory BackgroundUtils() => _instance ??= BackgroundUtils._();
@@ -19,9 +15,12 @@ class BackgroundUtils {
 
   static BackgroundUtils? _instance;
 
-  Future<Result<int>> addAlertInBackground(AlertBackgroundParams params) {
+  Future<Result<int>> addAlertInBackground(
+    ProviderContainer container,
+    AlertBackgroundParams params,
+  ) {
     final product = params.product;
-    final repository = AlertRepositoryImpl();
+    final repository = container.read(alertRepositoryProvider);
     final alert = Alert(
       productId: product.id!,
       daysBeforeExpiry: params.daysBeforeExpire,
@@ -34,19 +33,14 @@ class BackgroundUtils {
     return repository.addAlert(alert);
   }
 
-  Future<void> dailyExpiryCheck() async {
-    final repository = ProductRepositoryImpl();
+  Future<void> dailyExpiryCheck(ProviderContainer container) async {
+    final repository = container.read(productRepositoryProvider);
 
     final result = await repository.getNearExpiryProducts(30);
 
     if (result is! SuccessState<List<Product>>) return;
-    final prefs = await SharedPreferences.getInstance();
-    final settingsRepo = SettingsRepositoryImpl(prefs);
-    final alertController = AlertController();
-    final notifications = NotificationService.instance;
 
-    final alertService =
-        AlertService(settingsRepo, alertController, notifications);
+    final alertService = container.read(alertServiceProvider);
 
     final products = result.data;
 

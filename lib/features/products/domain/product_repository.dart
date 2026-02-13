@@ -1,4 +1,4 @@
-import '../../../core/utils/result.dart';
+import '../../../errors/result.dart';
 import 'product.dart';
 
 /// واجهة مستودع المنتجات

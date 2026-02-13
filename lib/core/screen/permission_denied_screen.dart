@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../errors/result.dart';
 import '../../features/dashboard/presentation/screen/dashboard_screen.dart';
 import '../../shared/presentation/theme/app_theme.dart';
 import '../extensions/extensions.dart';
 import '../utils/permissions.dart';
-import '../utils/result.dart';
 
 class PermissionDeniedScreen extends StatelessWidget {
   const PermissionDeniedScreen({super.key});

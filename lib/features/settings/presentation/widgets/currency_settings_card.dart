@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/utils/result.dart';
+import '../../../../errors/result.dart';
 import '../../../../shared/presentation/widgets/common/conditional_builder.dart';
 import '../../../../shared/presentation/widgets/common/loading_widget.dart';
 import '../../domain/settings.dart';

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/utils/result.dart';
+import '../../../../errors/result.dart';
 import '../../../../shared/providers/ui_providers.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../domain/product.dart';

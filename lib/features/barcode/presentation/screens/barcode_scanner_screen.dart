@@ -5,7 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/utils/result.dart';
+import '../../../../errors/result.dart';
 import '../../../../shared/providers/ui_providers.dart';
 import '../../../products/presentation/screens/add_product_screen.dart';
 import '../../domain/barcode_scan_result.dart';

@@ -36,13 +36,14 @@ class DatabaseHelper {
       CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        quantity INTEGER,
-        barcode TEXT UNIQUE ,
-        expiry_date TEXT,
+        quantity INTEGER NULL,
+        barcode TEXT NULL UNIQUE,
+        expiry_date TEXT NULL,
         category TEXT NOT NULL,
         price REAL NOT NULL,
         currency TEXT NOT NULL,
         notes TEXT,
+        account_status TEXT NOT NULL,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )

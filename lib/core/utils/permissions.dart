@@ -2,7 +2,7 @@ import 'package:app_settings/app_settings.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'result.dart';
+import '../../errors/result.dart';
 
 class PermissionsService {
   static Future<Result<bool>> requestCamera() async {

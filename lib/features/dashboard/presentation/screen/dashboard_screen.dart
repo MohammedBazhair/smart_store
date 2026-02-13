@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/screen/permission_denied_screen.dart';
 import '../../../../core/utils/permissions.dart';
-import '../../../../core/utils/result.dart';
+import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../alerts/presentation/controllers/notification_cache.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';

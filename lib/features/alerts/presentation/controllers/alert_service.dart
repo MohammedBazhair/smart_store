@@ -3,7 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
-import '../../../../core/utils/result.dart';
+import '../../../../errors/result.dart';
 import '../../../../main.dart';
 import '../../../products/data/product_model.dart';
 import '../../../products/data/product_repository_impl.dart';

@@ -50,3 +50,9 @@ extension Number on double {
   String  formatDouble() =>
       this == truncateToDouble() ? toStringAsFixed(0) : toString();
 }
+
+
+
+extension FilesSizes on num {
+  double get bytesToMb => this / (1024 * 1024);
+}

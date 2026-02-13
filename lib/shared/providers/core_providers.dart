@@ -1,0 +1,128 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../../features/user/data/datasources/user_local_data_source.dart';
+import '../../../features/user/data/datasources/user_remote_data_source.dart';
+import '../../../features/user/data/repositories/user_repository_impl.dart';
+import '../../../features/user/presentation/controllers/user_controller.dart';
+import '../../../features/user/presentation/controllers/user_state.dart';
+import '../../core/database/local/cache_service.dart';
+import '../../core/database/remote/remote_database_service.dart';
+import '../../core/network/connectivity_service.dart';
+import '../../core/network/network_clinet.dart';
+import 'repositories_provider.dart';
+
+final networkProvider = Provider((_) {
+  return ConnectivityServiceImpl(InternetConnection());
+});
+
+final supabaseProvider = Provider((ref) {
+  return Supabase.instance;
+});
+
+final supabaseAuthProvider = Provider((ref) {
+  final auth = ref.read(supabaseProvider).client.auth;
+  return auth;
+});
+
+final httpClinetProvider = Provider((ref) {
+  return http.Client();
+});
+
+final networkCilientProvider = Provider((ref) {
+  final clinet = ref.read(httpClinetProvider);
+
+  return NetworkClientImpl(clinet);
+});
+
+final authRemoteDataSourceProvider = Provider((ref) {
+  final auth = ref.read(supabaseAuthProvider);
+  final userRemote = ref.read(userRemoteDataSourceProvider);
+  return AuthRemoteDataSourceImpl(auth, userRemote);
+});
+
+final userLocalDataSourceProvider = Provider((ref) {
+  final localCache = ref.read(localCacheServiceProvider);
+  return UserLocalDataSourceImpl(localCache);
+});
+
+final userRepositoryProvider = Provider((ref) {
+  final auth = ref.read(supabaseAuthProvider);
+  final userRemoteDataSource = ref.read(userRemoteDataSourceProvider);
+  final userLocalDataSource = ref.read(userLocalDataSourceProvider);
+
+  return UserRepositoryImpl(userRemoteDataSource, userLocalDataSource, auth);
+});
+
+final remoteDatabaseServiceProvider = Provider((ref) {
+  final supabaseClinet = ref.read(supabaseProvider).client;
+  return RemoteDatabaseServiceImpl(supabaseClinet);
+});
+
+final localCacheServiceProvider = Provider((ref) {
+  final prefs = ref.read(sharedPreferencesProvider);
+  return LocalCacheServiceImpl(prefs);
+});
+
+final userRemoteDataSourceProvider = Provider((ref) {
+  final supabaseClinet = ref.read(supabaseProvider).client;
+  final remoteDatabaseService = ref.read(remoteDatabaseServiceProvider);
+  final localCacheService = ref.read(localCacheServiceProvider);
+  return UserRemoteDataSourceImpl(
+    supabaseClinet,
+    remoteDatabaseService,
+    localCacheService,
+  );
+});
+
+final _userControllerProvider = Provider((ref) {
+  final repo = ref.read(userRepositoryProvider);
+  return UserController(repo);
+});
+
+final userControllerProvider = StateNotifierProvider<UserController, UserState>(
+  (ref) {
+    final controller = ref.read(_userControllerProvider);
+    return controller;
+  },
+);
+
+final authRepositoryProvider = Provider((ref) {
+  final remoteAuth = ref.read(authRemoteDataSourceProvider);
+  final network = ref.read(networkProvider);
+  final localCacheService = ref.read(localCacheServiceProvider);
+  return AuthRepositoryImpl(remoteAuth, network, localCacheService);
+});
+
+final authControllerProvider = Provider((ref) {
+  final authRepo = ref.read(authRepositoryProvider);
+  return AuthController(authRepo);
+});
+
+final tokenRefreshProvider = Provider((ref) {
+  final network = ref.watch(networkProvider);
+  final supabase = ref.watch(supabaseAuthProvider);
+  // استمع لتغييرات الاتصال
+  final subscription = network.listenToConnectionChanges((status) async {
+    if (status == InternetStatus.connected) {
+      try {
+        // جدد التوكن فقط عند الاتصال الأول
+        final session = supabase.currentSession;
+        if (session == null || session.isExpired) {
+          await supabase.refreshSession();
+        }
+      } catch (e) {
+        debugPrint('Failed to refresh token: $e');
+      }
+    }
+  });
+
+  ref.onDispose(subscription.cancel);
+});
+

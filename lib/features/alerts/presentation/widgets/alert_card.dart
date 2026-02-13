@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/utils/result.dart';
+import '../../../../errors/result.dart';
 import '../../../../shared/presentation/theme/app_theme.dart';
 import '../../../../shared/providers/repositories_provider.dart';
 import '../../../products/domain/product.dart';

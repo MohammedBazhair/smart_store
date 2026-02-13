@@ -1,5 +1,5 @@
 import '../../../core/data/database_helper.dart';
-import '../../../core/utils/result.dart';
+import '../../../errors/result.dart';
 import '../domain/alert.dart';
 import '../domain/alert_repository.dart';
 import 'alert_model.dart';
@@ -70,6 +70,7 @@ class AlertRepositoryImpl implements AlertRepository {
     }
   }
 
+  @override
   Future<bool> isAlertDuplicated({
     required int productId,
     required DateTime expiryDate,

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/utils/result.dart';
+import '../../../../errors/result.dart';
 import '../../../../shared/providers/repositories_provider.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../domain/product.dart';

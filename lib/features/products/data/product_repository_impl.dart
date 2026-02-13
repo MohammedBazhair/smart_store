@@ -1,6 +1,6 @@
 import '../../../core/data/database_helper.dart';
-import '../../../core/errors/exceptions.dart';
-import '../../../core/utils/result.dart';
+import '../../../errors/exceptions.dart';
+import '../../../errors/result.dart';
 import '../domain/product.dart';
 import '../domain/product_repository.dart';
 import 'product_model.dart';

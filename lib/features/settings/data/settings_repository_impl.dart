@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/utils/result.dart';
+import '../../../errors/result.dart';
 import '../domain/settings.dart';
 import '../domain/settings_repository.dart';
 import 'settings_model.dart';
