@@ -19,7 +19,7 @@ import '../widgets/form_fields/product_name_field.dart';
 import '../widgets/form_fields/product_notes_field.dart';
 import '../widgets/form_fields/product_price_field.dart';
 import '../widgets/form_fields/product_quantity_field.dart';
-import '../widgets/pick_date/show_expiry_date.dart';
+import '../widgets/pick_date/show_expiry_date_picker.dart';
 import '../widgets/save_product_button.dart';
 
 /// شاشة إضافة منتج جديد
@@ -121,14 +121,16 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   Future<void> _selectDate() async {
     final date = DateTime.tryParse(_expiryDateController.text);
-    final picked = await showExpiryDatePicker(
-      context,
-      date,
-    );
+    ref.read(expiryDateControllerProvider.notifier).setDate(date);
+
+    await showExpiryDatePicker(context, ref);
+    final picked = ref.watch(expiryDateControllerProvider).selectedDate;
 
     _expiryDateController.text = picked != null
         ? DateFormat('yyyy-MM-dd').format(picked)
         : _expiryDateController.text;
+
+        ref.read(expiryDateControllerProvider.notifier).reset();
   }
 
   Future<void> _scanBarcode() async {

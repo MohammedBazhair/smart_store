@@ -56,7 +56,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       authProviders: profile.authProviders,
       username: profile.username,
       phone: profile.phone,
-      updatedAt: DateTime.now().toUtc(),
+      updatedAt: DateTime.now(),
     );
 
     await _remoteDatabase.update(

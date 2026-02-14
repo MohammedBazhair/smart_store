@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
+import '../../domain/expiry_date_picker.dart';
 import '../../domain/product.dart';
 import '../../domain/product_details.dart';
 import '../../domain/product_query.dart';
+import 'expiry_date_controller.dart';
 
 /// Provider للحصول على جميع المنتجات
 final productsProvider = FutureProvider<List<Product>>((ref) async {
@@ -21,7 +23,8 @@ final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
   (ref) => ProductQuery(),
 );
 
-final searchFilterProductsProvider = FutureProvider.autoDispose<List<Product>>((ref) async {
+final searchFilterProductsProvider =
+    FutureProvider.autoDispose<List<Product>>((ref) async {
   final query = ref.watch(productQueryProvider);
   if (!query.hasQuery) return [];
 
@@ -71,3 +74,8 @@ final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {
 });
 
 final currentProductProvider = StateProvider<Product?>((ref) => null);
+
+final expiryDateControllerProvider =
+    StateNotifierProvider<ExpiryDateController, ExpiryDatePicker>(
+  (ref) => ExpiryDateController(),
+);

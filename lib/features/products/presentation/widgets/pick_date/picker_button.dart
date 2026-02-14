@@ -1,40 +1,123 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../domain/expiry_date_picker.dart';
+import '../../controllers/product_provider.dart';
 
-class PickerButton extends StatelessWidget {
+class PickerButton extends ConsumerStatefulWidget {
   const PickerButton({
     super.key,
-    required this.label,
-    required this.onTap,
+    required this.type,
   });
 
-  final String label;
-  final VoidCallback onTap;
+  final ExpiryDatePickerType type;
+
+  @override
+  ConsumerState<PickerButton> createState() => _PickerButtonState();
+}
+
+class _PickerButtonState extends ConsumerState<PickerButton> {
+  late FixedExtentScrollController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialIndex = ref.read(
+      expiryDateControllerProvider
+          .select((s) => s.getInitialIndex(widget.type)),
+    );
+    _controller = FixedExtentScrollController(initialItem: initialIndex);
+
+    // Ensure it's centered even if initialItem had a glitch on first load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_controller.hasClients && _controller.selectedItem != initialIndex) {
+        _controller.animateToItem(
+          initialIndex,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          splashColor: AppTheme.primaryColor.withOpacity(0.1),
-          child: Container(
-            height: 56,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 18),
-            ),
+    // Watch for range changes (like number of days in month)
+    final items = ref.watch(
+      expiryDateControllerProvider.select((s) => s.getRange(widget.type)),
+    );
+
+    // Watch for selected value changes to update colors
+    final selectedValue = ref.watch(
+      expiryDateControllerProvider
+          .select((s) => s.getDefaultValue(widget.type)),
+    );
+
+    // Sync external state changes (like month changing the day)
+    ref.listen(
+      expiryDateControllerProvider
+          .select((s) => s.getInitialIndex(widget.type)),
+      (previous, next) {
+        if (next != _controller.selectedItem && _controller.hasClients) {
+          _controller.animateToItem(
+            next,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      },
+    );
+
+    return Column(
+      spacing: 12,
+      children: [
+        Text(
+          widget.type.label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
         ),
-      ),
+        Expanded(
+          child: ListWheelScrollView(
+            itemExtent: 30,
+            useMagnifier: true,
+            magnification: 1.2,
+            controller: _controller,
+            physics: const FixedExtentScrollPhysics(),
+            onSelectedItemChanged: (index) {
+              if (index < items.length) {
+                ref
+                    .read(expiryDateControllerProvider.notifier)
+                    .changeDate(widget.type, items[index]);
+              }
+            },
+            children: items
+                .map(
+                  (value) => Text(
+                    '$value',
+                    style: TextStyle(
+                      color: value == selectedValue
+                          ? Colors.black
+                          : AppTheme.textSecondary,
+                      fontWeight: value == selectedValue
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      fontSize: 18,
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
     );
   }
 }

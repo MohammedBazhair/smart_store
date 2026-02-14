@@ -2,19 +2,24 @@
 enum Role {
   /// The app developer or platform owner
   /// Can add store owners and manage the platform
-  systemAdmin,
+  systemAdmin(label: 'مدير النظام'),
 
   /// The merchant who owns a store
   /// Can manage products and assign workers
-  storeOwner,
+  storeOwner(label: 'صاحب المتجر'),
 
   /// The assistant or staff of a store
   /// Can only update the expiry date of products
   /// Can explore products
-  worker,
+  worker(label: 'موظف'),
 
 // when user signup first time
-  guest;
+  guest(label: 'زائر');
+
+  final String label;
+
+  // ignore: sort_constructors_first
+  const Role({required this.label});
 
   static Role fromString(String role) {
     return Role.values.byName(role);

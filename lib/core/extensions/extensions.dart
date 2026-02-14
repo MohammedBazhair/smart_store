@@ -47,12 +47,30 @@ extension RoutesNavigators on BuildContext {
 }
 
 extension Number on double {
-  String  formatDouble() =>
+  String formatDouble() =>
       this == truncateToDouble() ? toStringAsFixed(0) : toString();
 }
 
-
-
 extension FilesSizes on num {
   double get bytesToMb => this / (1024 * 1024);
+}
+
+extension DateFormating on DateTime {
+  String get formattedDate {
+    final months = [
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
+    ];
+    return '$day ${months[month - 1]} $year';
+  }
 }
