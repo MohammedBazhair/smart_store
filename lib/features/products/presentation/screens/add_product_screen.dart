@@ -8,8 +8,9 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
-import '../../domain/product.dart';
-import '../../domain/product_details.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/entities/seller_product.dart';
+import '../../domain/entities/product_details.dart';
 import '../controllers/product_controller.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/form_fields/product_barcode_field.dart';
@@ -31,7 +32,7 @@ class AddProductScreen extends ConsumerStatefulWidget {
     this.detailsType,
   });
   final String? barcode;
-  final Product? product;
+  final SellerProduct? product;
   final ProductDetailsType? detailsType;
 
   @override
@@ -47,7 +48,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   final _notesController = TextEditingController();
   final _expiryDateController = TextEditingController();
 
-  ProductCategory _selectedCategory = ProductCategory.others;
+  Category _selectedCategory = Category.undefined();
   Currency _selectedCurrency = Currency.YER;
 
   bool get isEditingProduct => widget.product != null;
@@ -79,7 +80,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
     _nameController.text = product.name;
     _quantityController.text = product.quantity?.toString() ?? '';
-    _priceController.text = product.price.formatDouble();
+    _priceController.text = product.price.toString();
     _notesController.text = product.notes ?? '';
     _barcodeController.text = product.barcode ?? '';
 
@@ -101,10 +102,10 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     });
   }
 
-  Product _buildProductFromFields({Product? oldProduct}) {
+  SellerProduct _buildProductFromFields({SellerProduct? oldProduct}) {
     final now = DateTime.now();
 
-    return Product(
+    return SellerProduct(
       id: oldProduct?.id,
       name: _nameController.text.trim(),
       quantity: int.tryParse(_quantityController.text),
@@ -130,7 +131,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
         ? DateFormat('yyyy-MM-dd').format(picked)
         : _expiryDateController.text;
 
-        ref.read(expiryDateControllerProvider.notifier).reset();
+    ref.read(expiryDateControllerProvider.notifier).reset();
   }
 
   Future<void> _scanBarcode() async {

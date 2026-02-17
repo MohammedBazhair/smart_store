@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../products/domain/product.dart';
+import '../../../../products/domain/entities/seller_product.dart';
 
 class AnimatedPrice extends StatefulWidget {
   const AnimatedPrice(this.product, {super.key});
 
-  final Product product;
+  final SellerProduct product;
 
   @override
   State<AnimatedPrice> createState() => _AnimatedPriceState();
@@ -81,7 +80,7 @@ class _AnimatedPriceState extends State<AnimatedPrice>
                 child: Column(
                   children: [
                     Text(
-                      widget.product.price.formatDouble(),
+                      widget.product.price.toString(),
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             fontWeight: FontWeight.w800,
                             color: AppTheme.primaryColor,

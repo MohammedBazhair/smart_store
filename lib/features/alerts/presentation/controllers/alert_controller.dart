@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
-import '../../../products/domain/product.dart';
+import '../../../products/domain/entities/seller_product.dart';
 import '../../domain/alert.dart';
 import 'alert_provider.dart';
 
@@ -13,7 +13,7 @@ class AlertController extends Notifier<void> {
 
   /// إضافة تنبيه
   Future<Result<int>> addAlert({
-    required Product product,
+    required SellerProduct product,
     required int daysBeforeExpiry,
     required Priority importance,
   }) async {

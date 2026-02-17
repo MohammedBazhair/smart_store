@@ -15,6 +15,17 @@ abstract interface class LocalDatabaseService {
     required String table,
   });
 
+  Future<List<Map<String, dynamic>>> rawQuery({
+    required String query,
+    List<Object?>? arguments,
+  });
+
+  Future<List<Map<String, dynamic>>> readWhereArguments({
+    required String table,
+    String? where,
+    List<Object?>? whereArgs,
+  });
+
   Future<List<Map<String, dynamic>>> readRowsWhere({
     required String table,
     required Map<String, Object> filters,
@@ -26,7 +37,7 @@ abstract interface class LocalDatabaseService {
 
   Future<int> update({
     required Map<String, dynamic> updated,
-    required String id,
+    required Object? id,
     required String column,
     required String table,
   });
@@ -80,7 +91,7 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
   @override
   Future<int> update({
     required Map<String, dynamic> updated,
-    required String id,
+    required Object? id,
     required String column,
     required String table,
   }) {
@@ -107,9 +118,8 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     required String table,
     required Map<String, Object> filters,
   }) {
-    final whereClause = filters.entries
-        .map((e) => '${e.key} = ?')
-        .join(' AND ');
+    final whereClause =
+        filters.entries.map((e) => '${e.key} = ?').join(' AND ');
 
     return _database.delete(
       table,
@@ -129,9 +139,8 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     required String table,
     required Map<String, Object> filters,
   }) {
-    final whereClause = filters.entries
-        .map((e) => '${e.key} = ?')
-        .join(' AND ');
+    final whereClause =
+        filters.entries.map((e) => '${e.key} = ?').join(' AND ');
     return _database.rawQuery('SELECET * FROM $table WHERE $whereClause', []);
   }
 
@@ -147,5 +156,27 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     }
 
     await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> readWhereArguments({
+    required String table,
+    String? where,
+    List<Object?>? whereArgs,
+  }) async {
+    final result = await _database.query(
+      table,
+      where: where,
+      whereArgs: whereArgs,
+    );
+    return result;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> rawQuery({
+    required String query,
+    List<Object?>? arguments,
+  }) {
+    return _database.rawQuery(query, arguments);
   }
 }

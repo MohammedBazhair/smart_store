@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
-import '../../../domain/product.dart';
-import '../../../domain/product_details.dart';
+import '../../../domain/entities/seller_product.dart';
+import '../../../domain/entities/product_details.dart';
 import 'product_info_card.dart';
 
 class ProductInfoSection extends StatelessWidget {
   const ProductInfoSection({super.key, required this.product});
-  final Product product;
+  final SellerProduct product;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +28,7 @@ class ProductInfoSection extends StatelessWidget {
               child: BaseProductInfoCard(
                 icon: Icons.attach_money,
                 label: 'السعر',
-                value: product.price.formatDouble(),
+                value: product.price.toString(),
                 secondaryValue: product.currency.label,
                 detailsType: ProductDetailsType.price,
                 iconColor: const Color(0xFF0FA4AF),
@@ -53,7 +52,7 @@ class ProductInfoSection extends StatelessWidget {
               child: ProductInfoCard(
                 icon: Icons.category,
                 label: 'الفئة',
-                value: product.category.label,
+                value: product.category.name,
                 detailsType: ProductDetailsType.category,
                 iconColor: const Color(0xFF0FA4AF),
               ),

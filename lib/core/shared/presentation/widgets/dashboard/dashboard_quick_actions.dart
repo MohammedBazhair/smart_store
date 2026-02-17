@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../alerts/presentation/controllers/alert_provider.dart';
-import '../../../alerts/presentation/screens/alerts_screen.dart';
-import '../../../products/presentation/screens/add_product_screen.dart';
+
+import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
+import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
+import '../../../../../features/products/presentation/screens/add_product_screen.dart';
+import '../../../../extensions/extensions.dart';
+import '../../theme/app_theme.dart';
 import 'dashboard_quick_action_card.dart';
 
 class DashboardQuickActions extends StatelessWidget {

@@ -5,12 +5,12 @@ import '../../../../../core/constants/enums.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../errors/result.dart';
-import '../../../domain/product.dart';
+import '../../../domain/entities/seller_product.dart';
 import '../../controllers/product_controller.dart';
 
 class DeleteProductDialog extends ConsumerWidget {
   const DeleteProductDialog({super.key, required this.product});
-  final Product product;
+  final SellerProduct product;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,8 +35,10 @@ class DeleteProductDialog extends ConsumerWidget {
             Navigator.pop(context);
 
             result is SuccessState
-                ? context.showSnakbar('تم الحذف بنجاح',type: SnackBarType.success)
-                : context.showSnakbar((result as ErrorState).message,type: SnackBarType.error);
+                ? context.showSnakbar('تم الحذف بنجاح',
+                    type: SnackBarType.success)
+                : context.showSnakbar((result as ErrorState).message,
+                    type: SnackBarType.error);
 
             if (result is SuccessState) Navigator.pop(context);
           },

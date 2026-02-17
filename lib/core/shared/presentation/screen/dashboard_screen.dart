@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/extensions/extensions.dart';
-import '../../../../core/screen/permission_denied_screen.dart';
-import '../../../../core/utils/permissions.dart';
 import '../../../../errors/result.dart';
-import '../../../alerts/presentation/controllers/alert_provider.dart';
-import '../../../alerts/presentation/controllers/notification_cache.dart';
-import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
-import '../../../products/presentation/controllers/product_provider.dart';
-import '../../../products/presentation/screens/product_details_screen.dart';
-import '../../../settings/presentation/screens/settings_screen.dart';
-import '../widgets/dashboard_near_expiry_section.dart';
-import '../widgets/dashboard_quick_actions.dart';
-import '../widgets/dashboard_stats_grid.dart';
+import '../../../../features/alerts/presentation/controllers/alert_provider.dart';
+import '../../../../features/alerts/presentation/controllers/notification_cache.dart';
+import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
+import '../../../../features/products/presentation/controllers/product_provider.dart';
+import '../../../../features/products/presentation/screens/product_details_screen.dart';
+import '../../../../features/settings/presentation/screens/settings_screen.dart';
+import '../../../extensions/extensions.dart';
+import '../../../utils/permissions.dart';
+import '../widgets/dashboard/dashboard_near_expiry_section.dart';
+import '../widgets/dashboard/dashboard_quick_actions.dart';
+import '../widgets/dashboard/dashboard_stats_grid.dart';
+import 'permission_denied_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

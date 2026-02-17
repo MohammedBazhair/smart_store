@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../domain/expiry_date_picker.dart';
+import '../../../domain/entities/expiry_date_picker.dart';
 import '../../controllers/product_provider.dart';
 
 class PickerButton extends ConsumerStatefulWidget {

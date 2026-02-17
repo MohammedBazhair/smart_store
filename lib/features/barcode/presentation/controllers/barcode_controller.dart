@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
-import '../../../products/domain/product.dart';
+import '../../../products/domain/entities/seller_product.dart';
 import '../../domain/barcode_scan_result.dart';
 
 /// Controller لإدارة مسح الباركود
@@ -16,9 +16,9 @@ class BarcodeController extends Notifier<void> {
 
     // التحقق من وجود المنتج
     final productResult = await productRepo.getProductByBarcode(barcode);
-    Product? product;
+    SellerProduct? product;
 
-    if (productResult is SuccessState<Product?>) {
+    if (productResult is SuccessState<SellerProduct?>) {
       product = productResult.data;
     }
 

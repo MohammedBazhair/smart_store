@@ -5,15 +5,15 @@ class NotificationCache {
   static const _key = 'pending_notification_payload';
 
   /// save product id
-  static Future<void> save(int payload) async {
+  static Future<void> save(String payload) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setInt(_key, payload);
+    await prefs.setString(_key, payload);
   }
 
-  static Future<int?> read() async {
+  static Future<String?> read() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(_key);
+    return prefs.getString(_key);
   }
 
   static Future<void> clear() async {

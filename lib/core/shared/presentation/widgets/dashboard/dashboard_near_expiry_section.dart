@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../core/shared/presentation/widgets/common/error_widget.dart';
-import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
-import '../../../products/presentation/controllers/product_provider.dart';
-import '../../../products/presentation/screens/product_details_screen.dart';
-import '../../../products/presentation/screens/products_screen.dart';
+import '../../../../../features/products/presentation/controllers/product_provider.dart';
+import '../../../../../features/products/presentation/screens/product_details_screen.dart';
+import '../../../../../features/products/presentation/screens/products_screen.dart';
+import '../../../../extensions/extensions.dart';
+import '../../theme/app_theme.dart';
+import '../common/error_widget.dart';
+import '../common/loading_widget.dart';
 
 class DashboardNearExpirySection extends ConsumerWidget {
   const DashboardNearExpirySection({super.key});
@@ -64,7 +64,7 @@ class DashboardNearExpirySection extends ConsumerWidget {
                     Icons.warning,
                     color: AppTheme.nearExpiryColor,
                   ),
-                  title: Text(product.name),
+                  title: Text(product.globalProduct.name),
                   subtitle: product.expiryDate == null
                       ? null
                       : Text(

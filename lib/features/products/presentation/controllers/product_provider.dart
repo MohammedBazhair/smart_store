@@ -3,17 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
-import '../../domain/expiry_date_picker.dart';
-import '../../domain/product.dart';
-import '../../domain/product_details.dart';
-import '../../domain/product_query.dart';
+import '../../domain/entities/expiry_date_picker.dart';
+import '../../domain/entities/seller_product.dart';
+import '../../domain/entities/product_details.dart';
+import '../../domain/entities/product_query.dart';
 import 'expiry_date_controller.dart';
 
 /// Provider للحصول على جميع المنتجات
-final productsProvider = FutureProvider<List<Product>>((ref) async {
+final productsProvider = FutureProvider<List<SellerProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
   final result = await repository.getAllProducts();
-  if (result is SuccessState<List<Product>>) {
+  if (result is SuccessState<List<SellerProduct>>) {
     return result.data;
   }
   return [];
@@ -24,7 +24,7 @@ final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
 );
 
 final searchFilterProductsProvider =
-    FutureProvider.autoDispose<List<Product>>((ref) async {
+    FutureProvider.autoDispose<List<SellerProduct>>((ref) async {
   final query = ref.watch(productQueryProvider);
   if (!query.hasQuery) return [];
 
@@ -34,7 +34,7 @@ final searchFilterProductsProvider =
       ? await repository.searchProducts(query.search)
       : await repository.getAllProducts();
 
-  if (result is! SuccessState<List<Product>>) return [];
+  if (result is! SuccessState<List<SellerProduct>>) return [];
 
   final products = result.data;
 
@@ -44,20 +44,22 @@ final searchFilterProductsProvider =
 });
 
 /// Provider للمنتجات المنتهية
-final expiredProductsProvider = FutureProvider<List<Product>>((ref) async {
+final expiredProductsProvider =
+    FutureProvider<List<SellerProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
   final result = await repository.getExpiredProducts();
-  if (result is SuccessState<List<Product>>) {
+  if (result is SuccessState<List<SellerProduct>>) {
     return result.data;
   }
   return [];
 });
 
 /// Provider للمنتجات القريبة من الانتهاء
-final nearExpiryProductsProvider = FutureProvider<List<Product>>((ref) async {
+final nearExpiryProductsProvider =
+    FutureProvider<List<SellerProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
   final result = await repository.getNearExpiryProducts(30);
-  if (result is SuccessState<List<Product>>) {
+  if (result is SuccessState<List<SellerProduct>>) {
     return result.data;
   }
   return [];
@@ -73,7 +75,7 @@ final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {
   return map;
 });
 
-final currentProductProvider = StateProvider<Product?>((ref) => null);
+final currentProductProvider = StateProvider<SellerProduct?>((ref) => null);
 
 final expiryDateControllerProvider =
     StateNotifierProvider<ExpiryDateController, ExpiryDatePicker>(

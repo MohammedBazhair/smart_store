@@ -1,24 +1,24 @@
-import '../../../core/constants/enums.dart';
+import 'category.dart';
 
 class ProductQuery {
-  ProductQuery({this.search = '', this.category = ProductCategory.all});
+  ProductQuery({this.search = '', this.category});
 
   final String search;
-  final ProductCategory category;
+  final Category? category;
 
   bool get isSearching => search.trim().isNotEmpty;
-  bool get hasCategory => category != ProductCategory.all;
+  bool get hasCategory => category != null;
   bool get hasQuery => isSearching || hasCategory;
 
   String get uiNotFoundText {
     if (!hasQuery) return 'لا توجد منتجات متاحة حاليًا.';
 
     if (hasCategory && isSearching) {
-      return 'لم نتمكن من العثور على نتائج للبحث عن:\n"$search"\nضمن الفئة: (${category.label}).\nحاول تعديل كلمة البحث أو اختيار فئة أخرى.';
+      return 'لم نتمكن من العثور على نتائج للبحث عن:\n"$search"\nضمن الفئة: (${category!.name}).\nحاول تعديل كلمة البحث أو اختيار فئة أخرى.';
     }
 
     if (hasCategory) {
-      return 'لا توجد منتجات ضمن الفئة: \n( ${category.label} )\nجرب البحث في فئة أخرى';
+      return 'لا توجد منتجات ضمن الفئة: \n( ${category!.name} )\nجرب البحث في فئة أخرى';
     }
 
     if (isSearching) {
@@ -28,7 +28,7 @@ class ProductQuery {
     return 'لا توجد نتائج متاحة.';
   }
 
-  ProductQuery copyWith({String? search, ProductCategory? category}) {
+  ProductQuery copyWith({String? search, Category? category}) {
     return ProductQuery(
       search: search ?? this.search,
       category: category ?? this.category,

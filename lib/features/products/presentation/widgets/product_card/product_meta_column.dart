@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
-import '../../../domain/product.dart';
+import '../../../domain/entities/seller_product.dart';
 
 class ProductMetaColumn extends StatelessWidget {
   const ProductMetaColumn(this.product, {super.key});
 
-  final Product product;
+  final SellerProduct product;
 
   @override
   Widget build(BuildContext context) {

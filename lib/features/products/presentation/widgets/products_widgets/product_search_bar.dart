@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/product_query.dart';
+import '../../../domain/entities/product_query.dart';
 
 class ProductSearchBar extends StatelessWidget {
   const ProductSearchBar({

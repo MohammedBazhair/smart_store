@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/constants/enums.dart';
-import '../../../domain/product_details.dart';
+import '../../../domain/entities/product_details.dart';
 import '../../controllers/product_provider.dart';
 
 class ProductPriceField extends ConsumerWidget {

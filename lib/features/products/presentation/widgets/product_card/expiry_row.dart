@@ -3,7 +3,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
-import '../../../domain/product_expiry_status.dart';
+import '../../../domain/entities/product_expiry_status.dart';
 
 class ExpiryRow extends StatelessWidget {
   const ExpiryRow(this.date, this.status, {super.key});

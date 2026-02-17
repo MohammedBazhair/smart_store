@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
-import '../../../core/data/database_helper.dart';
+import '../../../core/database/local/database_helper.dart';
 
 import '../../../errors/result.dart';
 import '../domain/backup_repository.dart';

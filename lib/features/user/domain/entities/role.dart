@@ -1,9 +1,5 @@
 /// Enum for user roles in the app
 enum Role {
-  /// The app developer or platform owner
-  /// Can add store owners and manage the platform
-  systemAdmin(label: 'مدير النظام'),
-
   /// The merchant who owns a store
   /// Can manage products and assign workers
   storeOwner(label: 'صاحب المتجر'),

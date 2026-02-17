@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../products/domain/product.dart';
+import '../../../../products/domain/entities/seller_product.dart';
 import '../../../../settings/domain/settings.dart';
 import 'animated_price.dart';
 import 'converted_price_text.dart';
@@ -13,7 +13,7 @@ class ProductPriceContent extends StatelessWidget {
     required this.settings,
   });
 
-  final Product product;
+  final SellerProduct product;
   final Settings settings;
 
   bool get _shouldShowConvertedPrice =>
@@ -34,9 +34,9 @@ class ProductPriceContent extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-    
+
         const SizedBox(height: 12),
-    
+
         // اسم المنتج (ثانوي)
         Text(
           product.name,
@@ -45,11 +45,11 @@ class ProductPriceContent extends StatelessWidget {
             color: AppTheme.textSecondary,
           ),
         ),
-    
+
         const SizedBox(height: 24),
-    
+
         AnimatedPrice(product),
-    
+
         if (_shouldShowConvertedPrice)
           ConvertedPriceText(
             product: product,

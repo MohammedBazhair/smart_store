@@ -4,17 +4,16 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../domain/product.dart';
+import '../../domain/entities/seller_product.dart';
 import '../controllers/product_controller.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/product_details/delete_product_dialog.dart';
 import '../widgets/product_details/product_header_card.dart';
 import '../widgets/product_details/product_info_section.dart';
 
-
 class ProductDetailsScreen extends ConsumerWidget {
   const ProductDetailsScreen({super.key, required this.productId});
-  final int productId;
+  final String productId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,8 +55,8 @@ class ProductDetailsScreen extends ConsumerWidget {
       ),
       body: productAsync.when(
         data: (product) => ProductDetailsBody(product: product),
-        loading: () =>
-            Skeletonizer(child: ProductDetailsBody(product: Product.fake())),
+        loading: () => Skeletonizer(
+            child: ProductDetailsBody(product: SellerProduct.fake())),
         error: (_, __) => const Center(
           child: Text('حدث خطأ أثناء عرض المنتج'),
         ),
@@ -68,7 +67,7 @@ class ProductDetailsScreen extends ConsumerWidget {
 
 class ProductDetailsBody extends ConsumerWidget {
   const ProductDetailsBody({super.key, required this.product});
-  final Product? product;
+  final SellerProduct? product;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

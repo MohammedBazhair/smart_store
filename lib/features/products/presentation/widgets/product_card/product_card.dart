@@ -3,8 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../domain/product.dart';
-import '../../../domain/product_expiry_status.dart';
+import '../../../domain/entities/seller_product.dart';
+import '../../../domain/entities/product_expiry_status.dart';
 import '../../screens/product_details_screen.dart';
 import '../products_widgets/product_delete_dialog.dart';
 import 'product_meta_column.dart';
@@ -17,9 +17,9 @@ class AnimatedProductCard extends StatelessWidget {
     required this.product,
   });
 
-  final Product product;
+  final SellerProduct product;
 
-  Future<bool?> _showDeleteDialog(BuildContext context, Product product) {
+  Future<bool?> _showDeleteDialog(BuildContext context, SellerProduct product) {
     return showDialog<bool?>(
       context: context,
       builder: (_) => ProductDeleteDialog(
@@ -83,7 +83,7 @@ class AnimatedProductCardBody extends StatelessWidget {
     required this.product,
   });
 
-  final Product product;
+  final SellerProduct product;
   @override
   Widget build(BuildContext context) {
     final status = product.expiryDate == null
@@ -112,7 +112,7 @@ class AnimatedProductCardBody extends StatelessWidget {
                   color: AppTheme.textSecondary,
                 ),
                 Text(
-                  product.category.label,
+                  product.category.name,
                   maxLines: 1,
                   overflow: TextOverflow.fade,
                   style: Theme.of(context).textTheme.bodySmall,

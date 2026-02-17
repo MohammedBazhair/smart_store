@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/enums.dart';
+import '../../../domain/entities/category.dart';
 
 class ProductFilterDialog extends StatelessWidget {
   const ProductFilterDialog({
@@ -8,8 +8,8 @@ class ProductFilterDialog extends StatelessWidget {
     required this.initialCategory,
     required this.onApply,
   });
-  final ProductCategory? initialCategory;
-  final ValueChanged<ProductCategory?> onApply;
+  final Category? initialCategory;
+  final ValueChanged<Category?> onApply;
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +25,8 @@ class ProductFilterDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               
-              ...ProductCategory.values.map(
-                (category) => RadioListTile<ProductCategory?>(
+              ...Category.values.map(
+                (category) => RadioListTile<Category?>(
                   title: Text(category.label),
                   value: category,
                   groupValue: initialCategory,

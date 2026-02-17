@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../core/shared/presentation/widgets/common/stat_card.dart';
-import '../../../alerts/presentation/controllers/alert_provider.dart';
-import '../../../alerts/presentation/screens/alerts_screen.dart';
-import '../../../products/presentation/controllers/product_provider.dart';
-import '../../../products/presentation/screens/products_screen.dart';
+import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
+import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
+import '../../../../../features/products/presentation/controllers/product_provider.dart';
+import '../../../../../features/products/presentation/screens/products_screen.dart';
+import '../../../../extensions/extensions.dart';
+import '../../theme/app_theme.dart';
+import '../common/stat_card.dart';
 
 class DashboardStatsGrid extends StatelessWidget {
   const DashboardStatsGrid({

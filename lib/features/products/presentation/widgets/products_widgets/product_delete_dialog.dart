@@ -5,7 +5,7 @@ import '../../../../../core/constants/enums.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../errors/result.dart';
-import '../../../domain/product.dart';
+import '../../../domain/entities/seller_product.dart';
 import '../../controllers/product_controller.dart';
 import '../../controllers/product_provider.dart';
 
@@ -14,7 +14,7 @@ class ProductDeleteDialog extends ConsumerWidget {
     super.key,
     required this.product,
   });
-  final Product product;
+  final SellerProduct product;
 
   String get productName => product.name;
 
@@ -37,10 +37,10 @@ class ProductDeleteDialog extends ConsumerWidget {
             if (!context.mounted) return;
 
             if (result is SuccessState<void>) {
-              context.showSnakbar('تم الحذف بنجاح',type: SnackBarType.success);
+              context.showSnakbar('تم الحذف بنجاح', type: SnackBarType.success);
               ref.invalidate(productsProvider);
             } else if (result is ErrorState<void>) {
-              context.showSnakbar(result.message,type: SnackBarType.error);
+              context.showSnakbar(result.message, type: SnackBarType.error);
             }
             Navigator.pop(context, true);
           },

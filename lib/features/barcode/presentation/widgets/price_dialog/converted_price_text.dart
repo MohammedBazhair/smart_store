@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/enums.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../products/domain/product.dart';
+import '../../../../products/domain/entities/seller_product.dart';
 import '../../../../settings/domain/settings.dart';
 
 String convertCurrency({
-  required double price,
+  required num price,
   required Currency from,
   required Currency to,
   required double rate,
@@ -27,7 +27,7 @@ class ConvertedPriceText extends StatelessWidget {
     required this.settings,
   });
 
-  final Product product;
+  final SellerProduct product;
   final Settings settings;
 
   @override

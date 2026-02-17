@@ -1,4 +1,4 @@
-import '../../products/domain/product.dart';
+import '../../products/domain/entities/seller_product.dart';
 
 class BarcodeScanResult {
   BarcodeScanResult({
@@ -6,7 +6,7 @@ class BarcodeScanResult {
     this.product,
   });
   final String barcode;
-  final Product? product;
+  final SellerProduct? product;
 
   bool get hasPrice => product?.price != null;
 }

@@ -7,16 +7,19 @@ import 'package:workmanager/workmanager.dart';
 import '../../core/constants/enums.dart';
 import '../../core/utils/top_level_fuctions.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
+import 'core/database/local/database_helper.dart';
+import 'core/shared/providers/core_providers.dart';
 import 'core/shared/providers/repositories_provider.dart';
 
 Future<ProviderContainer> configureDependencies() async {
   await initializeDateFormatting('ar');
 
   final sharedPrefs = await SharedPreferences.getInstance();
-
+  final database = await DatabaseHelper.instance.database;
   final container = ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+      databaseProvider.overrideWithValue(database),
     ],
   );
 

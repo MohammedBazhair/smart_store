@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../constants/typedef.dart';
 
-
 abstract interface class RemoteDatabaseService {
+  SupabaseClient get client;
   Future<Map<String, dynamic>> insertRow({
     required Map<String, dynamic> map,
     required String table,
@@ -43,7 +43,6 @@ abstract interface class RemoteDatabaseService {
     required String table,
   });
 
-
   Future<void> delete({
     required String id,
     required String column,
@@ -67,6 +66,9 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
   RemoteDatabaseServiceImpl(this._client);
   final SupabaseClient _client;
 
+  @override
+  SupabaseClient get client => _client;
+  
   String _listToSelectColumns(List<String> columns) {
     return columns.join(', ');
   }
@@ -187,5 +189,4 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
       debugPrint(e.toString());
     }
   }
-  
 }

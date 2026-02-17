@@ -1,5 +1,4 @@
-
-import '../../products/data/product_model.dart';
+import '../../products/data/models/seller_product_model.dart';
 
 class AlertBackgroundParams {
   AlertBackgroundParams({
@@ -9,12 +8,13 @@ class AlertBackgroundParams {
 
   factory AlertBackgroundParams.fromMap(Map<String, dynamic> map) {
     return AlertBackgroundParams(
-      product: ProductModel.fromMap(map['product'] as Map<String, dynamic>),
+      product:
+          SellerProductModel.fromMap(map['product'] as Map<String, dynamic>),
       daysBeforeExpire: map['daysBeforeExpire'] as int,
     );
   }
 
-  final ProductModel product;
+  final SellerProductModel product;
   final int daysBeforeExpire;
 
   Map<String, dynamic> toMap() {

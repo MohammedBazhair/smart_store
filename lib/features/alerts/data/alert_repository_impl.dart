@@ -1,4 +1,4 @@
-import '../../../core/data/database_helper.dart';
+import '../../../core/database/local/database_helper.dart';
 import '../../../errors/result.dart';
 import '../domain/alert.dart';
 import '../domain/alert_repository.dart';

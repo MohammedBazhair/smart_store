@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../../../domain/product_expiry_status.dart';
+import '../../../domain/entities/product_expiry_status.dart';
 
 class StatusIcon extends StatelessWidget {
   const StatusIcon(this.status, {super.key});

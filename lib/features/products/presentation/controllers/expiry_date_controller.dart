@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/expiry_date_picker.dart';
+import '../../domain/entities/expiry_date_picker.dart';
 
 class ExpiryDateController extends StateNotifier<ExpiryDatePicker> {
   ExpiryDateController() : super(ExpiryDatePicker()) {

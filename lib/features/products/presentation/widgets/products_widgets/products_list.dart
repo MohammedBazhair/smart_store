@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../domain/product.dart';
+import '../../../domain/entities/seller_product.dart';
 import '../product_card/product_card.dart';
 
 class ProductsList extends StatelessWidget {
@@ -10,7 +10,7 @@ class ProductsList extends StatelessWidget {
     required this.onRefresh,
   });
 
-  final List<Product> products;
+  final List<SellerProduct> products;
   final Future<void> Function() onRefresh;
 
   @override

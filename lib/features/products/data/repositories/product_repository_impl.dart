@@ -1,78 +1,79 @@
-import '../../../core/data/database_helper.dart';
-import '../../../errors/exceptions.dart';
-import '../../../errors/result.dart';
-import '../domain/product.dart';
-import '../domain/product_repository.dart';
-import 'product_model.dart';
+import 'package:flutter/material.dart';
 
-/// تنفيذ مستودع المنتجات
+import '../../../../core/database/local/database_helper.dart';
+import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/database/remote/remote_database_service.dart';
+import '../../../../core/network/connectivity_service.dart';
+import '../../../../errors/exceptions.dart';
+import '../../../../errors/result.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/entities/seller_product.dart';
+import '../../domain/repositories/product_repository.dart';
+import '../datasource/product_local_data_source.dart';
+import '../datasource/product_remote_data_source.dart';
+import '../models/seller_product_model.dart';
+
 class ProductRepositoryImpl implements ProductRepository {
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  ProductRepositoryImpl(
+    this._localDatabase,
+    this._remoteDatabase,
+    this._connectivity,
+  );
+
+  final ConnectivityService _connectivity;
+  final ProductLocalDataSource _localDatabase;
+  final ProductRemoteDataSource _remoteDatabase;
 
   @override
-  Future<Result<List<Product>>> getAllProducts() async {
-    try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'products',
-        orderBy: 'created_at DESC',
-      );
-      final products = maps.map(ProductModel.fromMap).toList();
-      return SuccessState(products);
-    } catch (e) {
-      return ErrorState('فشل في جلب المنتجات: ${e.toString()}');
-    }
+  Future<Result<List<SellerProduct>>> getAllProducts(String sellerId) async {
+    final hasConnection = await _connectivity.hasConnection();
+
+    final products = hasConnection
+        ? await _remoteDatabase.getSellerProducts(sellerId)
+        : await _localDatabase.getAllProducts();
+
+    return products;
   }
 
   @override
-  Future<Result<Product>> getProductById(int id) async {
+  Future<Result<SellerProduct>> getProductById(String id) async {
     try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'products',
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-      if (maps.isEmpty) {
-        return const ErrorState('المنتج غير موجود');
+      if (await _connectivity.hasConnection()) {
+        final result = await _remoteDatabase.getProductById(id);
+        return result;
+      } else {
+        final result = await _localDatabase.getProductById(id);
+        return result;
       }
-      final product = ProductModel.fromMap(maps.first);
-      return SuccessState(product);
     } catch (e) {
       return const ErrorState('فشل في جلب المنتج');
     }
   }
 
   @override
-  Future<Result<Product?>> getProductByBarcode(String barcode) async {
-    try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'products',
-        where: 'barcode = ?',
-        whereArgs: [barcode],
-      );
-      if (maps.isEmpty) {
-        return const SuccessState(null);
-      }
-      final product = ProductModel.fromMap(maps.first);
-      return SuccessState(product);
-    } catch (e) {
-      return ErrorState('فشل في جلب المنتج: ${e.toString()}');
-    }
+  Future<SellerProduct?> getProductByBarcode(String barcode) async {
+    final hasConnection = await _connectivity.hasConnection();
+
+    final result = hasConnection
+        ? await _remoteDatabase.getProductByBarcode(barcode)
+        : await _localDatabase.getProductByBarcode(barcode);
+
+    return (result is SuccessState<SellerProduct?>) ? result.data : null;
   }
 
   @override
-  Future<Result<List<Product>>> searchProducts(String query) async {
+  Future<Result<List<SellerProduct>>> searchProducts(String query) async {
     try {
-      final db = await _dbHelper.database;
+
+      
+      final db = await ;
       final maps = await db.query(
         'products',
         where: 'LOWER(name) LIKE LOWER(?) OR LOWER(barcode) LIKE LOWER(?)',
         whereArgs: ['%$query%', '%$query%'],
         orderBy: 'created_at DESC',
       );
-      final products = maps.map(ProductModel.fromMap).toList();
+      final products = maps.map(SellerProductModel.fromMap).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState('فشل في البحث: ${e.toString()}');
@@ -80,7 +81,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<List<Product>>> filterProductsByCategory(
+  Future<Result<List<SellerProduct>>> filterProductsByCategory(
     String category,
   ) async {
     try {
@@ -91,7 +92,7 @@ class ProductRepositoryImpl implements ProductRepository {
         whereArgs: [category],
         orderBy: 'created_at DESC',
       );
-      final products = maps.map(ProductModel.fromMap).toList();
+      final products = maps.map(SellerProductModel.fromMap).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState('فشل في التصفية: ${e.toString()}');
@@ -99,7 +100,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<List<Product>>> getExpiredProducts() async {
+  Future<Result<List<SellerProduct>>> getExpiredProducts() async {
     try {
       final db = await _dbHelper.database;
       final now = DateTime.now().toIso8601String();
@@ -109,7 +110,7 @@ class ProductRepositoryImpl implements ProductRepository {
         whereArgs: [now],
         orderBy: 'expiry_date ASC',
       );
-      final products = maps.map(ProductModel.fromMap).toList();
+      final products = maps.map(SellerProductModel.fromMap).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(
@@ -119,7 +120,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<List<Product>>> getNearExpiryProducts(int days) async {
+  Future<Result<List<SellerProduct>>> getNearExpiryProducts(int days) async {
     try {
       final db = await _dbHelper.database;
       final now = DateTime.now();
@@ -130,7 +131,7 @@ class ProductRepositoryImpl implements ProductRepository {
         whereArgs: [threshold, now.toIso8601String()],
         orderBy: 'expiry_date ASC',
       );
-      final products = maps.map(ProductModel.fromMap).toList();
+      final products = maps.map(SellerProductModel.fromMap).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(
@@ -152,7 +153,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<int>> addProduct(Product product) async {
+  Future<Result<int>> addProduct(SellerProduct product) async {
     try {
       final barcode = product.barcode;
       if (barcode == null) throw ArgumentError();
@@ -162,7 +163,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       final db = await _dbHelper.database;
-      final model = ProductModel.fromEntity(product);
+      final model = SellerProductModel.fromEntity(product);
 
       final id = await db.insert('products', model.toMap());
       return SuccessState(id);
@@ -178,11 +179,11 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<void>> updateProduct(Product product) async {
+  Future<Result<void>> updateProduct(SellerProduct product) async {
     try {
       final db = await _dbHelper.database;
 
-      final model = ProductModel.fromEntity(product);
+      final model = SellerProductModel.fromEntity(product);
       await db.update(
         'products',
         model.toMap(),
@@ -219,5 +220,11 @@ class ProductRepositoryImpl implements ProductRepository {
     } catch (e) {
       return ErrorState('فشل في حذف جميع المنتجات: ${e.toString()}');
     }
+  }
+
+  @override
+  Future<Result<List<Category>>> getAllCategories() {
+    // TODO: implement getAllCategories
+    throw UnimplementedError();
   }
 }

@@ -1,15 +1,15 @@
 import 'package:workmanager/workmanager.dart';
 import '../../../../core/constants/enums.dart';
-import '../../../products/data/product_model.dart';
-import '../../../products/domain/product.dart';
+import '../../../products/data/models/seller_product_model.dart';
+import '../../../products/domain/entities/seller_product.dart';
 import '../../data/alert_background_params.dart';
 
 Future<void> scheduleWorkManagerAlert(
-  Product product,
+  SellerProduct product,
   int daysBefore,
   Duration delay,
 ) async {
-  final productModel = ProductModel.fromEntity(product);
+  final productModel = SellerProductModel.fromEntity(product);
   final alertParams = AlertBackgroundParams(
     product: productModel,
     daysBeforeExpire: daysBefore,

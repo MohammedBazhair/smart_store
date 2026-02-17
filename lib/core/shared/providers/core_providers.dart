@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -13,10 +14,13 @@ import '../../../../features/user/data/repositories/user_repository_impl.dart';
 import '../../../../features/user/presentation/controllers/user_controller.dart';
 import '../../../../features/user/presentation/controllers/user_state.dart';
 import '../../database/local/cache_service.dart';
+import '../../database/local/local_database_service.dart';
 import '../../database/remote/remote_database_service.dart';
 import '../../network/connectivity_service.dart';
 import '../../network/network_clinet.dart';
 import 'repositories_provider.dart';
+
+final databaseProvider = Provider<Database>((ref)=> throw UnimplementedError());
 
 final networkProvider = Provider((_) {
   return ConnectivityServiceImpl(InternetConnection());
@@ -63,6 +67,11 @@ final userRepositoryProvider = Provider((ref) {
 final remoteDatabaseServiceProvider = Provider((ref) {
   final supabaseClinet = ref.read(supabaseProvider).client;
   return RemoteDatabaseServiceImpl(supabaseClinet);
+});
+
+final localDatabaseServiceProvider = Provider((ref) {
+  final supabaseClinet = ref.read(databaseProvider);
+  return LocalDatabaseServiceImpl(supabaseClinet);
 });
 
 final localCacheServiceProvider = Provider((ref) {
@@ -125,4 +134,3 @@ final tokenRefreshProvider = Provider((ref) {
 
   ref.onDispose(subscription.cancel);
 });
-

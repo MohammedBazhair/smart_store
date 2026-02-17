@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../domain/entities/profile.dart';
 import '../controllers/user_controller.dart';
@@ -50,20 +49,7 @@ class _UserProfileWidgetState extends ConsumerState<UserProfileWidget> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Stack(
-            children: [
-              if (profile.isEmailLogin)
-                const Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: CircleAvatar(
-                    radius: 15,
-                    backgroundColor: AppTheme.primaryColor,
-                    child: Icon(Icons.edit_rounded, size: 20),
-                  ),
-                ),
-            ],
-          ),
+       
           const SizedBox(height: 20),
           FittedBox(child: Text(profile.username)),
           const SizedBox(height: 5),

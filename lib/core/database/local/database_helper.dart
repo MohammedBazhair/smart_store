@@ -1,7 +1,7 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../constants/app_constants.dart';
+import '../../constants/app_constants.dart';
 
 /// مساعد قاعدة البيانات
 class DatabaseHelper {
