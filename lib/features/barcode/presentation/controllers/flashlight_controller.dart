@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 final mobileScannerControllerProvider = Provider((ref) {

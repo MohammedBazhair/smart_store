@@ -17,7 +17,6 @@ Future<DateTime?> showExpiryDatePicker(BuildContext context, WidgetRef ref) {
     ),
     builder: (context) {
       return ProviderScope(
-        parent: ProviderScope.containerOf(context),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(

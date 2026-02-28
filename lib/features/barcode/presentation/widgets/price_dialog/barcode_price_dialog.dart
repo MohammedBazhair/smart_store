@@ -14,7 +14,6 @@ Future<void> showProductPriceDialog({
   await showDialog(
     context: context,
     builder: (_) => ProviderScope(
-      parent: ProviderScope.containerOf(context),
       child: ProductPriceDialog(scanResult: scanResult),
     ),
   );

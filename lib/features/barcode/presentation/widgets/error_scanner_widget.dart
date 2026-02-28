@@ -29,6 +29,8 @@ class ErrorScannerWidget extends ConsumerWidget {
         MobileScannerErrorCode.controllerUninitialized =>
           throw UnimplementedError(),
         MobileScannerErrorCode.genericError => throw UnimplementedError(),
+        MobileScannerErrorCode.controllerInitializing => throw UnimplementedError(),
+        MobileScannerErrorCode.controllerNotAttached => throw UnimplementedError(),
       };
     } on UnimplementedError catch (_) {
       return 'حدثت اخطاء منعت تشغيل الماسح';
@@ -66,9 +68,11 @@ class ErrorScannerWidget extends ConsumerWidget {
                   await controller.start();
                 case MobileScannerErrorCode.controllerAlreadyInitialized:
                 case MobileScannerErrorCode.genericError:
+                case MobileScannerErrorCode.unsupported:
+                case MobileScannerErrorCode.controllerInitializing:
+                case MobileScannerErrorCode.controllerNotAttached:
                   ref.invalidate(mobileScannerControllerProvider);
                   context.pop();
-                case MobileScannerErrorCode.unsupported:
               }
             },
             child: const Text('إصلاح'),

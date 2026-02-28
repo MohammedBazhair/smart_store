@@ -17,7 +17,7 @@ class BarcodeCameraView extends ConsumerWidget {
   Widget build(BuildContext context,ref) {
     return MobileScanner(
       controller: ref.read(mobileScannerControllerProvider),
-      errorBuilder: (_, error, __) {
+      errorBuilder: (_, error) {
         return ErrorScannerWidget(error: error);
       },
       onDetect: (capture) {

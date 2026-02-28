@@ -46,7 +46,7 @@ class NotificationService {
     );
 
     await _notifications.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveBackgroundNotificationResponse:
           onDidReceiveBackgroundNotificationResponse,
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
@@ -61,10 +61,10 @@ class NotificationService {
     String? payload,
   }) async {
     await _notifications.show(
-      id,
-      title,
-      body,
-      notificationDetails,
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails,
       payload: payload,
     );
   }
@@ -78,11 +78,11 @@ class NotificationService {
     String? payload,
   }) async {
     await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(date, tz.local),
-      notificationDetails,
+     id:  id,
+     title:  title,
+     body:  body,
+     scheduledDate: tz.TZDateTime.from(date, tz.local),
+    notificationDetails:   notificationDetails,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
       payload: payload,
@@ -91,6 +91,6 @@ class NotificationService {
 
   /// إلغاء إشعار
   Future<void> cancel(int id) async {
-    await _notifications.cancel(id);
+    await _notifications.cancel(id:  id);
   }
 }
