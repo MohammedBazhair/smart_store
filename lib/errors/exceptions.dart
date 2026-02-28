@@ -4,13 +4,14 @@ abstract class AppException implements Exception {
 }
 
 class DuplicateBarcodeException extends AppException {
-  const DuplicateBarcodeException([super.message = 'هذا الباركود مستخدم مسبقا']);
+  const DuplicateBarcodeException([
+    super.message = 'هذا الباركود مستخدم مسبقا',
+  ]);
 }
 
 class OtpWrongException extends AppException {
   const OtpWrongException([super.message = 'الرمز المدخل غير صحيح']);
 }
-
 
 class UserNotLoggedInException extends AppException {
   const UserNotLoggedInException(super.message);
@@ -45,4 +46,12 @@ class AlreadyRunnedException extends AppException {
 
 class PermissionsException extends AppException {
   const PermissionsException(super.message);
+}
+
+class UserPhoneNotFoundException extends AppException {
+  const UserPhoneNotFoundException(super.message);
+}
+
+class NoStoreSelectedException extends AppException {
+  const NoStoreSelectedException(super.message);
 }

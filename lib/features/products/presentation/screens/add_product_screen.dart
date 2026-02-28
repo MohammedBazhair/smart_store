@@ -8,6 +8,7 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
+import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product_details.dart';
 import '../../domain/entities/store_product.dart';
@@ -103,6 +104,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   }
 
   StoreProduct _buildProductFromFields({StoreProduct? oldProduct}) {
+    final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
+  
     final now = DateTime.now();
     final globalProduct = GlobalProduct(
       category: _selectedCategory,
@@ -112,7 +115,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     );
     return StoreProduct(
       id: oldProduct?.id,
-      storeId: ,
+      storeId: storeId,
       quantity: int.tryParse(_quantityController.text),
       expiryDate: DateTime.tryParse(_expiryDateController.text),
       notes: _notesController.text,

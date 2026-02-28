@@ -9,6 +9,8 @@ abstract interface class UserRemoteDataSource {
   Future<ProfileEntity> readProfile(String? userId);
 
   Future<void> updateProfile(ProfileEntity profile);
+
+  Future<bool> isPhoneSignUp(String phoneNumber);
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
@@ -52,5 +54,14 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       column: 'id',
       table: AppConstants.profilesTable,
     );
+  }
+
+  @override
+  Future<bool> isPhoneSignUp(String phoneNumber)async {
+  final response= await _remoteDatabase.client
+        .from('profiles')
+        .select('phone')
+        .eq('phone', phoneNumber);
+  return response.isNotEmpty;
   }
 }

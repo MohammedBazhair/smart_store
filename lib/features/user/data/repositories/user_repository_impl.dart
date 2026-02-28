@@ -41,4 +41,9 @@ class UserRepositoryImpl implements UserRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<bool> isPhoneSignUp(String phoneNumber){
+    return _remoteDataSource.isPhoneSignUp(phoneNumber);
+  }
 }

@@ -2,7 +2,7 @@ import '../../../../core/constants/enums.dart';
 
 class Store {
   Store({
-    required this.id,
+     this.id,
     required this.ownerId,
     required this.name,
     required this.currency,
@@ -10,7 +10,7 @@ class Store {
     required this.updatedAt,
   });
   
-  final String id;
+  final String? id;
   final String  ownerId;
   final String name;
   final Currency currency;

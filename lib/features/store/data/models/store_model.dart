@@ -3,7 +3,7 @@ import '../../domain/entities/store.dart';
 
 class StoreModel extends Store {
   StoreModel({
-    required super.id,
+     super.id,
     required super.ownerId,
     required super.name,
     required super.currency,
@@ -11,7 +11,7 @@ class StoreModel extends Store {
     required super.updatedAt, 
   });
 
-  factory StoreModel.fromStore(Store store) {
+  factory StoreModel.fromEntity(Store store) {
     return StoreModel(
       id: store.id,
       ownerId: store.ownerId,

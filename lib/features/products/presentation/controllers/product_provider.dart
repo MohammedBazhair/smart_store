@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/providers/core_providers.dart';
-import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
+import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/datasource/product_local_data_source.dart';
 import '../../data/datasource/product_remote_data_source.dart';
 import '../../data/repositories/product_repository_impl.dart';
-import '../../domain/entities/category.dart';
 import '../../domain/entities/expiry_date_picker.dart';
 import '../../domain/entities/product_details.dart';
 import '../../domain/entities/product_query.dart';
@@ -27,13 +26,11 @@ final _productRemoteDataSource = Provider((ref) {
   return ProductRemoteDataSourceImpl(_client);
 });
 
-
-
 /// Provider لمستودع المنتجات
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final _remote = ref.read(_productRemoteDataSource);
   final _local = ref.read(_productLocalDataSource);
-  final cache= ref.read(localCacheServiceProvider);
+  final cache = ref.read(localCacheServiceProvider);
   final _network = ref.read(networkProvider);
   return ProductRepositoryImpl(_local, _remote, _network, cache);
 });
@@ -41,6 +38,7 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 /// Provider للحصول على جميع المنتجات
 final productsProvider = FutureProvider<List<StoreProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
+  final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
   final result = await repository.getAllProducts(storeId);
 
   return result;
@@ -56,20 +54,23 @@ final searchFilterProductsProvider =
   if (!query.hasQuery) return [];
 
   final repository = ref.watch(productRepositoryProvider);
-
+  final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
   final products = query.isSearching
-      ? await repository.searchProducts( storeId: storeId , query:  query.search):
-     await repository.getAllProducts(storeId);
+      ? await repository.searchProducts(storeId: storeId, query: query.search)
+      : await repository.getAllProducts(storeId);
 
   if (!query.hasCategory) return products;
 
-  return products.where((p) => p.globalProduct.category.id == query.category?.id).toList();
+  return products
+      .where((p) => p.globalProduct.category.id == query.category?.id)
+      .toList();
 });
 
 /// Provider للمنتجات المنتهية
-final expiredProductsProvider =
-    FutureProvider<List<StoreProduct>>((ref) async {
+final expiredProductsProvider = FutureProvider<List<StoreProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
+  final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+
   final result = await repository.getExpiredProducts(storeId);
   if (result is SuccessState<List<StoreProduct>>) {
     return result.data;
@@ -81,7 +82,9 @@ final expiredProductsProvider =
 final nearExpiryProductsProvider =
     FutureProvider<List<StoreProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
-  final result = await repository.getNearExpiryProducts(storeId,30);
+  final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+
+  final result = await repository.getNearExpiryProducts(storeId, 30);
   if (result is SuccessState<List<StoreProduct>>) {
     return result.data;
   }
@@ -105,7 +108,6 @@ final expiryDateControllerProvider =
   (ref) => ExpiryDateController(),
 );
 
-
 final productByIdProvider = FutureProvider.family<StoreProduct?, String>(
   (ref, id) async {
     final result =
@@ -116,6 +118,7 @@ final productByIdProvider = FutureProvider.family<StoreProduct?, String>(
 );
 
 /// Provider للـ ProductController
-final productControllerProvider = NotifierProvider<ProductManagementController, ProductManagementState>(() {
+final productControllerProvider =
+    NotifierProvider<ProductManagementController, ProductManagementState>(() {
   return ProductManagementController();
 });
