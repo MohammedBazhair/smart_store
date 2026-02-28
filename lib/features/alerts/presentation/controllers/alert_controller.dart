@@ -25,7 +25,7 @@ class AlertController extends Notifier<void> {
       isRead: false,
       createdAt: DateTime.now(),
       expiryDate: product.expiryDate,
-      productName: product.name,
+      productName: product.globalProduct.name,
     );
 
     final result = await repository.addAlert(alert);
@@ -59,7 +59,7 @@ class AlertController extends Notifier<void> {
   }
 
   Future<bool> isAlertDuplicated({
-    required int productId,
+    required String productId,
     required DateTime expiryDate,
     required int daysBeforeExpiry,
   }) async {

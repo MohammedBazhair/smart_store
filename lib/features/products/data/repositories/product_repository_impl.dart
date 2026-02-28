@@ -1,17 +1,11 @@
-import 'package:flutter/material.dart';
-
-import '../../../../core/database/local/database_helper.dart';
-import '../../../../core/database/local/local_database_service.dart';
-import '../../../../core/database/remote/remote_database_service.dart';
 import '../../../../core/network/connectivity_service.dart';
-import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/product.dart';
 import '../../domain/entities/seller_product.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasource/product_local_data_source.dart';
 import '../datasource/product_remote_data_source.dart';
-import '../models/seller_product_model.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
   ProductRepositoryImpl(
@@ -25,93 +19,102 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource _remoteDatabase;
 
   @override
-  Future<Result<List<SellerProduct>>> getAllProducts(String sellerId) async {
+  Future<Result<List<Category>>> getAllCategories() async {
     final hasConnection = await _connectivity.hasConnection();
+    final result = hasConnection
+        ? await _remoteDatabase.getAllCategories()
+        : await _localDatabase.getAllCategories();
 
-    final products = hasConnection
-        ? await _remoteDatabase.getSellerProducts(sellerId)
-        : await _localDatabase.getAllProducts();
-
-    return products;
+    return result;
   }
 
   @override
-  Future<Result<SellerProduct>> getProductById(String id) async {
+  Future<List<SellerProduct>> getAllProducts(String sellerId) async {
+    final hasConnection = await _connectivity.hasConnection();
+
+    final result = hasConnection
+        ? await _remoteDatabase.getSellerProducts(sellerId)
+        : await _localDatabase.getAllProducts(sellerId);
+
+    if (result is SuccessState<List<SellerProduct>>) return result.data;
+    return [];
+  }
+
+  @override
+  Future<Result<SellerProduct>> getProductById(String sellerProductId) async {
     try {
-      if (await _connectivity.hasConnection()) {
-        final result = await _remoteDatabase.getProductById(id);
-        return result;
-      } else {
-        final result = await _localDatabase.getProductById(id);
-        return result;
-      }
+      final hasConnection = await _connectivity.hasConnection();
+
+      final result = hasConnection
+          ? await _remoteDatabase.getProductById(sellerProductId)
+          : await _localDatabase.getProductById(sellerProductId);
+
+      if (result is ErrorState) throw Exception();
+      return result;
     } catch (e) {
       return const ErrorState('فشل في جلب المنتج');
     }
   }
 
   @override
-  Future<SellerProduct?> getProductByBarcode(String barcode) async {
+  Future<Product?> getProductByBarcode({
+    required String barcode,
+    required String sellerId,
+  }) async {
     final hasConnection = await _connectivity.hasConnection();
 
     final result = hasConnection
-        ? await _remoteDatabase.getProductByBarcode(barcode)
-        : await _localDatabase.getProductByBarcode(barcode);
+        ? await _remoteDatabase.getProductByBarcode(
+            sellerId: sellerId,
+            barcode: barcode,
+          )
+        : await _localDatabase.getProductByBarcode(
+            sellerId: sellerId,
+            barcode: barcode,
+          );
 
-    return (result is SuccessState<SellerProduct?>) ? result.data : null;
+    if (result is SuccessState<Product?>) return result.data;
+    return null;
   }
 
   @override
-  Future<Result<List<SellerProduct>>> searchProducts(String query) async {
-    try {
+  Future<List<SellerProduct>> searchProducts({
+    required String query,
+    required String sellerId,
+  }) async {
+    final hasConnection = await _connectivity.hasConnection();
 
-      
-      final db = await ;
-      final maps = await db.query(
-        'products',
-        where: 'LOWER(name) LIKE LOWER(?) OR LOWER(barcode) LIKE LOWER(?)',
-        whereArgs: ['%$query%', '%$query%'],
-        orderBy: 'created_at DESC',
-      );
-      final products = maps.map(SellerProductModel.fromMap).toList();
-      return SuccessState(products);
-    } catch (e) {
-      return ErrorState('فشل في البحث: ${e.toString()}');
+    final result = hasConnection
+        ? await _remoteDatabase.searchProducts(
+            query: query,
+            sellerId: sellerId,
+          )
+        : await _localDatabase.searchProducts(
+            query: query,
+            sellerId: sellerId,
+          );
+
+    if (result is SuccessState<List<SellerProduct>>) {
+      return result.data;
     }
+    return [];
   }
 
   @override
-  Future<Result<List<SellerProduct>>> filterProductsByCategory(
-    String category,
+  Future<Result<List<SellerProduct>>> getExpiredProducts(
+    String sellerId,
   ) async {
     try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'products',
-        where: 'category = ?',
-        whereArgs: [category],
-        orderBy: 'created_at DESC',
-      );
-      final products = maps.map(SellerProductModel.fromMap).toList();
-      return SuccessState(products);
-    } catch (e) {
-      return ErrorState('فشل في التصفية: ${e.toString()}');
-    }
-  }
+      final hasConnection = await _connectivity.hasConnection();
 
-  @override
-  Future<Result<List<SellerProduct>>> getExpiredProducts() async {
-    try {
-      final db = await _dbHelper.database;
-      final now = DateTime.now().toIso8601String();
-      final maps = await db.query(
-        'products',
-        where: 'expiry_date < ?',
-        whereArgs: [now],
-        orderBy: 'expiry_date ASC',
-      );
-      final products = maps.map(SellerProductModel.fromMap).toList();
-      return SuccessState(products);
+      final result = hasConnection
+          ? await _remoteDatabase.getExpiredProducts(sellerId)
+          : await _localDatabase.getExpiredProducts(sellerId);
+
+      if (result is SuccessState<List<SellerProduct>>) {
+        return SuccessState(result.data);
+      }
+      throw Exception();
     } catch (e) {
       return ErrorState(
         'فشل في جلب المنتجات المنتهية: ${e.toString()}',
@@ -120,19 +123,21 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<List<SellerProduct>>> getNearExpiryProducts(int days) async {
+  Future<Result<List<SellerProduct>>> getNearExpiryProducts(
+    String sellerId,
+    int days,
+  ) async {
     try {
-      final db = await _dbHelper.database;
-      final now = DateTime.now();
-      final threshold = now.add(Duration(days: days)).toIso8601String();
-      final maps = await db.query(
-        'products',
-        where: 'DATE(expiry_date) BETWEEN DATE(?) AND DATE(?)',
-        whereArgs: [threshold, now.toIso8601String()],
-        orderBy: 'expiry_date ASC',
-      );
-      final products = maps.map(SellerProductModel.fromMap).toList();
-      return SuccessState(products);
+      final hasConnection = await _connectivity.hasConnection();
+
+      final result = hasConnection
+          ? await _remoteDatabase.getNearExpiryProducts(sellerId, days)
+          : await _localDatabase.getNearExpiryProducts(sellerId, days);
+
+      if (result is SuccessState<List<SellerProduct>>) {
+        return SuccessState(result.data);
+      }
+      throw Exception();
     } catch (e) {
       return ErrorState(
         'فشل في جلب المنتجات القريبة من الانتهاء: ${e.toString()}',
@@ -142,37 +147,24 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<bool> isBarcodeExists(String barcode) async {
-    final db = await _dbHelper.database;
+    final hasConnection = await _connectivity.hasConnection();
+    final isExists = hasConnection
+        ? await _remoteDatabase.isBarcodeExists(barcode)
+        : await _localDatabase.isBarcodeExists(barcode);
 
-    final result = await db.query(
-      'products',
-      where: 'barcode = ?',
-      whereArgs: [barcode],
-    );
-    return result.isNotEmpty;
+    return isExists;
   }
 
   @override
-  Future<Result<int>> addProduct(SellerProduct product) async {
+  Future<Result<void>> addProduct(SellerProduct product) async {
     try {
-      final barcode = product.barcode;
-      if (barcode == null) throw ArgumentError();
-
-      if (await isBarcodeExists(barcode)) {
-        throw const DuplicateBarcodeException();
+      if (await _connectivity.hasConnection()) {
+        await _remoteDatabase.addProduct(product);
       }
 
-      final db = await _dbHelper.database;
-      final model = SellerProductModel.fromEntity(product);
+      await _localDatabase.addProduct(product);
 
-      final id = await db.insert('products', model.toMap());
-      return SuccessState(id);
-    } on ArgumentError {
-      return const ErrorState(
-        'فشل في إضافة المنتج: لم يتم تحديد الباركود',
-      );
-    } on DuplicateBarcodeException catch (e) {
-      return ErrorState(e.message);
+      return const SuccessState(null);
     } catch (e) {
       return ErrorState('فشل في إضافة المنتج: ${e.toString()}');
     }
@@ -181,50 +173,15 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void>> updateProduct(SellerProduct product) async {
     try {
-      final db = await _dbHelper.database;
+      final updatedProduct = product.copyWith(updatedAt: DateTime.now());
+      if (await _connectivity.hasConnection()) {
+        await _remoteDatabase.updateProduct(updatedProduct);
+      }
 
-      final model = SellerProductModel.fromEntity(product);
-      await db.update(
-        'products',
-        model.toMap(),
-        where: 'id = ?',
-        whereArgs: [product.id],
-      );
+      await _localDatabase.updateProduct(updatedProduct);
       return const SuccessState(null);
     } catch (e) {
       return const ErrorState('فشل في تحديث المنتج');
     }
-  }
-
-  @override
-  Future<Result<void>> deleteProduct(int id) async {
-    try {
-      final db = await _dbHelper.database;
-      await db.delete(
-        'products',
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-      return const SuccessState(null);
-    } catch (e) {
-      return ErrorState('فشل في حذف المنتج: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<Result<void>> deleteAllProducts() async {
-    try {
-      final db = await _dbHelper.database;
-      await db.delete('products');
-      return const SuccessState(null);
-    } catch (e) {
-      return ErrorState('فشل في حذف جميع المنتجات: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<Result<List<Category>>> getAllCategories() {
-    // TODO: implement getAllCategories
-    throw UnimplementedError();
   }
 }

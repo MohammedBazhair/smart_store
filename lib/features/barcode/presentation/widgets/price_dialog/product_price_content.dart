@@ -39,7 +39,7 @@ class ProductPriceContent extends StatelessWidget {
 
         // اسم المنتج (ثانوي)
         Text(
-          product.name,
+          product.globalProduct.name,
           textAlign: TextAlign.center,
           style: textTheme.bodyMedium?.copyWith(
             color: AppTheme.textSecondary,

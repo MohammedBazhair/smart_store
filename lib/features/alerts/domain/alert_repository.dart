@@ -19,7 +19,7 @@ abstract class AlertRepository {
 
   /// تحقق إذا التبيه موجود مسبقًا
   Future<bool> isAlertDuplicated({
-    required int productId,
+    required String productId,
     required DateTime expiryDate,
     required int daysBeforeExpiry,
   });

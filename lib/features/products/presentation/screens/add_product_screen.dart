@@ -9,8 +9,8 @@ import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../domain/entities/category.dart';
-import '../../domain/entities/seller_product.dart';
 import '../../domain/entities/product_details.dart';
+import '../../domain/entities/seller_product.dart';
 import '../controllers/product_controller.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/form_fields/product_barcode_field.dart';
@@ -78,16 +78,16 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
     final product = widget.product!;
 
-    _nameController.text = product.name;
+    _nameController.text = product.globalProduct.name;
     _quantityController.text = product.quantity?.toString() ?? '';
     _priceController.text = product.price.toString();
     _notesController.text = product.notes ?? '';
-    _barcodeController.text = product.barcode ?? '';
+    _barcodeController.text = product.globalProduct.barcode ?? '';
 
     _expiryDateController.text = product.expiryDate != null
         ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
         : '';
-    _selectedCategory = product.category;
+    _selectedCategory = product.globalProduct.category;
     _selectedCurrency = product.currency;
   }
 

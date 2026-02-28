@@ -72,7 +72,7 @@ class AlertRepositoryImpl implements AlertRepository {
 
   @override
   Future<bool> isAlertDuplicated({
-    required int productId,
+    required String productId,
     required DateTime expiryDate,
     required int daysBeforeExpiry,
   }) async {

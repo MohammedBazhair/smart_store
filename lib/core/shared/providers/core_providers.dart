@@ -90,6 +90,7 @@ final userRemoteDataSourceProvider = Provider((ref) {
   );
 });
 
+
 final _userControllerProvider = Provider((ref) {
   final repo = ref.read(userRepositoryProvider);
   return UserController(repo);
@@ -101,6 +102,8 @@ final userControllerProvider = StateNotifierProvider<UserController, UserState>(
     return controller;
   },
 );
+
+
 
 final authRepositoryProvider = Provider((ref) {
   final remoteAuth = ref.read(authRemoteDataSourceProvider);

@@ -3,10 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
-import '../../../../errors/result.dart';
 import '../../../../main.dart';
-import '../../../products/data/models/seller_product_model.dart';
-import '../../../products/data/repositories/product_repository_impl.dart';
 import '../../../products/domain/entities/seller_product.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../settings/domain/settings_repository.dart';
@@ -18,22 +15,11 @@ import 'notification_service.dart';
 /// handle tap on notification
 void onDidReceiveNotificationResponse(NotificationResponse response) async {
   if (response.payload == null) return;
-  final rawString = response.payload!;
-  final product = SellerProductModel.fromJson(rawString);
+  final sellerProductId = response.payload!;
 
-  final productId = product.id;
-  if (productId == null) return;
-
-  final repo = ProductRepositoryImpl();
-  final result = await repo.getProductById(productId);
-
-  switch (result) {
-    case SuccessState<SellerProduct>():
-      final detatailsScreen = ProductDetailsScreen(productId: productId);
-      await navigatorKey.currentState
-          ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
-    case ErrorState<SellerProduct>():
-  }
+  final detatailsScreen = ProductDetailsScreen(productId: sellerProductId);
+  await navigatorKey.currentState
+      ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
 }
 
 class AlertService {
@@ -95,9 +81,9 @@ class AlertService {
 
     await _notifications.show(
       id: AlertUtils.notificationId(product, daysBefore),
-      title: 'تنبيه صلاحية: ${product.name}',
+      title: 'تنبيه صلاحية: ${product.globalProduct.name}',
       body:
-          '${product.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
+          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
       payload: payload,
     );
 
@@ -131,7 +117,7 @@ class AlertService {
       id: AlertUtils.notificationId(product, daysBefore),
       title: 'تنبيه صلاحية',
       body:
-          '${product.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
+          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
       date: alertDate,
       payload: payload,
     );

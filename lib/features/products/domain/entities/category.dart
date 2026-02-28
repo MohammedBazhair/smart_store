@@ -1,12 +1,18 @@
-class Category {
-  Category({required this.id, required this.name});
+import 'package:equatable/equatable.dart';
 
-  factory Category.fromMap(Map<String, dynamic> map) {
+class Category extends Equatable {
+  const Category({required this.id, required this.name});
+
+  factory Category.fromRemote(Map<String, dynamic> map) {
     return Category(id: map['id'], name: map['name']);
   }
 
+  factory Category.fromLocal(Map<String, dynamic> map) {
+    return Category(id: map['category_id'], name: map['category_name']);
+  }
+
   factory Category.undefined() {
-    return Category(id: 1, name: 'غير مصنف');
+    return const Category(id: 1, name: 'غير مصنف');
   }
 
   final int id;
@@ -19,5 +25,6 @@ class Category {
     };
   }
 
-  
+  @override
+  List<Object?> get props => [id];
 }

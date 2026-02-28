@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../domain/entities/seller_product.dart';
@@ -38,41 +37,26 @@ class ProductController extends Notifier<void> {
     required SellerProduct newProduct,
   }) async {
     final repository = ref.read(productRepositoryProvider);
-    final updatedProduct = newProduct.copyWith(updatedAt: DateTime.now());
 
-    final result = await repository.updateProduct(updatedProduct);
+    final result = await repository.updateProduct(newProduct);
 
     if (result is ErrorState<void>) return result;
 
     final alertService = ref.read(alertServiceProvider);
 
-    if (oldProduct.expiryDate != updatedProduct.expiryDate) {
-      await alertService.cancelProductAlerts(updatedProduct);
+    if (oldProduct.expiryDate != newProduct.expiryDate) {
+      await alertService.cancelProductAlerts(newProduct);
 
       // إعادة الجدولة
-      await alertService.scheduleProductAlerts(updatedProduct);
+      await alertService.scheduleProductAlerts(newProduct);
     }
 
     _invalidate();
-    ref.invalidate(productByIdProvider(updatedProduct.id!));
+    ref.invalidate(productByIdProvider(newProduct.id!));
 
     return result;
   }
 
-  Future<Result<void>> deleteProduct(int id) async {
-    final repository = ref.read(productRepositoryProvider);
-    final product = await repository.getProductById(id);
-    final result = await repository.deleteProduct(id);
-
-    if (result is! SuccessState<void>) return result;
-    if (product is! SuccessState<SellerProduct>) return result;
-    final alertService = ref.read(alertServiceProvider);
-    await alertService.cancelProductAlerts(product.data);
-
-    _invalidate();
-
-    return result;
-  }
 }
 
 final productByIdProvider = FutureProvider.family<SellerProduct?, String>(

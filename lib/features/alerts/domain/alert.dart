@@ -13,7 +13,7 @@ class Alert extends Equatable {
     required this.expiryDate,
   });
   final int? id;
-  final int productId;
+  final String productId;
   final String productName;
   final int daysBeforeExpiry;
   final Priority importance;

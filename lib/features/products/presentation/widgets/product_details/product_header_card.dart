@@ -13,7 +13,7 @@ class ProductHeaderInfo extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            product.name,
+            product.globalProduct.name,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),

@@ -1,8 +1,9 @@
 import '../category.dart';
+import '../product.dart';
 
-class GlobalProduct {
+class GlobalProduct extends Product {
   GlobalProduct({
-     this.id,
+    this.id,
     required this.category,
     required this.name,
     required this.barcode,

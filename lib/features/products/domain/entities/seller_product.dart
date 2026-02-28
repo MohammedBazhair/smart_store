@@ -1,9 +1,9 @@
-import 'package:equatable/equatable.dart';
-
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import '../../../../core/constants/enums.dart';
+import 'product.dart';
 import 'sub_entities/global_product.dart';
 
-class SellerProduct extends Equatable {
+class SellerProduct extends Product {
   const SellerProduct({
     this.id,
     required this.sellerId,
@@ -44,10 +44,27 @@ class SellerProduct extends Equatable {
 
   static final fakeProducts = List.generate(8, (_) => SellerProduct.fake());
 
-  @override
-  List<Object?> get props => [
-        id,
-        sellerId,
-        globalProduct.id,
-      ];
+  SellerProduct copyWith({
+    String? id,
+    String? sellerId,
+    GlobalProduct? globalProduct,
+    num? price,
+    DateTime? expiryDate,
+    int? quantity,
+    Currency? currency,
+    String? notes,
+    DateTime? updatedAt,
+  }) {
+    return SellerProduct(
+      id: id ?? this.id,
+      sellerId: sellerId ?? this.sellerId,
+      globalProduct: globalProduct ?? this.globalProduct,
+      price: price ?? this.price,
+      expiryDate: expiryDate ?? this.expiryDate,
+      quantity: quantity ?? this.quantity,
+      currency: currency ?? this.currency,
+      notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

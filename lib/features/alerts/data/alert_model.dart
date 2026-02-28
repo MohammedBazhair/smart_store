@@ -33,7 +33,7 @@ class AlertModel extends Alert {
   factory AlertModel.fromMap(Map<String, dynamic> map) {
     return AlertModel(
       id: map['id'] as int?,
-      productId: map['product_id'] as int,
+      productId: map['product_id'] as String,
       daysBeforeExpiry: map['days_before_expiry'] as int,
       importance: Priority.values.byName(map['importance'] as String),
       isRead: (map['is_read'] as int) == 1,

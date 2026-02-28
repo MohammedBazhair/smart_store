@@ -1,24 +1,33 @@
 import '../../../../core/database/remote/remote_database_service.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/product.dart';
 import '../../domain/entities/seller_product.dart';
+import '../models/global_product_model.dart';
 import '../models/seller_product_model.dart';
 
 abstract class ProductRemoteDataSource {
   Future<Result<List<Category>>> getAllCategories();
   Future<Result<List<SellerProduct>>> getSellerProducts(String sellerId);
-  Future<Result<SellerProduct>> getProductById(String id);
-  Future<Result<SellerProduct?>> getProductByBarcode(String barcode);
+  Future<Result<SellerProduct>> getProductById(String sellerProductId);
+  Future<Result<Product?>> getProductByBarcode({
+    required String barcode,
+    required String sellerId,
+  });
   Future<bool> isBarcodeExists(String barcode);
-  Future<Result<List<SellerProduct>>> searchProducts(String query);
-  Future<Result<List<SellerProduct>>> filterProductsByCategory(
-      String categoryKey);
-  Future<Result<List<SellerProduct>>> getExpiredProducts();
-  Future<Result<List<SellerProduct>>> getNearExpiryProducts(int days);
-  Future<Result<int>> addProduct(SellerProduct product);
+  Future<Result<List<SellerProduct>>> searchProducts({
+    required String query,
+    required String sellerId,
+  });
+  Future<Result<List<SellerProduct>>> getExpiredProducts(
+    String sellerId,
+  );
+  Future<Result<List<SellerProduct>>> getNearExpiryProducts(
+    String sellerId,
+    int days,
+  );
+  Future<Result<void>> addProduct(SellerProduct product);
   Future<Result<void>> updateProduct(SellerProduct product);
-  Future<Result<void>> deleteProduct(int id);
-  Future<Result<void>> deleteAllProducts();
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -29,7 +38,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<Result<List<Category>>> getAllCategories() async {
     try {
       final response = await _client.readRows(table: 'categories');
-      final categories = response.map(Category.fromMap).toList();
+      final categories = response.map(Category.fromRemote).toList();
       return SuccessState(categories);
     } catch (e) {
       return ErrorState(e.toString());
@@ -46,7 +55,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           )
           .eq('seller_id', sellerId);
 
-      final products = response.map(SellerProductModel.fromMap).toList();
+      final products = response.map(SellerProductModel.fromRemote).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -54,113 +63,156 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<Result<SellerProduct>> getProductById(int id) async {
+  Future<Result<SellerProduct>> getProductById(String sellerProductId) async {
     try {
       final response = await _client.client
-          .from('global_products')
-          .select('*, categories(*)')
-          .eq('product_id', id)
-          .limit(1)
-          .single();
-      return SuccessState(SellerProductModel.fromMap(response));
+          .from('seller_products')
+          .select(
+            '*, global_products(*, categories(*))',
+          )
+          .eq('id', sellerProductId);
+      final map = response.first;
+      return SuccessState(SellerProductModel.fromRemote(map));
     } catch (e) {
       return ErrorState(e.toString());
     }
   }
 
   @override
-  Future<Result<SellerProduct?>> getProductByBarcode(String barcode) async {
+  Future<Result<Product?>> getProductByBarcode({
+    required String barcode,
+    required String sellerId,
+  }) async {
     try {
-      final response = await client
-          .from('products')
-          .select('*, categories(*)')
+      if (!await isBarcodeExists(barcode)) return const SuccessState(null);
+
+      final result = await _client.client
+          .from('seller_products')
+          .select(
+            '*, global_products(*, categories(*))',
+          )
           .eq('barcode', barcode)
-          .maybeSingle();
-      if (response == null) return Result.success(null);
-      return Result.success(SellerProduct.fromMap(response));
+          .eq('seller_id', sellerId)
+          .single();
+
+      if (result.isNotEmpty) {
+        final product = SellerProductModel.fromRemote(result);
+        return SuccessState(product);
+      }
+
+      final globalProductMap = (await _getGlobalProductByBarcode(barcode))!;
+      final globalProduct = GlobalProductModel.fromRemote(globalProductMap);
+      return SuccessState(globalProduct);
     } catch (e) {
-      return Result.failure(e.toString());
+      return ErrorState(e.toString());
     }
+  }
+
+  Future<Map<String, dynamic>?> _getGlobalProductByBarcode(
+    String barcode,
+  ) async {
+    final response = await _client.client
+        .from('global_products')
+        .select('*, categories(*)')
+        .eq('barcode', barcode);
+
+    return response.firstOrNull;
   }
 
   @override
   Future<bool> isBarcodeExists(String barcode) async {
-    final response =
-        await client.from('products').select('id').eq('barcode', barcode);
-    return (response as List).isNotEmpty;
-  }
-
-  @override
-  Future<Result<List<SellerProduct>>> searchProducts(String query) async {
     try {
-      final response = await client
-          .from('products')
-          .select('*, categories(*)')
-          .ilike('name', '%$query%');
-      final products = (response as List).map(SellerProduct.fromMap).toList();
-      return Result.success(products);
+      final response = await _getGlobalProductByBarcode(barcode);
+
+      return response != null;
     } catch (e) {
-      return Result.failure(e.toString());
+      return false;
     }
   }
 
   @override
-  Future<Result<List<SellerProduct>>> filterProductsByCategory(
-    String categoryKey,
+  Future<Result<List<SellerProduct>>> searchProducts({
+    required String query,
+    required String sellerId,
+  }) async {
+    try {
+      final response = await _client.client
+          .from('seller_products')
+          .select(
+            '*, global_products(*, categories(*))',
+          )
+          .eq('seller_id', sellerId)
+          .ilike('name', '%$query%');
+
+      final products = response.map(SellerProductModel.fromRemote).toList();
+      return SuccessState(products);
+    } catch (e) {
+      return ErrorState(e.toString());
+    }
+  }
+
+  @override
+  Future<Result<List<SellerProduct>>> getExpiredProducts(
+    String sellerId,
   ) async {
     try {
-      final response = await client
-          .from('products')
-          .select('*, categories(*)')
-          .eq('categories.key', categoryKey);
-      final products = (response as List).map(SellerProduct.fromMap).toList();
-      return Result.success(products);
-    } catch (e) {
-      return Result.failure(e.toString());
-    }
-  }
-
-  @override
-  Future<Result<List<SellerProduct>>> getExpiredProducts() async {
-    try {
       final today = DateTime.now().toIso8601String();
-      final response = await client
-          .from('products')
-          .select('*, categories(*)')
+      final response = await _client.client
+          .from('seller_products')
+          .select(
+            '*, global_products(*, categories(*))',
+          )
+          .eq('seller_id', sellerId)
           .lte('expiry_date', today);
-      final products = (response as List).map(SellerProduct.fromMap).toList();
-      return Result.success(products);
+
+      final products = response.map(SellerProductModel.fromRemote).toList();
+      return SuccessState(products);
     } catch (e) {
-      return Result.failure(e.toString());
+      return ErrorState(e.toString());
     }
   }
 
   @override
-  Future<Result<List<SellerProduct>>> getNearExpiryProducts(int days) async {
+  Future<Result<List<SellerProduct>>> getNearExpiryProducts(
+    String sellerId,
+    int days,
+  ) async {
     try {
       final now = DateTime.now();
       final near = now.add(Duration(days: days));
-      final response = await client
-          .from('products')
-          .select('*, categories(*)')
+      final response = await _client.client
+          .from('seller_products')
+          .select(
+            '*, global_products(*, categories(*))',
+          )
+          .eq('seller_id', sellerId)
           .gte('expiry_date', now.toIso8601String())
           .lte('expiry_date', near.toIso8601String());
-      final products = (response as List).map(SellerProduct.fromMap).toList();
-      return Result.success(products);
+
+      final products = response.map(SellerProductModel.fromRemote).toList();
+      return SuccessState(products);
     } catch (e) {
-      return Result.failure(e.toString());
+      return ErrorState(e.toString());
     }
   }
 
   @override
-  Future<Result<int>> addProduct(SellerProduct product) async {
+  Future<Result<void>> addProduct(SellerProduct product) async {
     try {
-      final map = SellerProductModel.fromEntity(product).toMap();
-      final response = await client.from('products').insert(map).select();
-      final insertedId = (response as List).first['id'] as int;
-      return Result.success(insertedId);
+      if (!await isBarcodeExists(product.globalProduct.barcode ?? '')) {
+        final globalProductMap =
+            GlobalProductModel.fromEntity(product.globalProduct).toMap();
+        await _client.insertRow(
+          map: globalProductMap,
+          table: 'global_products',
+        );
+      }
+      final sellerProductMap = SellerProductModel.fromEntity(product).toMap();
+
+      await _client.insertRow(map: sellerProductMap, table: 'seller_products');
+      return const SuccessState(null);
     } catch (e) {
-      return Result.failure(e.toString());
+      return ErrorState(e.toString());
     }
   }
 
@@ -168,30 +220,15 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<Result<void>> updateProduct(SellerProduct product) async {
     try {
       final map = SellerProductModel.fromEntity(product).toMap();
-      await client.from('products').update(map).eq('id', product.id);
-      return Result.success(null);
+      await _client.update(
+        column: 'id',
+        id: product.id!,
+        table: 'seller_products',
+        updated: map,
+      );
+      return const SuccessState(null);
     } catch (e) {
-      return Result.failure(e.toString());
-    }
-  }
-
-  @override
-  Future<Result<void>> deleteProduct(int id) async {
-    try {
-      await client.from('products').delete().eq('id', id);
-      return Result.success(null);
-    } catch (e) {
-      return Result.failure(e.toString());
-    }
-  }
-
-  @override
-  Future<Result<void>> deleteAllProducts() async {
-    try {
-      await client.from('products').delete();
-      return Result.success(null);
-    } catch (e) {
-      return Result.failure(e.toString());
+      return ErrorState(e.toString());
     }
   }
 }

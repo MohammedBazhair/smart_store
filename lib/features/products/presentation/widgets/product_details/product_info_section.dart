@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../../core/utils/date_utils.dart' as date_utils;
-import '../../../domain/entities/seller_product.dart';
 import '../../../domain/entities/product_details.dart';
+import '../../../domain/entities/seller_product.dart';
 import 'product_info_card.dart';
 
 class ProductInfoSection extends StatelessWidget {
@@ -52,7 +52,7 @@ class ProductInfoSection extends StatelessWidget {
               child: ProductInfoCard(
                 icon: Icons.category,
                 label: 'الفئة',
-                value: product.category.name,
+                value: product.globalProduct.name,
                 detailsType: ProductDetailsType.category,
                 iconColor: const Color(0xFF0FA4AF),
               ),
@@ -61,7 +61,7 @@ class ProductInfoSection extends StatelessWidget {
               child: ProductInfoCard(
                 icon: Icons.qr_code,
                 label: 'كود المنتج',
-                value: product.barcode == null ? '-' : product.barcode!,
+                value: product.globalProduct.barcode == null ? '-' : product.globalProduct.barcode!,
                 detailsType: ProductDetailsType.barcode,
                 iconColor: const Color(0xFF6669F1),
               ),

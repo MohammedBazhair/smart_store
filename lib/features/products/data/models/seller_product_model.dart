@@ -30,17 +30,31 @@ class SellerProductModel extends SellerProduct {
     );
   }
 
-  factory SellerProductModel.fromMap(Map<String, dynamic> map) {
+  factory SellerProductModel.fromRemote(Map<String, dynamic> map) {
     return SellerProductModel(
       id: map['id'] as String?,
       sellerId: map['seller_id'] as String,
-      globalProduct: GlobalProductModel.fromMap(map['global_product']),
+      globalProduct: GlobalProductModel.fromRemote(map['global_products']),
       quantity: map['quantity'] as int?,
       expiryDate: DateTime.tryParse((map['expiry_date'] as String?) ?? ''),
       notes: map['notes'] as String?,
       updatedAt: DateTime.parse(map['updated_at'] as String),
       currency: Currency.values.byName(map['currency']),
       price: map['price'] as num,
+    );
+  }
+
+  factory SellerProductModel.fromLocal(Map<String, dynamic> map) {
+    return SellerProductModel(
+      id: map['seller_product_id'],
+      sellerId: map['seller_id'],
+      price: map['price'] as num,
+      quantity: map['quantity'],
+      currency: Currency.values.byName(map['currency']),
+      expiryDate: DateTime.tryParse(map['expiry_date']),
+      notes: map['notes'],
+      globalProduct: GlobalProductModel.fromLocal(map),
+      updatedAt: DateTime.parse(map['updated_at']),
     );
   }
 
@@ -61,4 +75,5 @@ class SellerProductModel extends SellerProduct {
     return map;
   }
 
+  
 }

@@ -33,39 +33,53 @@ class DatabaseHelper {
 
   Future<void> _createDB(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        quantity INTEGER NULL,
-        barcode TEXT NULL UNIQUE,
-        expiry_date TEXT NULL,
-        category TEXT NOT NULL,
-        price REAL NOT NULL,
-        currency TEXT NOT NULL,
-        notes TEXT,
-        account_status TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
+    CREATE TABLE categories (
+      category_id int PRIMARY KEY,
+      category_name TEXT NOT NULL
+    );
     ''');
 
-  
+    await db.execute('''
+      CREATE TABLE global_products (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        category_id int,
+        barcode TEXT,
+        created_at TEXT,
+        FOREIGN KEY (category_id) REFERENCES categories(id)
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE seller_products (
+        id TEXT PRIMARY KEY,
+        seller_id TEXT NOT NULL,
+        product_id TEXT NOT NULL,
+        price REAL NOT NULL,
+        quantity INTEGER NOT NULL,
+        currency TEXT NOT NULL,
+        expiry_date TEXT,
+        notes TEXT,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (product_id) REFERENCES global_products(id),
+        UNIQUE (seller_id, product_id)
+      );
+    ''');
 
     await db.execute('''
       CREATE TABLE IF NOT EXISTS alerts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        product_id INTEGER NOT NULL,
+        product_id TEXT NOT NULL,
         product_name TEXT NOT NULL,
         expiry_date TEXT NOT NULL,
         days_before_expiry INTEGER NOT NULL,
         importance TEXT NOT NULL,
         is_read INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL,
-        UNIQUE(product_id, expiry_date,days_before_expiry)
+        UNIQUE(product_id, expiry_date,days_before_expiry),
+        FOREIGN KEY (product_id) REFERENCES global_products(id)
       )
     ''');
-
-
   }
 
   Future<void> close() async {

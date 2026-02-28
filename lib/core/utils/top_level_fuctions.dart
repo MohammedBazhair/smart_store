@@ -52,7 +52,7 @@ void callbackDispatcher() {
 void onDidReceiveBackgroundNotificationResponse(NotificationResponse details) {
   if (details.payload?.isEmpty ?? true) return;
 
-  final productId = int.tryParse(details.payload!);
+  final productId = details.payload;
   if (productId == null) return;
 
   NotificationCache.save(productId);
