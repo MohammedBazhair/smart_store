@@ -1,11 +1,11 @@
 import 'package:workmanager/workmanager.dart';
 import '../../../../core/constants/enums.dart';
-import '../../../products/data/models/seller_product_model.dart';
-import '../../../products/domain/entities/seller_product.dart';
+import '../../../products/data/models/store_product_model.dart';
+import '../../../products/domain/entities/store_product.dart';
 import '../../data/alert_background_params.dart';
 
 Future<void> scheduleWorkManagerAlert(
-  SellerProduct product,
+  StoreProduct product,
   int daysBefore,
   Duration delay,
 ) async {

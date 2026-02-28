@@ -2,12 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
-import '../../domain/entities/seller_product.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/entities/store_product.dart';
 import 'product_provider.dart';
+import 'product_state.dart';
 
-class ProductController extends Notifier<void> {
+class ProductManagementController extends Notifier<ProductManagementState> {
   @override
-  void build() {}
+  ProductManagementState build() {
+    return ProductManagementState(products: [], categories: []);
+  }
 
   /// تحديث قائمة المنتجات
   void _invalidate() {
@@ -16,8 +20,29 @@ class ProductController extends Notifier<void> {
     ref.invalidate(nearExpiryProductsProvider);
   }
 
+  Future<void> initialize() async {
+    final categories = await getCategories();
+    final products = await getSellerProducts();
+
+    state = ProductManagementState(products: products, categories: categories);
+  }
+
+  Future<List<Category>> getCategories() async {
+    final categories =
+        await ref.read(productRepositoryProvider).getAllCategories();
+    categories.sort((a, b) => a.name.compareTo(b.name));
+    return categories;
+  }
+
+  Future<List<StoreProduct>> getSellerProducts() async {
+    final products =
+        await ref.read(productRepositoryProvider).getAllProducts('');
+
+    return products;
+  }
+
   Future<Result<void>> addProduct(
-    SellerProduct product,
+    StoreProduct product,
   ) async {
     final productRepository = ref.read(productRepositoryProvider);
 
@@ -33,8 +58,8 @@ class ProductController extends Notifier<void> {
   }
 
   Future<Result<void>> updateProduct({
-    required SellerProduct oldProduct,
-    required SellerProduct newProduct,
+    required StoreProduct oldProduct,
+    required StoreProduct newProduct,
   }) async {
     final repository = ref.read(productRepositoryProvider);
 
@@ -56,19 +81,4 @@ class ProductController extends Notifier<void> {
 
     return result;
   }
-
 }
-
-final productByIdProvider = FutureProvider.family<SellerProduct?, String>(
-  (ref, id) async {
-    final result =
-        await ref.watch(productRepositoryProvider).getProductById(id);
-    if (result is SuccessState<SellerProduct>) return result.data;
-    return null;
-  },
-);
-
-/// Provider للـ ProductController
-final productControllerProvider = NotifierProvider<ProductController, void>(() {
-  return ProductController();
-});

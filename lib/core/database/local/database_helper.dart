@@ -33,6 +33,18 @@ class DatabaseHelper {
 
   Future<void> _createDB(Database db, int version) async {
     await db.execute('''
+      CREATE TABLE profiles (
+      id TEXT PRIMARY KEY,
+      user_name TEXT NOT NULL,
+      account_status TEXT NOT NULL,
+      phone TEXT UNIQUE,
+      credits INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    ''');
+
+    await db.execute('''
     CREATE TABLE categories (
       category_id int PRIMARY KEY,
       category_name TEXT NOT NULL
@@ -40,20 +52,46 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE global_products (
+      CREATE TABLE stores (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        category_id int,
-        barcode TEXT,
-        created_at TEXT,
-        FOREIGN KEY (category_id) REFERENCES categories(id)
+        owner_id TEXT NOT NULL,
+        store_name TEXT NOT NULL,
+        currency TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (owner_id) REFERENCES profiles(id)
       );
     ''');
 
     await db.execute('''
-      CREATE TABLE seller_products (
+      CREATE TABLE global_products (
         id TEXT PRIMARY KEY,
-        seller_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        category_id int,
+        barcode TEXT UNIQUE,
+        created_at TEXT,
+        FOREIGN KEY (category_id) REFERENCES categories(category_id)
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE store_members (
+        id TEXT PRIMARY KEY,
+        member_phone TEXT NOT NULL,
+        store_id TEXT NOT NULL,
+        role TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (store_id) REFERENCES stores(id),
+        FOREIGN KEY (member_phone) REFERENCES profiles(phone),
+        UNIQUE (store_id, member_phone)
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE store_products (
+        id TEXT PRIMARY KEY,
+        store_id TEXT NOT NULL,
         product_id TEXT NOT NULL,
         price REAL NOT NULL,
         quantity INTEGER NOT NULL,
@@ -62,7 +100,8 @@ class DatabaseHelper {
         notes TEXT,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (product_id) REFERENCES global_products(id),
-        UNIQUE (seller_id, product_id)
+        FOREIGN KEY (store_id) REFERENCES stores(id),
+        UNIQUE (store_id, product_id)
       );
     ''');
 

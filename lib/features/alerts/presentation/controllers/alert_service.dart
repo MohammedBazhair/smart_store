@@ -4,7 +4,7 @@ import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../main.dart';
-import '../../../products/domain/entities/seller_product.dart';
+import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../settings/domain/settings_repository.dart';
 import '../../domain/expiry_reminder.dart';
@@ -34,7 +34,7 @@ class AlertService {
     await _notifications.initialize();
   }
 
-  Future<void> scheduleProductAlerts(SellerProduct product) async {
+  Future<void> scheduleProductAlerts(StoreProduct product) async {
     final result = await settingsRepo.getSettings();
     if (!result.enableNotifications) return;
 
@@ -73,7 +73,7 @@ class AlertService {
   }
 
   Future<void> _showNotification({
-    required SellerProduct product,
+    required StoreProduct product,
     required int daysBefore,
     required Priority importance,
   }) async {
@@ -95,7 +95,7 @@ class AlertService {
   }
 
   Future<void> _scheduleAlert({
-    required SellerProduct product,
+    required StoreProduct product,
     required int daysBefore,
     required Priority importance,
   }) async {
@@ -126,7 +126,7 @@ class AlertService {
     await scheduleWorkManagerAlert(product, daysBefore, delay);
   }
 
-  Future<void> cancelProductAlerts(SellerProduct product) async {
+  Future<void> cancelProductAlerts(StoreProduct product) async {
     final daysList = {30, 15, 7, 0};
 
     for (final daysBefore in daysList) {

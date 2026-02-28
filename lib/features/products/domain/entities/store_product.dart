@@ -1,12 +1,11 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import '../../../../core/constants/enums.dart';
 import 'product.dart';
 import 'sub_entities/global_product.dart';
 
-class SellerProduct extends Product {
-  const SellerProduct({
+class StoreProduct extends Product {
+  const StoreProduct({
     this.id,
-    required this.sellerId,
+    required this.storeId,
     required this.globalProduct,
     required this.price,
     required this.expiryDate,
@@ -16,10 +15,10 @@ class SellerProduct extends Product {
     required this.updatedAt,
   });
 
-  factory SellerProduct.fake() {
+  factory StoreProduct.fake() {
     final date = DateTime.now();
-    return SellerProduct(
-      sellerId: '',
+    return StoreProduct(
+      storeId: '',
       globalProduct: GlobalProduct.fake(),
       quantity: 50,
       expiryDate: date,
@@ -31,7 +30,7 @@ class SellerProduct extends Product {
   }
 
   final String? id;
-  final String sellerId;
+  final String storeId;
   final GlobalProduct globalProduct;
   final num price;
   final DateTime? expiryDate;
@@ -42,11 +41,11 @@ class SellerProduct extends Product {
 
   String get quantityText => quantity?.toString() ?? 'غير محددة';
 
-  static final fakeProducts = List.generate(8, (_) => SellerProduct.fake());
+  static final fakeProducts = List.generate(8, (_) => StoreProduct.fake());
 
-  SellerProduct copyWith({
+  StoreProduct copyWith({
     String? id,
-    String? sellerId,
+    String? storeId,
     GlobalProduct? globalProduct,
     num? price,
     DateTime? expiryDate,
@@ -55,9 +54,9 @@ class SellerProduct extends Product {
     String? notes,
     DateTime? updatedAt,
   }) {
-    return SellerProduct(
+    return StoreProduct(
       id: id ?? this.id,
-      sellerId: sellerId ?? this.sellerId,
+      storeId: storeId ?? this.storeId,
       globalProduct: globalProduct ?? this.globalProduct,
       price: price ?? this.price,
       expiryDate: expiryDate ?? this.expiryDate,

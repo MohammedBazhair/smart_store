@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import '../../../../products/domain/entities/seller_product.dart';
+import '../../../../products/domain/entities/store_product.dart';
 import '../../../../settings/domain/settings.dart';
 import '../../../../settings/presentation/controllers/settings_provider.dart';
 import '../../../domain/barcode_scan_result.dart';
@@ -48,7 +48,7 @@ class ProductPriceDialog extends ConsumerWidget {
           },
           loading: () => Skeletonizer(
             child: ProductPriceContent(
-              product: SellerProduct.fake(),
+              product: StoreProduct.fake(),
               settings: Settings.theDefault(),
             ),
           ),

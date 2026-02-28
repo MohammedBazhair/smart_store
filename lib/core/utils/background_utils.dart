@@ -5,7 +5,7 @@ import '../../errors/result.dart';
 import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/domain/alert.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
-import '../../features/products/domain/entities/seller_product.dart';
+import '../../features/products/domain/entities/store_product.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
 import '../shared/providers/repositories_provider.dart';
 import 'date_utils.dart';
@@ -37,9 +37,9 @@ class BackgroundUtils {
   Future<void> dailyExpiryCheck(ProviderContainer container) async {
     final repository = container.read(productRepositoryProvider);
 
-    final result = await repository.getNearExpiryProducts(sellerId,30);
+    final result = await repository.getNearExpiryProducts(store_id, 30);
 
-    if (result is! SuccessState<List<SellerProduct>>) return;
+    if (result is! SuccessState<List<StoreProduct>>) return;
 
     final alertService = container.read(alertServiceProvider);
 

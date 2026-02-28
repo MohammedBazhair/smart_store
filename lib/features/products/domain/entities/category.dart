@@ -20,8 +20,8 @@ class Category extends Equatable {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'name': name,
+      'category_id': id,
+      'category_name': name,
     };
   }
 

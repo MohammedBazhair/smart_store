@@ -3,12 +3,12 @@ import 'package:intl/intl.dart';
 
 import '../../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../domain/entities/product_details.dart';
-import '../../../domain/entities/seller_product.dart';
+import '../../../domain/entities/store_product.dart';
 import 'product_info_card.dart';
 
 class ProductInfoSection extends StatelessWidget {
   const ProductInfoSection({super.key, required this.product});
-  final SellerProduct product;
+  final StoreProduct product;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,9 @@ class ProductInfoSection extends StatelessWidget {
               child: ProductInfoCard(
                 icon: Icons.qr_code,
                 label: 'كود المنتج',
-                value: product.globalProduct.barcode == null ? '-' : product.globalProduct.barcode!,
+                value: product.globalProduct.barcode == null
+                    ? '-'
+                    : product.globalProduct.barcode!,
                 detailsType: ProductDetailsType.barcode,
                 iconColor: const Color(0xFF6669F1),
               ),

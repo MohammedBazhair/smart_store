@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../core/extensions/extensions.dart';
-import '../../domain/entities/seller_product.dart';
+import '../../domain/entities/store_product.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/products_widgets/product_filter_dialog.dart';
 import '../widgets/products_widgets/product_search_bar.dart';
@@ -20,7 +20,7 @@ class ProductsScreen extends ConsumerStatefulWidget {
     this.title,
   });
 
-  final FutureProvider<List<SellerProduct>> productsProvider;
+  final FutureProvider<List<StoreProduct>> productsProvider;
   final String? title;
 
   @override
@@ -97,7 +97,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 Expanded(
                   child: productsAsync.when(
                     loading: () {
-                      final fakeProducts = SellerProduct.fakeProducts;
+                      final fakeProducts = StoreProduct.fakeProducts;
 
                       return ProductsList(
                         products: fakeProducts,

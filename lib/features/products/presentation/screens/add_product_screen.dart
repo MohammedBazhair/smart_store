@@ -10,8 +10,8 @@ import '../../../../errors/result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product_details.dart';
-import '../../domain/entities/seller_product.dart';
-import '../controllers/product_controller.dart';
+import '../../domain/entities/store_product.dart';
+import '../../domain/entities/sub_entities/global_product.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/form_fields/product_barcode_field.dart';
 import '../widgets/form_fields/product_category_dropdown.dart';
@@ -32,7 +32,7 @@ class AddProductScreen extends ConsumerStatefulWidget {
     this.detailsType,
   });
   final String? barcode;
-  final SellerProduct? product;
+  final StoreProduct? product;
   final ProductDetailsType? detailsType;
 
   @override
@@ -102,21 +102,24 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     });
   }
 
-  SellerProduct _buildProductFromFields({SellerProduct? oldProduct}) {
+  StoreProduct _buildProductFromFields({StoreProduct? oldProduct}) {
     final now = DateTime.now();
-
-    return SellerProduct(
-      id: oldProduct?.id,
-      name: _nameController.text.trim(),
-      quantity: int.tryParse(_quantityController.text),
-      barcode: _barcodeController.text,
-      expiryDate: DateTime.tryParse(_expiryDateController.text),
+    final globalProduct = GlobalProduct(
       category: _selectedCategory,
+      name: _nameController.text.trim(),
+      barcode: _barcodeController.text,
+      createdAt: now,
+    );
+    return StoreProduct(
+      id: oldProduct?.id,
+      storeId: ,
+      quantity: int.tryParse(_quantityController.text),
+      expiryDate: DateTime.tryParse(_expiryDateController.text),
       notes: _notesController.text,
-      createdAt: oldProduct?.createdAt ?? now,
       updatedAt: now,
       currency: _selectedCurrency,
       price: double.tryParse(_priceController.text) ?? 0,
+      globalProduct: globalProduct,
     );
   }
 

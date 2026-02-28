@@ -4,15 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../domain/entities/product_expiry_status.dart';
-import '../../../domain/entities/seller_product.dart';
+import '../../../domain/entities/store_product.dart';
 import '../../screens/product_details_screen.dart';
 import 'product_meta_column.dart';
 import 'product_title.dart';
 import 'status_icon.dart';
-
-
-
-
 
 class AnimatedProductCard extends StatelessWidget {
   const AnimatedProductCard({
@@ -20,7 +16,7 @@ class AnimatedProductCard extends StatelessWidget {
     required this.product,
   });
 
-  final SellerProduct product;
+  final StoreProduct product;
   @override
   Widget build(BuildContext context) {
     final status = product.expiryDate == null

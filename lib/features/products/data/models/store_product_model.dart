@@ -1,11 +1,11 @@
 import '../../../../core/constants/enums.dart';
-import '../../domain/entities/seller_product.dart';
+import '../../domain/entities/store_product.dart';
 import 'global_product_model.dart';
 
-class SellerProductModel extends SellerProduct {
+class SellerProductModel extends StoreProduct {
   const SellerProductModel({
     super.id,
-    required super.sellerId,
+    required super.storeId,
     required super.quantity,
     required super.expiryDate,
     required super.updatedAt,
@@ -16,10 +16,10 @@ class SellerProductModel extends SellerProduct {
   });
 
   /// تحويل من Entity إلى Model
-  factory SellerProductModel.fromEntity(SellerProduct product) {
+  factory SellerProductModel.fromEntity(StoreProduct product) {
     return SellerProductModel(
       id: product.id,
-      sellerId: product.sellerId,
+      storeId: product.storeId,
       globalProduct: product.globalProduct,
       quantity: product.quantity,
       expiryDate: product.expiryDate,
@@ -33,7 +33,7 @@ class SellerProductModel extends SellerProduct {
   factory SellerProductModel.fromRemote(Map<String, dynamic> map) {
     return SellerProductModel(
       id: map['id'] as String?,
-      sellerId: map['seller_id'] as String,
+      storeId: map['store_id'] as String,
       globalProduct: GlobalProductModel.fromRemote(map['global_products']),
       quantity: map['quantity'] as int?,
       expiryDate: DateTime.tryParse((map['expiry_date'] as String?) ?? ''),
@@ -46,8 +46,8 @@ class SellerProductModel extends SellerProduct {
 
   factory SellerProductModel.fromLocal(Map<String, dynamic> map) {
     return SellerProductModel(
-      id: map['seller_product_id'],
-      sellerId: map['seller_id'],
+      id: map['store_product_id'],
+      storeId: map['store_id'],
       price: map['price'] as num,
       quantity: map['quantity'],
       currency: Currency.values.byName(map['currency']),
@@ -60,20 +60,18 @@ class SellerProductModel extends SellerProduct {
 
   Map<String, dynamic> toMap() {
     final map = {
-      'quantity': quantity,
-      'expiry_date': expiryDate?.toIso8601String(),
+      'store_id': storeId,
+      'product_id': globalProduct.id,
       'price': price,
+      'expiry_date': expiryDate?.toIso8601String(),
+      'quantity': quantity,
       'currency': currency.name,
       'notes': notes,
       'updated_at': updatedAt.toIso8601String(),
-      'seller_id': sellerId,
-      'product_id': globalProduct.id,
     };
 
     if (id != null) map['id'] = id;
 
     return map;
   }
-
-  
 }

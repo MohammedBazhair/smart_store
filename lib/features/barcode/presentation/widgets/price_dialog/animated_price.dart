@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../products/domain/entities/seller_product.dart';
+import '../../../../products/domain/entities/store_product.dart';
 
 class AnimatedPrice extends StatefulWidget {
   const AnimatedPrice(this.product, {super.key});
 
-  final SellerProduct product;
+  final StoreProduct product;
 
   @override
   State<AnimatedPrice> createState() => _AnimatedPriceState();

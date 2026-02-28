@@ -7,7 +7,7 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../errors/result.dart';
-import '../../../products/domain/entities/seller_product.dart';
+import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../domain/alert.dart';
@@ -103,7 +103,7 @@ class AlertCard extends ConsumerWidget {
           final product = await ref
               .read(productRepositoryProvider)
               .getProductById(alert.productId);
-          if (product is SuccessState<SellerProduct>) {
+          if (product is SuccessState<StoreProduct>) {
             await context.pushTo(
               ProductDetailsScreen(productId: product.data.id!),
             );

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import '../../domain/entities/seller_product.dart';
-import '../controllers/product_controller.dart';
+import '../../domain/entities/store_product.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/product_details/product_header_card.dart';
 import '../widgets/product_details/product_info_section.dart';
@@ -31,7 +30,7 @@ class ProductDetailsScreen extends ConsumerWidget {
       body: productAsync.when(
         data: (product) => ProductDetailsBody(product: product),
         loading: () => Skeletonizer(
-          child: ProductDetailsBody(product: SellerProduct.fake()),
+          child: ProductDetailsBody(product: StoreProduct.fake()),
         ),
         error: (_, __) => const Center(
           child: Text('حدث خطأ أثناء عرض المنتج'),
@@ -43,7 +42,7 @@ class ProductDetailsScreen extends ConsumerWidget {
 
 class ProductDetailsBody extends ConsumerWidget {
   const ProductDetailsBody({super.key, required this.product});
-  final SellerProduct? product;
+  final StoreProduct? product;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

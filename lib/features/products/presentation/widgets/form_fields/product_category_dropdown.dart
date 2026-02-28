@@ -4,7 +4,6 @@ import '../../../domain/entities/category.dart';
 import '../../../domain/entities/product_details.dart';
 import '../../controllers/product_provider.dart';
 
-
 class ProductCategoryDropdown extends ConsumerWidget {
   const ProductCategoryDropdown({
     super.key,
@@ -15,7 +14,7 @@ class ProductCategoryDropdown extends ConsumerWidget {
   final ValueChanged<Category?> onChanged;
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     return DropdownButtonFormField<Category>(
       value: value,
       focusNode: ref.read(focusNodesProvider)[ProductDetailsType.category],
@@ -24,13 +23,14 @@ class ProductCategoryDropdown extends ConsumerWidget {
         prefixIcon: Icon(Icons.category),
         helperText: '',
       ),
-      items:Category.values.map((category) {
+      items: ref
+          .watch(productControllerProvider.select((s) => s.categories))
+          .map((category) {
         return DropdownMenuItem(
           value: category,
-          child: Text(category.label),
+          child: Text(category.name),
         );
       }).toList(),
-      
       onChanged: onChanged,
       validator: (value) {
         if (value == null) {

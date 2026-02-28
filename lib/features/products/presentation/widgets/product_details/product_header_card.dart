@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/seller_product.dart';
+import '../../../domain/entities/store_product.dart';
 import 'product_status_badge.dart';
 
 class ProductHeaderInfo extends StatelessWidget {
   const ProductHeaderInfo({super.key, required this.product});
-  final SellerProduct product;
+  final StoreProduct product;
 
   @override
   Widget build(BuildContext context) {

@@ -7,12 +7,15 @@ import '../../../../errors/result.dart';
 import '../../data/datasource/product_local_data_source.dart';
 import '../../data/datasource/product_remote_data_source.dart';
 import '../../data/repositories/product_repository_impl.dart';
+import '../../domain/entities/category.dart';
 import '../../domain/entities/expiry_date_picker.dart';
 import '../../domain/entities/product_details.dart';
 import '../../domain/entities/product_query.dart';
-import '../../domain/entities/seller_product.dart';
+import '../../domain/entities/store_product.dart';
 import '../../domain/repositories/product_repository.dart';
 import 'expiry_date_controller.dart';
+import 'product_controller.dart';
+import 'product_state.dart';
 
 final _productLocalDataSource = Provider((ref) {
   final db = ref.read(localDatabaseServiceProvider);
@@ -30,14 +33,15 @@ final _productRemoteDataSource = Provider((ref) {
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final _remote = ref.read(_productRemoteDataSource);
   final _local = ref.read(_productLocalDataSource);
+  final cache= ref.read(localCacheServiceProvider);
   final _network = ref.read(networkProvider);
-  return ProductRepositoryImpl(_local, _remote, _network);
+  return ProductRepositoryImpl(_local, _remote, _network, cache);
 });
 
 /// Provider للحصول على جميع المنتجات
-final productsProvider = FutureProvider<List<SellerProduct>>((ref) async {
+final productsProvider = FutureProvider<List<StoreProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
-  final result = await repository.getAllProducts(sellerId);
+  final result = await repository.getAllProducts(storeId);
 
   return result;
 });
@@ -47,15 +51,15 @@ final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
 );
 
 final searchFilterProductsProvider =
-    FutureProvider.autoDispose<List<SellerProduct>>((ref) async {
+    FutureProvider.autoDispose<List<StoreProduct>>((ref) async {
   final query = ref.watch(productQueryProvider);
   if (!query.hasQuery) return [];
 
   final repository = ref.watch(productRepositoryProvider);
 
   final products = query.isSearching
-      ? await repository.searchProducts( sellerId: , query:  query.search):
-     await repository.getAllProducts(sellerId);
+      ? await repository.searchProducts( storeId: storeId , query:  query.search):
+     await repository.getAllProducts(storeId);
 
   if (!query.hasCategory) return products;
 
@@ -64,10 +68,10 @@ final searchFilterProductsProvider =
 
 /// Provider للمنتجات المنتهية
 final expiredProductsProvider =
-    FutureProvider<List<SellerProduct>>((ref) async {
+    FutureProvider<List<StoreProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
-  final result = await repository.getExpiredProducts(sellerId);
-  if (result is SuccessState<List<SellerProduct>>) {
+  final result = await repository.getExpiredProducts(storeId);
+  if (result is SuccessState<List<StoreProduct>>) {
     return result.data;
   }
   return [];
@@ -75,10 +79,10 @@ final expiredProductsProvider =
 
 /// Provider للمنتجات القريبة من الانتهاء
 final nearExpiryProductsProvider =
-    FutureProvider<List<SellerProduct>>((ref) async {
+    FutureProvider<List<StoreProduct>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
-  final result = await repository.getNearExpiryProducts(sellerId,30);
-  if (result is SuccessState<List<SellerProduct>>) {
+  final result = await repository.getNearExpiryProducts(storeId,30);
+  if (result is SuccessState<List<StoreProduct>>) {
     return result.data;
   }
   return [];
@@ -94,9 +98,24 @@ final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {
   return map;
 });
 
-final currentProductProvider = StateProvider<SellerProduct?>((ref) => null);
+final currentProductProvider = StateProvider<StoreProduct?>((ref) => null);
 
 final expiryDateControllerProvider =
     StateNotifierProvider<ExpiryDateController, ExpiryDatePicker>(
   (ref) => ExpiryDateController(),
 );
+
+
+final productByIdProvider = FutureProvider.family<StoreProduct?, String>(
+  (ref, id) async {
+    final result =
+        await ref.watch(productRepositoryProvider).getProductById(id);
+    if (result is SuccessState<StoreProduct>) return result.data;
+    return null;
+  },
+);
+
+/// Provider للـ ProductController
+final productControllerProvider = NotifierProvider<ProductManagementController, ProductManagementState>(() {
+  return ProductManagementController();
+});

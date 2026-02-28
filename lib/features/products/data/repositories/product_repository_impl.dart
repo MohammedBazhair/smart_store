@@ -1,47 +1,57 @@
+import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
-import '../../domain/entities/seller_product.dart';
+import '../../domain/entities/store_product.dart';
+import '../../domain/entities/sub_entities/global_product.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasource/product_local_data_source.dart';
 import '../datasource/product_remote_data_source.dart';
+import '../models/global_product_model.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
   ProductRepositoryImpl(
     this._localDatabase,
     this._remoteDatabase,
     this._connectivity,
+    this._localCache,
   );
 
   final ConnectivityService _connectivity;
+  final LocalCacheService _localCache;
   final ProductLocalDataSource _localDatabase;
   final ProductRemoteDataSource _remoteDatabase;
 
   @override
-  Future<Result<List<Category>>> getAllCategories() async {
+  Future<List<Category>> getAllCategories() async {
     final hasConnection = await _connectivity.hasConnection();
     final result = hasConnection
         ? await _remoteDatabase.getAllCategories()
         : await _localDatabase.getAllCategories();
 
-    return result;
-  }
+    if (result is SuccessState<List<Category>>) {
+      await _localDatabase.saveAllCategories(result.data);
+      return result.data;
+    }
 
-  @override
-  Future<List<SellerProduct>> getAllProducts(String sellerId) async {
-    final hasConnection = await _connectivity.hasConnection();
-
-    final result = hasConnection
-        ? await _remoteDatabase.getSellerProducts(sellerId)
-        : await _localDatabase.getAllProducts(sellerId);
-
-    if (result is SuccessState<List<SellerProduct>>) return result.data;
     return [];
   }
 
   @override
-  Future<Result<SellerProduct>> getProductById(String sellerProductId) async {
+  Future<List<StoreProduct>> getAllProducts(String storeId) async {
+    final hasConnection = await _connectivity.hasConnection();
+
+    final result = hasConnection
+        ? await _remoteDatabase.getSellerProducts(storeId)
+        : await _localDatabase.getAllProducts(storeId);
+
+    if (result is SuccessState<List<StoreProduct>>) return result.data;
+    return [];
+  }
+
+  @override
+  Future<Result<StoreProduct>> getProductById(String sellerProductId) async {
     try {
       final hasConnection = await _connectivity.hasConnection();
 
@@ -59,17 +69,17 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Product?> getProductByBarcode({
     required String barcode,
-    required String sellerId,
+    required String storeId,
   }) async {
     final hasConnection = await _connectivity.hasConnection();
 
     final result = hasConnection
         ? await _remoteDatabase.getProductByBarcode(
-            sellerId: sellerId,
+            storeId: storeId,
             barcode: barcode,
           )
         : await _localDatabase.getProductByBarcode(
-            sellerId: sellerId,
+            storeId: storeId,
             barcode: barcode,
           );
 
@@ -78,40 +88,40 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<SellerProduct>> searchProducts({
+  Future<List<StoreProduct>> searchProducts({
     required String query,
-    required String sellerId,
+    required String storeId,
   }) async {
     final hasConnection = await _connectivity.hasConnection();
 
     final result = hasConnection
         ? await _remoteDatabase.searchProducts(
             query: query,
-            sellerId: sellerId,
+            storeId: storeId,
           )
         : await _localDatabase.searchProducts(
             query: query,
-            sellerId: sellerId,
+            storeId: storeId,
           );
 
-    if (result is SuccessState<List<SellerProduct>>) {
+    if (result is SuccessState<List<StoreProduct>>) {
       return result.data;
     }
     return [];
   }
 
   @override
-  Future<Result<List<SellerProduct>>> getExpiredProducts(
-    String sellerId,
+  Future<Result<List<StoreProduct>>> getExpiredProducts(
+    String storeId,
   ) async {
     try {
       final hasConnection = await _connectivity.hasConnection();
 
       final result = hasConnection
-          ? await _remoteDatabase.getExpiredProducts(sellerId)
-          : await _localDatabase.getExpiredProducts(sellerId);
+          ? await _remoteDatabase.getExpiredProducts(storeId)
+          : await _localDatabase.getExpiredProducts(storeId);
 
-      if (result is SuccessState<List<SellerProduct>>) {
+      if (result is SuccessState<List<StoreProduct>>) {
         return SuccessState(result.data);
       }
       throw Exception();
@@ -123,18 +133,18 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<List<SellerProduct>>> getNearExpiryProducts(
-    String sellerId,
+  Future<Result<List<StoreProduct>>> getNearExpiryProducts(
+    String storeId,
     int days,
   ) async {
     try {
       final hasConnection = await _connectivity.hasConnection();
 
       final result = hasConnection
-          ? await _remoteDatabase.getNearExpiryProducts(sellerId, days)
-          : await _localDatabase.getNearExpiryProducts(sellerId, days);
+          ? await _remoteDatabase.getNearExpiryProducts(storeId, days)
+          : await _localDatabase.getNearExpiryProducts(storeId, days);
 
-      if (result is SuccessState<List<SellerProduct>>) {
+      if (result is SuccessState<List<StoreProduct>>) {
         return SuccessState(result.data);
       }
       throw Exception();
@@ -156,7 +166,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<void>> addProduct(SellerProduct product) async {
+  Future<Result<void>> addProduct(StoreProduct product) async {
     try {
       if (await _connectivity.hasConnection()) {
         await _remoteDatabase.addProduct(product);
@@ -171,7 +181,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<void>> updateProduct(SellerProduct product) async {
+  Future<Result<void>> updateProduct(StoreProduct product) async {
     try {
       final updatedProduct = product.copyWith(updatedAt: DateTime.now());
       if (await _connectivity.hasConnection()) {
@@ -183,5 +193,38 @@ class ProductRepositoryImpl implements ProductRepository {
     } catch (e) {
       return const ErrorState('فشل في تحديث المنتج');
     }
+  }
+
+  @override
+  Future<List<GlobalProduct>> getProductsGlobal() async {
+    final hasConnection = await _connectivity.hasConnection();
+    final rows = hasConnection
+        ? await _remoteDatabase.getGlobalProducts()
+        : await _localDatabase.getGlobalProducts();
+
+    final products = rows.map(GlobalProductModel.fromRemote).toList();
+
+    if (hasConnection) await _localDatabase.saveGlobalProducts(products);
+    return products;
+  }
+
+  @override
+  Future<void> initDataFromNetwork() async {
+    final isDownloaded = _localCache.getBool(key: 'isDownloadedInit') ?? false;
+    if (isDownloaded) return;
+
+    if (!await _connectivity.hasConnection()) {
+      throw Exception('No internet connection');
+    }
+
+    final categoriesResult = await getAllCategories();
+
+    if (categoriesResult.isEmpty) {
+      throw Exception('Categories not loaded');
+    }
+
+    await getProductsGlobal();
+
+    await _localCache.setBool(key: 'isDownloadedInit', value: true);
   }
 }

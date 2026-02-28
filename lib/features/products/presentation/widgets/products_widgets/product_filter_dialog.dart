@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/entities/category.dart';
+import '../../controllers/product_provider.dart';
 
-class ProductFilterDialog extends StatelessWidget {
+class ProductFilterDialog extends ConsumerWidget {
   const ProductFilterDialog({
     super.key,
     required this.initialCategory,
@@ -12,7 +14,9 @@ class ProductFilterDialog extends StatelessWidget {
   final ValueChanged<Category?> onApply;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
+    final categories =
+        ref.watch(productControllerProvider.select((s) => s.categories));
     return AlertDialog(
       title: const Text(
         'تصفية حسب الفئة',
@@ -23,20 +27,19 @@ class ProductFilterDialog extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              
-              ...Category.values.map(
-                (category) => RadioListTile<Category?>(
-                  title: Text(category.label),
-                  value: category,
-                  groupValue: initialCategory,
-                  onChanged: (value) {
-                    onApply(value);
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            ],
+            children: categories
+                .map(
+                  (category) => RadioListTile<Category?>(
+                    title: Text(category.name),
+                    value: category,
+                    groupValue: initialCategory,
+                    onChanged: (value) {
+                      onApply(value);
+                      Navigator.pop(context);
+                    },
+                  ),
+                )
+                .toList(),
           ),
         ),
       ),

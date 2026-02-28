@@ -1,34 +1,39 @@
 import '../../../../errors/result.dart';
 import '../entities/category.dart';
 import '../entities/product.dart';
-import '../entities/seller_product.dart';
+import '../entities/store_product.dart';
+import '../entities/sub_entities/global_product.dart';
 
 abstract class ProductRepository {
-  Future<Result<List<Category>>> getAllCategories();
-  Future<List<SellerProduct>> getAllProducts(String sellerId);
+  Future<List<Category>> getAllCategories();
+  Future<List<StoreProduct>> getAllProducts(String storeId);
 
-  Future<Result<SellerProduct>> getProductById(String sellerProductId);
+  Future<List<GlobalProduct>> getProductsGlobal();
+
+  Future<Result<StoreProduct>> getProductById(String sellerProductId);
 
   Future<Product?> getProductByBarcode({
     required String barcode,
-    required String sellerId,
+    required String storeId,
   });
 
   Future<bool> isBarcodeExists(String barcode);
 
-  Future<List<SellerProduct>> searchProducts({
+  Future<List<StoreProduct>> searchProducts({
     required String query,
-    required String sellerId,
+    required String storeId,
   });
 
-  Future<Result<List<SellerProduct>>> getExpiredProducts(String sellerId);
+  Future<Result<List<StoreProduct>>> getExpiredProducts(String storeId);
 
-  Future<Result<List<SellerProduct>>> getNearExpiryProducts(
-    String sellerId,
+  Future<Result<List<StoreProduct>>> getNearExpiryProducts(
+    String storeId,
     int days,
   );
 
-  Future<Result<void>> addProduct(SellerProduct product);
+  Future<Result<void>> addProduct(StoreProduct product);
 
-  Future<Result<void>> updateProduct(SellerProduct product);
+  Future<Result<void>> updateProduct(StoreProduct product);
+
+  Future<void> initDataFromNetwork();
 }

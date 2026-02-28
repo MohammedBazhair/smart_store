@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
-import '../../../domain/entities/seller_product.dart';
+import '../../../domain/entities/store_product.dart';
 
 class ProductStatusBadge extends StatelessWidget {
   const ProductStatusBadge({
@@ -10,7 +10,7 @@ class ProductStatusBadge extends StatelessWidget {
     required this.product,
   });
 
-  final SellerProduct product;
+  final StoreProduct product;
   @override
   Widget build(BuildContext context) {
     final remainingDays =
