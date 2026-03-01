@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/shared/providers/repositories_provider.dart';
+import '../../../../core/constants/enums.dart';
+import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/providers/core_providers.dart';
+import '../../../../core/utils/send_messages_utils.dart';
+import '../../../products/presentation/screens/init_screen.dart';
 import '../../domain/entities/status_config.dart';
 
 class ContinueButtonWidget extends ConsumerWidget {
@@ -29,11 +33,26 @@ class ContinueButtonWidget extends ConsumerWidget {
       ),
       child: ElevatedButton(
         onPressed: () async {
-          final prefs = ref.read(sharedPreferencesProvider);
-          await prefs.setBool('has_shown_account_status', true);
+          if (canContinue) {
+            final prefs = ref.read(localCacheServiceProvider);
+            await prefs.setBool(key: 'has_shown_account_status', value: true);
+
+            await context.pushReplacementTo(const InitScreen());
+            return;
+          }
+
+          try {
+            await UrlUtils.sendWhatsApp(
+              phone: '967776793111',
+              message:
+                  'مرحباً، أود الاستفسار عن حالة حسابي في تطبيق Smart Store.',
+            );
+          } catch (e) {
+            context.showSnakbar('حدثت مشكلة اثناء ارسال رسالة للدعم الفني', type: SnackBarType.error);
+          }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: config.primaryColor ,
+          backgroundColor: config.primaryColor,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 56),
           shape: RoundedRectangleBorder(

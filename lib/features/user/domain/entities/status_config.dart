@@ -49,14 +49,13 @@ class StatusConfig {
         return StatusConfig(
           title: 'في انتظار التفعيل',
           description:
-              'حسابك قيد المراجعة حالياً. سيتم تفعيل حسابك بالكامل بعد إتمام عملية التحقق. قد يستغرق ذلك بضع دقائق.',
+              'حسابك قيد المراجعة حالياً. سيتم تفعيل حسابك بالكامل بعد إتمام عملية التحقق. قد يستغرق ذلك 12 ساعة.',
           icon: Icons.hourglass_empty_rounded,
           primaryColor: AppTheme.secondaryColor,
           secondaryColor: const Color(0xFF818CF8),
           features: [
             'الحساب قيد المراجعة',
             'سيتم التفعيل قريباً',
-            'يمكنك تصفح التطبيق',
             'ستصلك إشعارات عند التفعيل',
           ],
         );

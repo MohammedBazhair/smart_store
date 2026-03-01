@@ -15,7 +15,7 @@ class StoreRemoteDataSource {
     final result = await _client.client
         .from('stores')
         .select('*, store_members(*)')
-        .eq('store_members.member_id', userId);
+        .contains('member_id', userId);
 
     return result.map(StoreModel.fromMap).toList();
   }

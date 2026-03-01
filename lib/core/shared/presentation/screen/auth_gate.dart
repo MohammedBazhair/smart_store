@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../../../../features/user/presentation/screens/account_status_screen.dart';
+import '../../../../features/products/presentation/screens/init_screen.dart';
 import '../../providers/core_providers.dart';
 import '../../providers/repositories_provider.dart';
-import 'dashboard_screen.dart';
 
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
@@ -36,13 +37,14 @@ class AuthGate extends ConsumerWidget {
           final userState = ref.watch(userControllerProvider);
           final profile = userState.profile;
 
+          if (profile.phone != null) OneSignal.login(profile.phone!);
+
           return AccountStatusScreen(
             profile: profile,
-           
           );
         }
 
-        return const DashboardScreen();
+        return const InitScreen();
       },
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workmanager/workmanager.dart';
@@ -32,6 +33,7 @@ Future<void> _initializeServices(ProviderContainer container) async {
   await _initializeAlertService(container);
   await _initializeWorkManager();
   await _initializeSupabase();
+  await _initializePushNotification();
 }
 
 Future<void> _initializeAlertService(
@@ -63,4 +65,11 @@ Future<void> _initializeSupabase() async {
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0ZXNtam16bWdranlsamZ4c3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4NjkyMDYsImV4cCI6MjA4NjQ0NTIwNn0.08YQFFWzFFb43EA1torB_ckO3xw4SgeWVpYraftKpyc',
   );
+}
+
+Future<void> _initializePushNotification() async {
+  // Enable verbose logging for debugging (remove in production)
+  await OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+  // Initialize with your OneSignal App ID
+  OneSignal.initialize('4a72759f-2beb-4621-80ed-7ee6b9bfc813');
 }

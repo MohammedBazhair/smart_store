@@ -1,4 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+
 import 'account_status.dart';
 
 class ProfileEntity {
@@ -82,4 +84,9 @@ class ProfileEntity {
   }
 
   String toJson() => jsonEncode(toMap());
+
+  @override
+  String toString() {
+    return 'ProfileEntity(userId: $userId, username: $username, phone: $phone, updatedAt: $updatedAt, createdAt: $createdAt, credits: $credits, accountStatus: $accountStatus)';
+  }
 }

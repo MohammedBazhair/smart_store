@@ -55,3 +55,7 @@ class UserPhoneNotFoundException extends AppException {
 class NoStoreSelectedException extends AppException {
   const NoStoreSelectedException(super.message);
 }
+
+class CannotLaunchWhatsAppException extends AppException {
+  const CannotLaunchWhatsAppException(super.message);
+}

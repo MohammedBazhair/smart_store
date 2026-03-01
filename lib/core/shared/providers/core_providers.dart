@@ -21,7 +21,8 @@ import '../../network/connectivity_service.dart';
 import '../../network/network_clinet.dart';
 import 'repositories_provider.dart';
 
-final databaseProvider = Provider<Database>((ref)=> throw UnimplementedError());
+final databaseProvider =
+    Provider<Database>((ref) => throw UnimplementedError());
 
 final networkProvider = Provider((_) {
   return ConnectivityServiceImpl(InternetConnection());
@@ -91,7 +92,6 @@ final userRemoteDataSourceProvider = Provider((ref) {
   );
 });
 
-
 final _userControllerProvider = Provider((ref) {
   final repo = ref.read(userRepositoryProvider);
   return UserController(repo);
@@ -100,11 +100,10 @@ final _userControllerProvider = Provider((ref) {
 final userControllerProvider = StateNotifierProvider<UserController, UserState>(
   (ref) {
     final controller = ref.read(_userControllerProvider);
+    controller.loadProfile();
     return controller;
   },
 );
-
-
 
 final authRepositoryProvider = Provider((ref) {
   final remoteAuth = ref.read(authRemoteDataSourceProvider);

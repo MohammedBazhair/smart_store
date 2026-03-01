@@ -42,7 +42,6 @@ class AccountDetailsWidget extends StatelessWidget {
               label: 'رقم الهاتف',
               value: profile.phone!,
             ),
-          
           if (profile.createdAt != null)
             DetailRowWidget(
               icon: Icons.calendar_today_outlined,
