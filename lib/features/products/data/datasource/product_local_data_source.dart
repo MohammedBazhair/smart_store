@@ -56,7 +56,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           gp.id             AS global_product_id,
           gp.name           AS product_name,
           gp.barcode        AS barcode,
-          gp.created_at     AS product_created_at,
+          gp.created_at     AS product_created_at
 
         FROM store_products sp
         $joinType JOIN global_products gp ON sp.product_id = gp.id

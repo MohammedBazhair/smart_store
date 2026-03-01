@@ -11,11 +11,11 @@ class StoreRemoteDataSource {
     await _client.insertRow(map: store.toMap(), table: 'stores');
   }
 
-  Future<List<StoreModel>> getUserStores(String userId) async {
+ Future<List<StoreModel>> getUserStores(String userPhone) async {
     final result = await _client.client
         .from('stores')
-        .select('*, store_members(*)')
-        .contains('member_id', userId);
+        .select('*, store_members!inner(*)')
+        .eq('store_members.member_phone', userPhone);
 
     return result.map(StoreModel.fromMap).toList();
   }

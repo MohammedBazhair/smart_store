@@ -18,7 +18,7 @@ class AppTheme {
 
   static const Color errorColor = Color.fromARGB(235, 212, 62, 62);
   static const Color warningColor = Color(0xFFD97706);
-  static const Color successColor = Color(0xE2059668);
+  static const Color successColor = Color(0xE108C388);
 
   static const Color expiredColor = Color(0xFFDC2626);
   static const Color nearExpiryColor = Color(0xFFD97706);

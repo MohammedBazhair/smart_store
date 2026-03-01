@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../products/presentation/screens/init_screen.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store.dart';
@@ -80,6 +81,7 @@ class _StoreSelectionScreenState extends ConsumerState<StoreSelectionScreen>
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -91,22 +93,22 @@ class _StoreSelectionScreenState extends ConsumerState<StoreSelectionScreen>
                       final stores = state.myStores.values.toList();
 
                       return Expanded(
-                        child: ListView.builder(
-                          itemCount: stores.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            final store = stores[index].store;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 20),
-                              child: _StoreCard(
-                                store: store,
-                                role: state.myRole.label,
-                                color: roleColor(state.myRole),
+                        child: stores.isEmpty
+                            ? const _EmptyStoresView()
+                            : ListView.builder(
+                                itemCount: stores.length,
+                                itemBuilder: (context, index) {
+                                  final store = stores[index].store;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 20),
+                                    child: _StoreCard(
+                                      store: store,
+                                      role: state.myRole.label,
+                                      color: roleColor(state.myRole),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
                       );
                     },
                   ),
@@ -122,7 +124,6 @@ class _StoreSelectionScreenState extends ConsumerState<StoreSelectionScreen>
                       height: 55,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -146,15 +147,14 @@ class _StoreSelectionScreenState extends ConsumerState<StoreSelectionScreen>
                                     child: const Text('إالغاء'),
                                   ),
                                   ElevatedButton(
-                                    onPressed: () async{
+                                    onPressed: () async {
                                       final name = storeName.trim();
                                       if (name.isEmpty) return;
-                                      final cntroller= ref
-                                          .read(
-                                            storeControllerProvider.notifier,
-                                          );
-                                      
-                                          await cntroller.createStore(name);
+                                      final cntroller = ref.read(
+                                        storeControllerProvider.notifier,
+                                      );
+
+                                      await cntroller.createStore(name);
                                       Navigator.pop(context);
                                     },
                                     child: const Text('Create'),
@@ -166,7 +166,7 @@ class _StoreSelectionScreenState extends ConsumerState<StoreSelectionScreen>
                         },
                         icon: const Icon(Icons.add),
                         label: const Text(
-                          'Create New Store',
+                          'إنشاء متجر جديد',
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -249,6 +249,88 @@ class _StoreCard extends ConsumerWidget {
               ),
             ),
             const Icon(Icons.arrow_forward_ios, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyStoresView extends StatelessWidget {
+  const _EmptyStoresView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // أيقونة احترافية
+            Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.03),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.storefront_outlined,
+                size: 50,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            const Text(
+              'لا يوجد لديك متاجر بعد',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              'ابدأ بإنشاء متجرك الأول لإدارة منتجاتك ومخزونك بسهولة واحترافية.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
+            ),
+
+            const SizedBox(height: 35),
+
+            SizedBox(
+              width: 220,
+              height: 50,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  // يمكنك استدعاء نفس dialog الإنشاء هنا
+                },
+                icon: const Icon(Icons.add, size: 20),
+                label: const Text(
+                  'إنشاء متجر جديد',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

@@ -20,7 +20,7 @@ class StoreController extends Notifier<StoreEventState> {
   Future<void> loadMyStores() async {
     final repo = ref.read(storeRepositoryProvider);
     final profile = ref.read(userControllerProvider).profile;
-    final stores = await repo.getUserStores(profile.userId);
+    final stores = await repo.getUserStores(profile.phone??'');
 
     final Map<String, StoreTest> myStores = {};
 

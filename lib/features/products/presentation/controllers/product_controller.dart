@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/log.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../domain/entities/category.dart';
@@ -25,6 +26,10 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final products = await getSellerProducts();
 
     state = ProductManagementState(products: products, categories: categories);
+    Logger.debugLog(
+      message:
+          'ProductManagementController initialized with ${products.length} products and ${categories.length} categories',
+    );
   }
 
   Future<List<Category>> getCategories() async {

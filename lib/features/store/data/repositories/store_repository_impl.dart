@@ -21,8 +21,8 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
-  Future<List<Store>> getUserStores(String userId) {
-    return remote.getUserStores(userId);
+  Future<List<Store>> getUserStores(String userPhone) {
+    return remote.getUserStores(userPhone);
   }
 
   @override

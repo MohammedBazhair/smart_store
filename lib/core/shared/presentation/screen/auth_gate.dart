@@ -4,7 +4,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../../../../features/user/presentation/screens/account_status_screen.dart';
-import '../../../../features/products/presentation/screens/init_screen.dart';
+import '../../../../features/store/presentation/screens/store_selection_screen.dart';
 import '../../providers/core_providers.dart';
 import '../../providers/repositories_provider.dart';
 
@@ -44,7 +44,7 @@ class AuthGate extends ConsumerWidget {
           );
         }
 
-        return const InitScreen();
+        return const StoreSelectionScreen();
       },
     );
   }
