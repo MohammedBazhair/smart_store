@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/presentation/screen/dashboard_screen.dart';
+import '../../../products/presentation/screens/init_screen.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store.dart';
 import '../controller/store_provider.dart';
@@ -197,7 +197,7 @@ class _StoreCard extends ConsumerWidget {
     return GestureDetector(
       onTap: () {
         ref.read(storeControllerProvider.notifier).selectStore(store.id!);
-        context.pushReplacementTo(const DashboardScreen());
+        context.pushReplacementTo(const InitScreen());
       },
       child: Container(
         width: double.infinity,

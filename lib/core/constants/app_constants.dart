@@ -23,5 +23,5 @@ class AppConstants {
 
   static const String profilesTable = 'profiles';
 
-  static const String profileUserKey = 'profile_user';
+  static const String profileUserIdKey = 'profile_user';
 }

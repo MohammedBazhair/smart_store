@@ -9,8 +9,11 @@ import '../../core/constants/enums.dart';
 import '../../core/utils/top_level_fuctions.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import 'core/database/local/database_helper.dart';
+import 'core/extensions/extensions.dart';
 import 'core/shared/providers/core_providers.dart';
 import 'core/shared/providers/repositories_provider.dart';
+import 'features/products/presentation/screens/init_screen.dart';
+import 'main.dart';
 
 Future<ProviderContainer> configureDependencies() async {
   await initializeDateFormatting('ar');
@@ -72,4 +75,12 @@ Future<void> _initializePushNotification() async {
   await OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
   // Initialize with your OneSignal App ID
   OneSignal.initialize('4a72759f-2beb-4621-80ed-7ee6b9bfc813');
+
+  OneSignal.Notifications.addClickListener((event) {
+    final notification = event.notification;
+
+    if (notification.title?.contains('تم تفعيل حسابك') ?? false) {
+      navigatorKey.currentContext?.pushReplacementTo(const InitScreen());
+    }
+  });
 }

@@ -4,7 +4,7 @@ import '../../../../errors/result.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
 import '../theme/app_theme.dart';
-import 'dashboard_screen.dart';
+import 'auth_gate.dart';
 
 class PermissionDeniedScreen extends StatelessWidget {
   const PermissionDeniedScreen({super.key});
@@ -46,7 +46,7 @@ class PermissionDeniedScreen extends StatelessWidget {
 
                 if (result is SuccessState<bool> && result.data) {
                   // إعادة تشغيل التطبيق
-                  await context.pushReplacementTo(const DashboardScreen());
+                  await context.pushReplacementTo(const AuthGate());
                 }
               },
               child: const Text('إعادة المحاولة'),

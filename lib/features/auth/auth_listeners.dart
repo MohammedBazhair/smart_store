@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/enums.dart';
 import '../../core/extensions/extensions.dart';
-import '../../core/shared/presentation/screen/dashboard_screen.dart';
 import '../../core/shared/providers/core_providers.dart';
+import '../products/presentation/screens/init_screen.dart';
 import 'presentation/controllers/auth_state.dart';
 import 'presentation/screens/more_info_screen.dart';
 import 'presentation/screens/reconfirm_password_screen.dart';
@@ -25,7 +25,7 @@ Future<void> authListener({
       final profile =
           await ref.read(userControllerProvider.notifier).loadProfile();
       if (profile?.isDataComplete ?? false) {
-        await context.pushReplacementTo(const DashboardScreen());
+        await context.pushReplacementTo(const InitScreen());
       } else {
         await context.pushTo(const MoreInfoScreen());
       }

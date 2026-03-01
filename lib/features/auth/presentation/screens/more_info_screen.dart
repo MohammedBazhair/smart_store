@@ -44,7 +44,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
 
     final newProfile = profile.copyWith(username: name, phone: phone);
     await controller.updateProfile(newProfile);
-    // await context.pushReplacementTo(const DashboardScreen());
   }
 
   @override

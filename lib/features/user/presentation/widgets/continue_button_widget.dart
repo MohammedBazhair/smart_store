@@ -42,13 +42,22 @@ class ContinueButtonWidget extends ConsumerWidget {
           }
 
           try {
-            await UrlUtils.sendWhatsApp(
-              phone: '967776793111',
-              message:
-                  'مرحباً، أود الاستفسار عن حالة حسابي في تطبيق Smart Store.',
+            await sendPushNotification(
+              playerIds: ['776793111'],
+              title: 'تم تفعيل حسابك',
+              message: 'مرحباً، تم تفعيل حسابك في تطبيق Smart Store. يمكنك الآن الوصول إلى جميع الميزات والاستمتاع بتجربتك معنا.',
             );
+
+            // await UrlUtils.sendWhatsApp(
+            //   phone: '967776793111',
+            //   message:
+            //       'مرحباً، أود الاستفسار عن حالة حسابي في تطبيق Smart Store.',
+            // );
           } catch (e) {
-            context.showSnakbar('حدثت مشكلة اثناء ارسال رسالة للدعم الفني', type: SnackBarType.error);
+            context.showSnakbar(
+              'حدثت مشكلة اثناء ارسال رسالة للدعم الفني',
+              type: SnackBarType.error,
+            );
           }
         },
         style: ElevatedButton.styleFrom(

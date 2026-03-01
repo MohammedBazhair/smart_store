@@ -55,7 +55,8 @@ final authRemoteDataSourceProvider = Provider((ref) {
 
 final userLocalDataSourceProvider = Provider((ref) {
   final localCache = ref.read(localCacheServiceProvider);
-  return UserLocalDataSourceImpl(localCache);
+  final localDatabase = ref.read(localDatabaseServiceProvider);
+  return UserLocalDataSourceImpl(localDatabase, localCache);
 });
 
 final userRepositoryProvider = Provider((ref) {
