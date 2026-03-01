@@ -20,7 +20,7 @@ class StoreController extends Notifier<StoreEventState> {
   Future<void> loadMyStores() async {
     final repo = ref.read(storeRepositoryProvider);
     final profile = ref.read(userControllerProvider).profile;
-    final stores = await repo.getUserStores(profile.phone??'');
+    final stores = await repo.getUserStores(profile.phone ?? '');
 
     final Map<String, StoreTest> myStores = {};
 
@@ -30,18 +30,13 @@ class StoreController extends Notifier<StoreEventState> {
       myStores[s.id!] = storeTest;
     }
 
-    final myRole = myStores[state.state.selectedStoreId]
-            ?.members
-            .firstWhere((m) => m.memberPhone == profile.phone)
-            .role ??
-        Role.guest;
 
     final newState = state.state.copyWith(
       myStores: myStores,
-      myRole: myRole,
     );
 
     state = LoadMyStoresEvent(state: newState);
+    Logger.debugLog(message: state.state.myStores.keys.toString());
   }
 
   Future<void> addStoreMember(String phoneNumber) async {
@@ -93,8 +88,18 @@ class StoreController extends Notifier<StoreEventState> {
       state = CreateStoreEvent(state: state.state, storeName: storeName);
 
       await loadMyStores();
+    } on AppException catch (e) {
+      state = ErrorStoreEvent(
+        state: state.state,
+        error: e.message,
+      );
     } catch (e) {
       Logger.debugLog(error: e);
+      state = ErrorStoreEvent(
+        state: state.state,
+        error:
+            'فشلت عملية إنشاء متجر تأكد من الاتصال بالانترنت او راجع الدعم الفني',
+      );
     }
   }
 

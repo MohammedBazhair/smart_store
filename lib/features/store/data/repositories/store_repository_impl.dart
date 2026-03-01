@@ -9,15 +9,28 @@ import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
 class StoreRepositoryImpl implements StoreRepository {
-  StoreRepositoryImpl(this.remote, this.userRepository, this.connectivityService);
+  StoreRepositoryImpl(
+    this.remote,
+    this.userRepository,
+    this.connectivityService,
+  );
   final StoreRemoteDataSource remote;
   final UserRepository userRepository;
   final ConnectivityService connectivityService;
 
   @override
-  Future<void> createStore(Store store) {
-    final model = StoreModel.fromEntity(store);
-    return remote.createStore(model);
+  Future<void> createStore(Store store) async {
+    try {
+      final model = StoreModel.fromEntity(store);
+      await remote.createStore(model);
+    } catch (e) {
+      if (e.toString().contains('enough credits')) {
+        throw const CreditsZeroException(
+          'يجب ان يكون معك عملة واحدة على الاقل لانشاء متجر',
+        );
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -33,7 +46,7 @@ class StoreRepositoryImpl implements StoreRepository {
 
   @override
   Future<void> addStoreMember(StoreMember member) async {
-    if(!await connectivityService.hasConnection()) {
+    if (!await connectivityService.hasConnection()) {
       throw const InternetException();
     }
     final isUserExist = await userRepository.isPhoneSignUp(member.memberPhone);

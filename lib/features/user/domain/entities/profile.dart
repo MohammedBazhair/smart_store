@@ -71,7 +71,7 @@ class ProfileEntity {
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'id': userId,
       'phone': phone,
       'credits': credits,

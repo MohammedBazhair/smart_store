@@ -45,7 +45,8 @@ class AlertModel extends Alert {
 
   /// تحويل من AlertModel إلى Map
   Map<String, dynamic> toMap() {
-    final map = <String, dynamic>{
+    return {
+     if (id != null) 'id': id,
       'product_id': productId,
       'product_name': productName,
       'expiry_date': expiryDate?.toIso8601String(),
@@ -54,9 +55,5 @@ class AlertModel extends Alert {
       'is_read': isRead ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
     };
-
-    if (id != null) map['id'] = id;
-
-    return map;
   }
 }

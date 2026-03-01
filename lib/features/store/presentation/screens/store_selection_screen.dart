@@ -1,181 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../products/presentation/screens/init_screen.dart';
-import '../../../user/domain/entities/role.dart';
+import '../../../user/domain/entities/status_config.dart';
+import '../../../user/presentation/widgets/status_icon_widget.dart';
 import '../../domain/entities/store.dart';
+import '../../domain/entities/store_member.dart';
 import '../controller/store_provider.dart';
+import '../handle_store_states.dart';
+import '../widgets/create_store_dialog.dart';
 
-class StoreSelectionScreen extends ConsumerStatefulWidget {
+class StoreSelectionScreen extends ConsumerWidget {
   const StoreSelectionScreen({super.key});
 
   @override
-  ConsumerState<StoreSelectionScreen> createState() =>
-      _StoreSelectionScreenState();
-}
+  Widget build(BuildContext context, ref) {
+    ref.listen(storeControllerProvider, (_, event) {
+      handleStoreStates(event, context);
+    });
 
-class _StoreSelectionScreenState extends ConsumerState<StoreSelectionScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Color roleColor(Role role) {
-    switch (role) {
-      case Role.storeOwner:
-        return Colors.green;
-      case Role.worker:
-        return Colors.blue;
-      case Role.guest:
-        return Colors.grey;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FA),
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  const Text(
-                    'اختر متجرك',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 30),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
+        elevation: 1,
+        onPressed: () => showCreateStoreDialog(context),
+        child: const Icon(Icons.add),
+      ),
+      body: RefreshIndicator(
+        edgeOffset: 100,
+        onRefresh: () =>
+            ref.read(storeControllerProvider.notifier).loadMyStores(),
+        child: CustomScrollView(
+          slivers: [
+            const SliverAppBar(
+              toolbarHeight: 60,
+              pinned: true,
+              backgroundColor: AppTheme.primaryColor,
+              title: Text(
+                'المتاجر',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
 
-                  /// STORES GRID
-                  Consumer(
-                    builder: (_, ref, __) {
-                      final state = ref.watch(storeControllerProvider).state;
-                      final stores = state.myStores.values.toList();
+            /// STORES GRID
+            SliverPadding(
+              padding: const EdgeInsetsGeometry.all(24),
+              sliver: SliverFillRemaining(
+                child: Consumer(
+                  builder: (_, ref, __) {
+                    final state = ref.watch(storeControllerProvider).state;
+                    final stores = state.myStores.values.toList();
 
-                      return Expanded(
-                        child: stores.isEmpty
-                            ? const _EmptyStoresView()
-                            : ListView.builder(
-                                itemCount: stores.length,
-                                itemBuilder: (context, index) {
-                                  final store = stores[index].store;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 20),
-                                    child: _StoreCard(
-                                      store: store,
-                                      role: state.myRole.label,
-                                      color: roleColor(state.myRole),
-                                    ),
-                                  );
-                                },
-                              ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  /// CREATE BUTTON
-                  AnimatedScale(
-                    scale: 1,
-                    duration: const Duration(milliseconds: 300),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              String storeName = '';
-                              return AlertDialog(
-                                title: const Text('Create New Store'),
-                                content: TextField(
-                                  onChanged: (value) => storeName = value,
-                                  decoration: const InputDecoration(
-                                    hintText: 'Store Name',
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('إالغاء'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      final name = storeName.trim();
-                                      if (name.isEmpty) return;
-                                      final cntroller = ref.read(
-                                        storeControllerProvider.notifier,
-                                      );
-
-                                      await cntroller.createStore(name);
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Create'),
-                                  ),
-                                ],
+                    return stores.isEmpty
+                        ? const _EmptyStoresView()
+                        : ListView.separated(
+                            itemCount: stores.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 20),
+                            itemBuilder: (context, index) {
+                              return _StoreCard(
+                                store: stores[index].store,
+                                owner: stores[index].owner,
                               );
                             },
                           );
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text(
-                          'إنشاء متجر جديد',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  },
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -185,15 +84,15 @@ class _StoreSelectionScreenState extends ConsumerState<StoreSelectionScreen>
 class _StoreCard extends ConsumerWidget {
   const _StoreCard({
     required this.store,
-    required this.role,
-    required this.color,
+    required this.owner,
   });
   final Store store;
-  final String role;
-  final Color color;
+  final StoreMember owner;
 
   @override
   Widget build(BuildContext context, ref) {
+    const color = AppTheme.primaryColor;
+    print(owner);
     return GestureDetector(
       onTap: () {
         ref.read(storeControllerProvider.notifier).selectStore(store.id!);
@@ -222,7 +121,7 @@ class _StoreCard extends ConsumerWidget {
                 color: color.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Icons.store, color: color),
+              child: const Icon(Icons.store, color: color),
             ),
             const SizedBox(width: 18),
             Expanded(
@@ -234,15 +133,15 @@ class _StoreCard extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
+                      color: color,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    role,
-                    style: TextStyle(
+                    '${owner.role.label}: ${owner.memberPhone}',
+                    style: const TextStyle(
                       fontSize: 13,
-                      color: color,
-                      fontWeight: FontWeight.w500,
+                      color: AppTheme.textSecondary,
                     ),
                   ),
                 ],
@@ -261,78 +160,67 @@ class _EmptyStoresView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final config = StatusConfig(
+      icon: Icons.store_mall_directory_sharp,
+      primaryColor: AppTheme.primaryColor,
+      secondaryColor: AppTheme.primaryColor.withOpacity(0.6),
+    );
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // أيقونة احترافية
-            Container(
-              width: 110,
-              height: 110,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.03),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.storefront_outlined,
-                size: 50,
-                color: AppTheme.primaryColor,
-              ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // أيقونة احترافية
+          StatusIconWidget(
+            config: config,
+          ),
+          const SizedBox(height: 60),
+
+          const Text(
+            'لا يوجد لديك متاجر بعد',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E293B),
             ),
+          ),
 
-            const SizedBox(height: 30),
+          const SizedBox(height: 12),
 
-            const Text(
-              'لا يوجد لديك متاجر بعد',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1E293B),
-              ),
+          Text(
+            'ابدأ بإنشاء متجرك الأول لإدارة منتجاتك ومخزونك بسهولة واحترافية.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey.shade600,
+              height: 1.5,
             ),
+          ),
 
-            const SizedBox(height: 12),
+          const SizedBox(height: 35),
 
-            Text(
-              'ابدأ بإنشاء متجرك الأول لإدارة منتجاتك ومخزونك بسهولة واحترافية.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey.shade600,
-                height: 1.5,
-              ),
-            ),
-
-            const SizedBox(height: 35),
-
-            SizedBox(
-              width: 220,
-              height: 50,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 0,
+          SizedBox(
+            width: 220,
+            height: 50,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                onPressed: () {
-                  // يمكنك استدعاء نفس dialog الإنشاء هنا
-                },
-                icon: const Icon(Icons.add, size: 20),
-                label: const Text(
-                  'إنشاء متجر جديد',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                elevation: 0,
+              ),
+              onPressed: () => showCreateStoreDialog(context),
+              icon: const Icon(Icons.add, size: 20),
+              label: const Text(
+                'إنشاء متجر جديد',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

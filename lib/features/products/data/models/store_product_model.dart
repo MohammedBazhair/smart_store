@@ -59,7 +59,9 @@ class SellerProductModel extends StoreProduct {
   }
 
   Map<String, dynamic> toMap() {
-    final map = {
+    return {
+     if (id != null) 'id': id,
+
       'store_id': storeId,
       'product_id': globalProduct.id,
       'price': price,
@@ -70,8 +72,5 @@ class SellerProductModel extends StoreProduct {
       'updated_at': updatedAt.toIso8601String(),
     };
 
-    if (id != null) map['id'] = id;
-
-    return map;
   }
 }

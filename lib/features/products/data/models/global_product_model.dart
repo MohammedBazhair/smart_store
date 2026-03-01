@@ -12,12 +12,11 @@ class GlobalProductModel extends GlobalProduct {
 
   factory GlobalProductModel.fromEntity(GlobalProduct product) {
     return GlobalProductModel(
-      id:product.id,
+      id: product.id,
       category: product.category,
       name: product.name,
       barcode: product.barcode,
       createdAt: product.createdAt,
-      
     );
   }
 
@@ -42,15 +41,12 @@ class GlobalProductModel extends GlobalProduct {
   }
 
   Map<String, dynamic> toMap() {
-    final map = {
+    return {
+      if (id != null) 'id': id,
       'category_id': category.id,
       'name': name,
       'barcode': barcode,
       'createdAt': createdAt.toIso8601String(),
     };
-    if (id != null) {
-      map['id'] = id;
-    }
-    return map;
   }
 }

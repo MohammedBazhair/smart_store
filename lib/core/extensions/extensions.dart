@@ -7,6 +7,7 @@ extension ShowSnackbar on BuildContext {
     String msg, {
     required SnackBarType type,
   }) {
+    if (!mounted) return;
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         content: Text(

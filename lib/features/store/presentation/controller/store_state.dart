@@ -7,28 +7,26 @@ class StoreTest {
 
   final Store store;
   final Set<StoreMember> members;
+
+  StoreMember get owner => members.firstWhere((m)=>m.role==Role.storeOwner);
 }
 
 class StoreState {
   const StoreState({
     this.myStores = const {},
     this.selectedStoreId,
-    this.myRole = Role.guest,
   });
 
   final Map<String, StoreTest> myStores;
   final String? selectedStoreId;
-  final Role myRole;
 
   StoreState copyWith({
     Map<String, StoreTest>? myStores,
     String? selectedStoreId,
-    Role? myRole,
   }) {
     return StoreState(
       myStores: myStores ?? this.myStores,
       selectedStoreId: selectedStoreId ?? this.selectedStoreId,
-      myRole: myRole ?? this.myRole,
     );
   }
 }

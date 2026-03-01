@@ -72,7 +72,7 @@ Future<void> _initializeSupabase() async {
 
 Future<void> _initializePushNotification() async {
   // Enable verbose logging for debugging (remove in production)
-  await OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+  await OneSignal.Debug.setLogLevel(OSLogLevel.none);
   // Initialize with your OneSignal App ID
   OneSignal.initialize('4a72759f-2beb-4621-80ed-7ee6b9bfc813');
 

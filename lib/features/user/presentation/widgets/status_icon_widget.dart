@@ -1,10 +1,40 @@
 import 'package:flutter/material.dart';
+
 import '../../domain/entities/status_config.dart';
 
-class StatusIconWidget extends StatelessWidget {
-  const StatusIconWidget({super.key, required this.config});
-
+class StatusIconWidget extends StatefulWidget {
+  const StatusIconWidget({
+    super.key,
+    required this.config,
+    this.isRepeated = true,
+  });
   final StatusConfig config;
+  final bool isRepeated;
+
+  @override
+  State<StatusIconWidget> createState() => _StatusIconWidgetState();
+}
+
+class _StatusIconWidgetState extends State<StatusIconWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
+
+    if (widget.isRepeated) _controller.repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +46,11 @@ class StatusIconWidget extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            config.primaryColor,
-            config.secondaryColor,
-          ],
+          colors: [widget.config.primaryColor, widget.config.secondaryColor],
         ),
         boxShadow: [
           BoxShadow(
-            color: config.primaryColor.withOpacity(0.3),
+            color: widget.config.primaryColor.withOpacity(0.3),
             blurRadius: 30,
             spreadRadius: 5,
             offset: const Offset(0, 10),
@@ -33,15 +60,14 @@ class StatusIconWidget extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Animated Rings
-          ...List.generate(3, (index) {
-            return TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: 1.0),
-              duration: Duration(milliseconds: 2000 + (index * 500)),
-              curve: Curves.easeInOut,
-              builder: (context, value, child) {
+          // حلقات متحركة
+          for (int i = 0; i < 3; i++)
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                final double value = (_controller.value + i * 0.3) % 1.0;
                 return Transform.scale(
-                  scale: 1 + (value * 0.3 * (index + 1)),
+                  scale: 1 + (value * 0.2 * (i + 1)),
                   child: Opacity(
                     opacity: 1 - value,
                     child: Container(
@@ -50,7 +76,7 @@ class StatusIconWidget extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: config.primaryColor.withOpacity(0.3),
+                          color: widget.config.primaryColor.withOpacity(0.3),
                           width: 2,
                         ),
                       ),
@@ -58,12 +84,11 @@ class StatusIconWidget extends StatelessWidget {
                   ),
                 );
               },
-            );
-          }),
+            ),
 
-          // Icon
+          // الأيقونة في المنتصف
           Icon(
-            config.icon,
+            widget.config.icon,
             size: 80,
             color: Colors.white,
           ),

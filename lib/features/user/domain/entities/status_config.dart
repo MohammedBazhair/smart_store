@@ -5,12 +5,12 @@ import 'account_status.dart';
 
 class StatusConfig {
   StatusConfig({
-    required this.title,
-    required this.description,
+     this.title='',
+     this.description='',
     required this.icon,
     required this.primaryColor,
     required this.secondaryColor,
-    required this.features,
+     this.features=const [],
   });
 
   factory StatusConfig.getStatusConfig(AccountStatus status) {

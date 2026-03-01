@@ -3,12 +3,12 @@ import '../../domain/entities/store.dart';
 
 class StoreModel extends Store {
   StoreModel({
-     super.id,
+    super.id,
     required super.ownerId,
     required super.name,
     required super.currency,
     required super.createdAt,
-    required super.updatedAt, 
+    required super.updatedAt,
   });
 
   factory StoreModel.fromEntity(Store store) {
@@ -27,17 +27,15 @@ class StoreModel extends Store {
       id: map['id'],
       ownerId: map['owner_id'],
       name: map['store_name'],
-      currency:Currency.values.byName( map['currency']),
+      currency: Currency.values.byName(map['currency']),
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
-    
     );
   }
 
-
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      if (id != null) 'id': id,
       'owner_id': ownerId,
       'store_name': name,
       'currency': currency.name,

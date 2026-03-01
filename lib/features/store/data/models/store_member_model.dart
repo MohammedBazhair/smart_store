@@ -1,3 +1,4 @@
+import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store_member.dart';
 
 class StoreMemberModel extends StoreMember {
@@ -26,24 +27,20 @@ class StoreMemberModel extends StoreMember {
       id: map['id'],
       memberPhone: map['member_phone'],
       storeId: map['store_id'],
-      role: map['role'],
+      role:Role.fromString( map['role']),
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
     );
   }
 
   Map<String, dynamic> toMap() {
-    final map = <String, dynamic>{
+    return {
+      if (id != null) 'id': id,
       'member_phone': memberPhone,
       'store_id': storeId,
-      'role': role,
+      'role': role.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
-
-    if (id != null) {
-      map['id'] = id;
-    }
-    return map;
   }
 }
