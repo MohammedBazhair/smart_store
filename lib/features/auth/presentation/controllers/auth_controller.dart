@@ -7,8 +7,9 @@ import '../../../../errors/result.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_state.dart';
 
-final authProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
-  final auth = ref.read(authControllerProvider);
+final authControllerProvider =
+    StateNotifierProvider<AuthController, AuthState>((ref) {
+  final auth = ref.read(authProvider);
   return auth;
 });
 
@@ -23,7 +24,7 @@ class AuthController extends StateNotifier<AuthState> {
       if (userId == null) {
         throw const AuthAppException('فشل تسجيل الدخول');
       }
-      
+
       state = const AuthSuccessfullState();
     } on AuthAppException catch (e) {
       Logger.debugLog(error: e.message);
@@ -69,6 +70,7 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signOut() async {
     try {
       await _auth.signOut();
+     state=  const AuthSignOutState();
     } catch (e) {
       _handleState('حدث خطأ في الخروج حاول مرة أخرى');
     }

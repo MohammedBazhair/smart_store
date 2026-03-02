@@ -38,8 +38,8 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 
 /// Provider للحصول على جميع المنتجات
 final productsProvider = FutureProvider<List<StoreProduct>>((ref) async {
-  final repository = ref.watch(productRepositoryProvider);
-  final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+  final repository = ref.read(productRepositoryProvider);
+  final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
   final result = await repository.getAllProducts(storeId);
 
   return result;
@@ -51,10 +51,10 @@ final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
 
 final searchFilterProductsProvider =
     FutureProvider.autoDispose<List<StoreProduct>>((ref) async {
-  final query = ref.watch(productQueryProvider);
+  final query = ref.read(productQueryProvider);
   if (!query.hasQuery) return [];
 
-  final repository = ref.watch(productRepositoryProvider);
+  final repository = ref.read(productRepositoryProvider);
   final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
   final products = query.isSearching
       ? await repository.searchProducts(storeId: storeId, query: query.search)
@@ -69,7 +69,7 @@ final searchFilterProductsProvider =
 
 /// Provider للمنتجات المنتهية
 final expiredProductsProvider = FutureProvider<List<StoreProduct>>((ref) async {
-  final repository = ref.watch(productRepositoryProvider);
+  final repository = ref.read(productRepositoryProvider);
   final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
 
   final result = await repository.getExpiredProducts(storeId);
@@ -82,7 +82,7 @@ final expiredProductsProvider = FutureProvider<List<StoreProduct>>((ref) async {
 /// Provider للمنتجات القريبة من الانتهاء
 final nearExpiryProductsProvider =
     FutureProvider<List<StoreProduct>>((ref) async {
-  final repository = ref.watch(productRepositoryProvider);
+  final repository = ref.read(productRepositoryProvider);
   final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
 
   final result = await repository.getNearExpiryProducts(storeId, 30);
@@ -111,8 +111,7 @@ final expiryDateControllerProvider =
 
 final productByIdProvider = FutureProvider.family<StoreProduct?, String>(
   (ref, id) async {
-    final result =
-        await ref.watch(productRepositoryProvider).getProductById(id);
+    final result = await ref.read(productRepositoryProvider).getProductById(id);
     if (result is SuccessState<StoreProduct>) return result.data;
     return null;
   },

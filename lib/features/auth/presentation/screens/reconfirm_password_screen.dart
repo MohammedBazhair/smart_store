@@ -37,7 +37,7 @@ class _ReconfirmPasswordScreenState
     final nonce = _nonceController.text;
 
     await ref
-        .read(authProvider.notifier)
+        .read(authControllerProvider.notifier)
         .changePassword(
           email: widget.email,
           newPassword: newPassword,
@@ -84,7 +84,7 @@ class _ReconfirmPasswordScreenState
                 const SizedBox(height: 24),
 
                 AbsorbPointer(
-                  absorbing: ref.watch(authProvider) is AuthLoadingState,
+                  absorbing: ref.watch(authControllerProvider) is AuthLoadingState,
                   child: ElevatedButton(
                     onPressed: _reconfirmPassword,
                     child: const Text('تغيير الباسورد'),

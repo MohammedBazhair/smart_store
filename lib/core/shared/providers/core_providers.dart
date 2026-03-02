@@ -95,13 +95,13 @@ final userRemoteDataSourceProvider = Provider((ref) {
 
 final _userControllerProvider = Provider((ref) {
   final repo = ref.read(userRepositoryProvider);
+  
   return UserController(repo);
 });
 
 final userControllerProvider = StateNotifierProvider<UserController, UserState>(
   (ref) {
     final controller = ref.read(_userControllerProvider);
-    controller.loadProfile();
     return controller;
   },
 );
@@ -113,7 +113,7 @@ final authRepositoryProvider = Provider((ref) {
   return AuthRepositoryImpl(remoteAuth, network, localCacheService);
 });
 
-final authControllerProvider = Provider((ref) {
+final authProvider = Provider((ref) {
   final authRepo = ref.read(authRepositoryProvider);
   return AuthController(authRepo);
 });

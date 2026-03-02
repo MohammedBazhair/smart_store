@@ -13,8 +13,10 @@ import 'store_state.dart';
 class StoreController extends Notifier<StoreEventState> {
   @override
   StoreEventState build() {
-    loadMyStores();
-    return const InitialStoreEvent();
+        final cache = ref.read(localCacheServiceProvider);
+    final selectedStoreId= cache.getString(key: 'selected_store_id');
+
+    return InitialStoreEvent(state:StoreState(selectedStoreId:selectedStoreId )) ;
   }
 
   Future<void> loadMyStores() async {

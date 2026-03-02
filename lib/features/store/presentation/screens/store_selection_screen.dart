@@ -92,7 +92,11 @@ class _StoreCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     const color = AppTheme.primaryColor;
-    print(owner);
+    final isSelected = ref.watch(
+      storeControllerProvider
+          .select((s) => s.state.selectedStoreId == store.id),
+    );
+
     return GestureDetector(
       onTap: () {
         ref.read(storeControllerProvider.notifier).selectStore(store.id!);
@@ -102,7 +106,9 @@ class _StoreCard extends ConsumerWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected
+              ? const Color(0xFFFBFEFF)
+              : Colors.white,
           borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
@@ -147,7 +153,11 @@ class _StoreCard extends ConsumerWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
+            Icon(
+              isSelected ? Icons.check : Icons.arrow_forward_ios,
+              size: isSelected ? 30 : 20,
+              color: color,
+            ),
           ],
         ),
       ),

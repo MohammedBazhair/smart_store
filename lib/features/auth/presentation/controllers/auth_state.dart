@@ -18,6 +18,10 @@ class AuthSuccessfullState extends AuthState {
   const AuthSuccessfullState();
 }
 
+class AuthSignOutState extends AuthState {
+  const AuthSignOutState();
+}
+
 class AuthResetPasswordSuccessfullState extends AuthState {
   const AuthResetPasswordSuccessfullState(this.email);
   final String email;

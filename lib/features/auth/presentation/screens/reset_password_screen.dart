@@ -29,7 +29,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     if (!isValidForm) return;
     final email = _emailController.text;
 
-    await ref.read(authProvider.notifier).resetPassword(email);
+    await ref.read(authControllerProvider.notifier).resetPassword(email);
   }
 
   @override
@@ -70,7 +70,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 const SizedBox(height: 24),
 
                 AbsorbPointer(
-                  absorbing: ref.watch(authProvider) is AuthLoadingState,
+                  absorbing: ref.watch(authControllerProvider) is AuthLoadingState,
                   child: ElevatedButton(
                     onPressed: _resetPassword,
                     child: const Text('استعادة الباسورد'),

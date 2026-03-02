@@ -1,59 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
-import '../../../../../features/user/presentation/screens/account_status_screen.dart';
-import '../../../../features/store/presentation/screens/store_selection_screen.dart';
+import '../../../../features/user/domain/entities/account_status.dart';
+import '../../../../features/user/presentation/screens/account_status_screen.dart';
 import '../../providers/core_providers.dart';
-import '../../providers/repositories_provider.dart';
+import '../widgets/common/loading_widget.dart';
+import 'dashboard_screen.dart';
 
-class AuthGate extends ConsumerWidget {
+class AuthGate extends ConsumerStatefulWidget {
   const AuthGate({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends ConsumerState<AuthGate> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(userControllerProvider.notifier).loadProfile();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isLogged = ref.watch(userControllerProvider.notifier).isUserLoggedIn;
 
     if (!isLogged) {
       return const SignInScreen();
     }
+    final profile = ref.watch(userControllerProvider).profile;
 
-    // User is logged in, check if we should show account status
-    return FutureBuilder<bool>(
-      future: _shouldShowAccountStatus(ref),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
+    if (!profile.isDataComplete) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/app_logo.png',
+                width: 200,
+                height: 200,
+              ),
+              const LoadingWidget(),
+            ],
+          ),
+        ),
+      );
+    }
 
-        final shouldShow = snapshot.data ?? false;
-
-        if (shouldShow) {
-          final userState = ref.watch(userControllerProvider);
-          final profile = userState.profile;
-
-          if (profile.phone != null) OneSignal.login(profile.phone!);
-
-          return AccountStatusScreen(
-            profile: profile,
-          );
-        }
-
-        return const StoreSelectionScreen();
-      },
-    );
-  }
-
-  Future<bool> _shouldShowAccountStatus(WidgetRef ref) async {
-    // Check if shown before in persistent storage
-    final prefs = ref.read(sharedPreferencesProvider);
-    final hasShownBefore = prefs.getBool('has_shown_account_status') ?? false;
-
-    return !hasShownBefore;
+    switch (profile.accountStatus) {
+      case AccountStatus.active:
+        return const DashboardScreen();
+      case AccountStatus.frozen:
+      case AccountStatus.pending:
+        return AccountStatusScreen(profile: profile);
+    }
   }
 }

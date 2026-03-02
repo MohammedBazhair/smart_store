@@ -28,8 +28,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   void initState() {
-    ref.listenManual(authProvider, (previous, next) async {
-      await authListener(
+    ref.listenManual(authControllerProvider, (previous, next) async {
+      await handlgeAuthListener(
         context: context,
         previous: previous,
         next: next,
@@ -46,7 +46,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
     TextInput.finishAutofillContext();
 
-    await ref.read(authProvider.notifier).signUp(
+    await ref.read(authControllerProvider.notifier).signUp(
           email: emailController.text,
           password: passwordController.text,
         );
@@ -142,8 +142,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         // زر إنشاء الحساب
                         Consumer(
                           builder: (context, ref, child) {
-                            final isLoading =
-                                ref.watch(authProvider) is AuthLoadingState;
+                            final isLoading = ref.watch(authControllerProvider)
+                                is AuthLoadingState;
                             return AbsorbPointer(
                               absorbing: isLoading,
                               child: ElevatedButton(

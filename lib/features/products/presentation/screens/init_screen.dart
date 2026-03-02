@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/screen/dashboard_screen.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../store/presentation/controller/store_provider.dart';
 import '../controllers/download_provider.dart';
 import '../controllers/product_provider.dart';
 
@@ -24,7 +25,10 @@ class InitScreen extends ConsumerWidget {
                       await ref
                           .read(productControllerProvider.notifier)
                           .initialize();
-                      await context.pushReplacementTo(const DashboardScreen());
+                      await ref.read(storeControllerProvider.notifier).loadMyStores();
+                      
+                      await context
+                          .pushReplacementTo(const DashboardScreen());
                     });
                     return const _LoadingContent();
                   },

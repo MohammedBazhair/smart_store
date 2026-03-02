@@ -10,7 +10,8 @@ class SignGoogleButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final isLoading = ref.watch(authProvider) is AuthGoogleLoadingState;
+    final isLoading =
+        ref.watch(authControllerProvider) is AuthGoogleLoadingState;
     return AbsorbPointer(
       absorbing: isLoading,
       child: ElevatedButton.icon(
@@ -25,7 +26,7 @@ class SignGoogleButton extends ConsumerWidget {
           elevation: 1,
         ),
         onPressed: () async {
-          await ref.read(authProvider.notifier).loginWithGoogle();
+          await ref.read(authControllerProvider.notifier).loginWithGoogle();
         },
         label: isLoading
             ? const LoadingWidget()

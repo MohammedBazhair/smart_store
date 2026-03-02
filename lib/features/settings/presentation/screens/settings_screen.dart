@@ -8,6 +8,8 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/widgets/common/error_widget.dart';
 import '../../../../errors/result.dart';
+import '../../../auth/auth_listeners.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../domain/settings.dart';
 import '../controllers/settings_controller.dart';
 import '../controllers/settings_provider.dart';
@@ -32,6 +34,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authControllerProvider, (previous, next) {
+      handlgeAuthListener(
+        context: context,
+        previous: previous,
+        next: next,
+        ref: ref,
+      );
+    });
+
     final settingsAsync = ref.watch(appSettingsProvider);
 
     return Scaffold(

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/send_messages_utils.dart';
-import '../../../products/presentation/screens/init_screen.dart';
+import '../../../store/presentation/screens/store_selection_screen.dart';
 import '../../domain/entities/status_config.dart';
 
 class ContinueButtonWidget extends ConsumerWidget {
@@ -34,10 +33,8 @@ class ContinueButtonWidget extends ConsumerWidget {
       child: ElevatedButton(
         onPressed: () async {
           if (canContinue) {
-            final prefs = ref.read(localCacheServiceProvider);
-            await prefs.setBool(key: 'has_shown_account_status', value: true);
-
-            await context.pushReplacementTo(const InitScreen());
+          
+            await context.pushReplacementTo(const StoreSelectionScreen());
             return;
           }
 
