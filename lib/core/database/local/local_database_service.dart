@@ -48,6 +48,11 @@ abstract interface class LocalDatabaseService {
     required String table,
   });
 
+  Future<T> transaction<T>(
+    Future<T> Function(Transaction) action, {
+    bool? exclusive,
+  });
+
   Future<int> deleteWhere({
     required String table,
     required Map<String, Object> filters,
@@ -141,7 +146,7 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
   }) {
     final whereClause =
         filters.entries.map((e) => '${e.key} = ?').join(' AND ');
-    return _database.rawQuery('SELECET * FROM $table WHERE $whereClause', []);
+    return _database.rawQuery('SELECT * FROM $table WHERE $whereClause', []);
   }
 
   @override
@@ -178,5 +183,13 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     List<Object?>? arguments,
   }) {
     return _database.rawQuery(query, arguments);
+  }
+
+  @override
+  Future<T> transaction<T>(
+    Future<T> Function(Transaction) action, {
+    bool? exclusive,
+  }) {
+    return _database.transaction(action);
   }
 }

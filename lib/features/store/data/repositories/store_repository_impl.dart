@@ -1,28 +1,36 @@
+import 'package:uuid/uuid.dart';
+
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../user/domain/repositories/user_repository.dart';
 import '../../domain/entities/store.dart';
 import '../../domain/entities/store_member.dart';
 import '../../domain/repositories/store_repository.dart';
+import '../datasource/store_local_data_source.dart';
 import '../datasource/store_remote_data_source.dart';
 import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
 class StoreRepositoryImpl implements StoreRepository {
   StoreRepositoryImpl(
+    this.local,
     this.remote,
     this.userRepository,
     this.connectivityService,
   );
   final StoreRemoteDataSource remote;
+  final StoreLocalDataSource local;
   final UserRepository userRepository;
   final ConnectivityService connectivityService;
 
   @override
-  Future<void> createStore(Store store) async {
+  Future<void> createStore(Store store, String ownerPhone) async {
     try {
-      final model = StoreModel.fromEntity(store);
+      final newStore = store.copyWith(id: const Uuid().v4());
+      final model = StoreModel.fromEntity(newStore);
       await remote.createStore(model);
+
+      await local.createStore(model, ownerPhone);
     } catch (e) {
       if (e.toString().contains('enough credits')) {
         throw const CreditsZeroException(

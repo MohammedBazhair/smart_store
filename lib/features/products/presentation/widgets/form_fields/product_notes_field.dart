@@ -9,10 +9,10 @@ class ProductNotesField extends ConsumerWidget {
   final TextEditingController controller;
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     return TextFormField(
       controller: controller,
-      focusNode: ref.read(focusNodesProvider)[ProductDetailsType.notes],
+      focusNode: ref.watch(focusNodesProvider)[ProductDetailsType.notes],
       decoration: const InputDecoration(
         labelText: 'ملاحظات',
       ),

@@ -76,7 +76,6 @@ class DatabaseHelper {
 
     await db.execute('''
       CREATE TABLE store_members (
-        id TEXT PRIMARY KEY,
         member_phone TEXT NOT NULL,
         store_id TEXT NOT NULL,
         role TEXT NOT NULL,
@@ -84,7 +83,7 @@ class DatabaseHelper {
         updated_at TEXT NOT NULL,
         FOREIGN KEY (store_id) REFERENCES stores(id),
         FOREIGN KEY (member_phone) REFERENCES profiles(phone),
-        UNIQUE (store_id, member_phone)
+        PRIMARY KEY (store_id, member_phone)
       );
     ''');
 

@@ -2,7 +2,7 @@ import '../entities/store.dart';
 import '../entities/store_member.dart';
 
 abstract class StoreRepository {
-  Future<void> createStore(Store store);
+  Future<void> createStore(Store store, String ownerPhone);
 
   Future<List<Store>> getUserStores(String userPhone);
 

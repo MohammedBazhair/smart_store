@@ -51,7 +51,7 @@ class _BarcodeScannerScreenState extends ConsumerState<BarcodeScannerScreen> {
     final barcodeController = ref.read(barcodeControllerProvider.notifier);
     final result = await barcodeController.processBarcode(barcode);
 
-    if (result.isGlobalProduct) {
+    if (result.isGlobalProduct || result.isProductNotFound) {
       context.showSnakbar(
         'المنتج غير مسجل.. قم باضافته أولا',
         type: SnackBarType.error,
@@ -75,16 +75,13 @@ class _BarcodeScannerScreenState extends ConsumerState<BarcodeScannerScreen> {
         context: context,
         scanResult: result,
       );
-      await scannerController.start();
     } else {
       await ref.read(flashlightProvider.notifier).off();
       ref.read(isLoadingProvider(IsLoading.processBarcode).notifier).state =
           false;
-      await scannerController.start();
-      await context.pushTo(
-        UpesertProductScreen(barcode: result.barcode),
-      );
+      await scannerController.stop();
     }
+    await scannerController.start();
   }
 
   @override

@@ -3,7 +3,6 @@ import '../../domain/entities/store_member.dart';
 
 class StoreMemberModel extends StoreMember {
   const StoreMemberModel({
-    super.id,
     required super.memberPhone,
     required super.storeId,
     required super.role,
@@ -13,7 +12,6 @@ class StoreMemberModel extends StoreMember {
 
   factory StoreMemberModel.fromEntity(StoreMember member) {
     return StoreMemberModel(
-      id: member.id,
       memberPhone: member.memberPhone,
       storeId: member.storeId,
       role: member.role,
@@ -24,7 +22,6 @@ class StoreMemberModel extends StoreMember {
 
   factory StoreMemberModel.fromMap(Map<String, dynamic> map) {
     return StoreMemberModel(
-      id: map['id'],
       memberPhone: map['member_phone'],
       storeId: map['store_id'],
       role:Role.fromString( map['role']),
@@ -35,7 +32,6 @@ class StoreMemberModel extends StoreMember {
 
   Map<String, dynamic> toMap() {
     return {
-      if (id != null) 'id': id,
       'member_phone': memberPhone,
       'store_id': storeId,
       'role': role.name,

@@ -59,8 +59,7 @@ class AlertService {
         daysBeforeExpiry: days,
       );
 
-      if (isAlertDuplicated) continue;
-      if (!isNearExpired ) continue;
+      if (isAlertDuplicated ||!isNearExpired) continue;
 
       await _scheduleAlert(
         product: product,

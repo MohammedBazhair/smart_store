@@ -75,18 +75,18 @@ class StoreController extends Notifier<StoreEventState> {
   Future<void> createStore(String storeName) async {
     try {
       final repo = ref.read(storeRepositoryProvider);
-      final userId = ref.read(userControllerProvider).profile.userId;
+      final profile = ref.read(userControllerProvider).profile;
       final now = DateTime.now();
 
       final store = Store(
         name: storeName,
-        ownerId: userId,
+        ownerId: profile.userId,
         currency: Currency.YER,
         createdAt: now,
         updatedAt: now,
       );
 
-      await repo.createStore(store);
+      await repo.createStore(store, profile.phone!);
 
       state = CreateStoreEvent(state: state.state, storeName: storeName);
 

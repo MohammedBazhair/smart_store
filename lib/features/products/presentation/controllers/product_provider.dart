@@ -82,16 +82,18 @@ final nearExpiryProductsProvider =
   return products;
 });
 
-final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {
-  final mapEntries =
-      ProductDetailsType.values.map((t) => MapEntry(t, FocusNode()));
+final focusNodesProvider =
+    Provider.autoDispose<Map<ProductDetailsType, FocusNode>>((ref) {
+  final map = {for (var t in ProductDetailsType.values) t: FocusNode()};
 
-  final map = Map.fromEntries(mapEntries);
+  ref.onDispose(() {
+    for (var f in map.values) {
+      f.dispose();
+    }
+  });
 
-  ref.onDispose(map.values.map((f) => f.dispose()).toList);
   return map;
 });
-
 final currentProductProvider = StateProvider<StoreProduct?>((ref) => null);
 
 final expiryDateControllerProvider =

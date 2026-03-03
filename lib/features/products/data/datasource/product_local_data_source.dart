@@ -213,7 +213,8 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   Future<Result<StoreProduct>> addProduct(StoreProduct product) async {
     try {
       final barcode = product.globalProduct.barcode ?? '';
-      final globalProduct =await getGlobalProductByBarcode(barcode);
+      final globalProduct = await getGlobalProductByBarcode(barcode);
+      
       if (globalProduct == null) {
         final globalProductModel =
             GlobalProductModel.fromEntity(product.globalProduct);
@@ -231,8 +232,10 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         map: storeProductModel.toMap(),
       );
 
+      Logger.debugLog(message: 'تمت اضافة المنتج');
       return SuccessState(product);
     } catch (e) {
+      Logger.debugLog(error: e);
       return ErrorState(e.toString());
     }
   }

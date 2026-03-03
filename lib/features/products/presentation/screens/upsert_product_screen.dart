@@ -302,6 +302,19 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+         
+        
+
+          final stores = await ref
+              .read(storeLocalDataSourceProvider)
+              .getUserStores('776793111');
+
+          print(stores.length);
+          print(stores);
+        },
+      ),
     );
   }
 }

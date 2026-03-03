@@ -16,4 +16,27 @@ class Store {
   final Currency currency;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  Store copyWith({
+    String? id,
+    String? ownerId,
+    String? name,
+    Currency? currency,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Store(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      name: name ?? this.name,
+      currency: currency ?? this.currency,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Store(id: $id, ownerId: $ownerId, name: $name, currency: $currency, createdAt: $createdAt, updatedAt: $updatedAt)';
+  }
 }

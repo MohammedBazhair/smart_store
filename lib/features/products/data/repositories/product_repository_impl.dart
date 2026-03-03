@@ -167,8 +167,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       await _localDatabase.addProduct(newProduct);
-
-      Logger.debugLog(message: 'تمت الاضافة بنجاح');
+      Logger.debugLog(message: newProduct.toString());
       return SuccessState(newProduct);
     } catch (e) {
       Logger.debugLog(error: e);
