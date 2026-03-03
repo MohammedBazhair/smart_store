@@ -15,23 +15,31 @@ class ProductCategoryDropdown extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    return DropdownButtonFormField<Category>(
-      value: value,
+    final categories =
+        ref.watch(productControllerProvider.select((s) => s.categories));
+    return DropdownMenuFormField<Category>(
+      initialSelection: value,
       focusNode: ref.read(focusNodesProvider)[ProductDetailsType.category],
-      decoration: const InputDecoration(
-        labelText: 'الفئة *',
-        prefixIcon: Icon(Icons.category),
-        helperText: '',
+      expandedInsets: const EdgeInsets.all(0),
+      alignmentOffset: const Offset(0, -20),
+      menuHeight: 200,
+      leadingIcon: const Icon(Icons.category),
+      trailingIcon: const Icon(Icons.keyboard_arrow_down),
+      inputDecorationTheme: const InputDecorationThemeData(
+        fillColor: Colors.white,
+        filled: true,
       ),
-      items: ref
-          .watch(productControllerProvider.select((s) => s.categories))
-          .map((category) {
-        return DropdownMenuItem(
+      hintText: 'اختر فئة *',
+      helperText: '',
+      label: const Text('الفئة'),
+      selectedTrailingIcon: const Icon(Icons.keyboard_arrow_up),
+      dropdownMenuEntries: categories.map((category) {
+        return DropdownMenuEntry(
           value: category,
-          child: Text(category.name),
+          label: category.name,
         );
       }).toList(),
-      onChanged: onChanged,
+      onSelected: onChanged,
       validator: (value) {
         if (value == null) {
           return 'يرجى اختيار فئة المنتج';

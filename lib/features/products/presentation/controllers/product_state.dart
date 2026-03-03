@@ -1,9 +1,21 @@
+import '../../../../core/constants/typedef.dart';
 import '../../domain/entities/category.dart';
-import '../../domain/entities/store_product.dart';
 
 class ProductManagementState {
-  ProductManagementState({this.products = const [], required this.categories});
+  ProductManagementState({this.products = const {},  this.categories=const[]});
 
-  final List<StoreProduct> products;
+  final ProductsByIdentifier products;
   final List<Category> categories;
+
+  
+
+  ProductManagementState copyWith({
+    ProductsByIdentifier? products,
+    List<Category>? categories,
+  }) {
+    return ProductManagementState(
+      products: products ?? this.products,
+      categories: categories ?? this.categories,
+    );
+  }
 }

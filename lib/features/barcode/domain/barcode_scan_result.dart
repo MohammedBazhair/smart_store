@@ -1,4 +1,6 @@
+import '../../products/domain/entities/product.dart';
 import '../../products/domain/entities/store_product.dart';
+import '../../products/domain/entities/sub_entities/global_product.dart';
 
 class BarcodeScanResult {
   BarcodeScanResult({
@@ -6,7 +8,10 @@ class BarcodeScanResult {
     this.product,
   });
   final String barcode;
-  final StoreProduct? product;
+  final Product? product;
 
-  bool get hasPrice => product?.price != null;
+
+ bool get isStoreProduct  => product!= null && product is StoreProduct;
+ bool get isGlobalProduct  => product!= null && product is GlobalProduct;
+ bool get isProductNotFound  => product == null;
 }

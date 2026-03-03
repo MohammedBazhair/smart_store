@@ -2,13 +2,13 @@ import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store.dart';
 import '../../domain/entities/store_member.dart';
 
-class StoreTest {
-  StoreTest({required this.store, required this.members});
+class StoreWithMembers {
+  StoreWithMembers({required this.store, required this.members});
 
   final Store store;
   final Set<StoreMember> members;
 
-  StoreMember get owner => members.firstWhere((m)=>m.role==Role.storeOwner);
+  StoreMember get owner => members.firstWhere((m) => m.role == Role.storeOwner);
 }
 
 class StoreState {
@@ -17,11 +17,11 @@ class StoreState {
     this.selectedStoreId,
   });
 
-  final Map<String, StoreTest> myStores;
+  final Map<String, StoreWithMembers> myStores;
   final String? selectedStoreId;
 
   StoreState copyWith({
-    Map<String, StoreTest>? myStores,
+    Map<String, StoreWithMembers>? myStores,
     String? selectedStoreId,
   }) {
     return StoreState(

@@ -11,7 +11,7 @@ import '../widgets/products_widgets/product_filter_dialog.dart';
 import '../widgets/products_widgets/product_search_bar.dart';
 import '../widgets/products_widgets/products_empty_state.dart';
 import '../widgets/products_widgets/products_list.dart';
-import 'add_product_screen.dart';
+import 'upsert_product_screen.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({
@@ -135,7 +135,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.pushTo(const AddProductScreen()),
+        onPressed: () => context.pushTo(const UpesertProductScreen()),
         icon: const Icon(Icons.add),
         label: const Text('إضافة منتج'),
       ),

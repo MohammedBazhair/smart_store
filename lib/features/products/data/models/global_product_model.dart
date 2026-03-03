@@ -26,7 +26,7 @@ class GlobalProductModel extends GlobalProduct {
       category: Category.fromRemote(map['categories']),
       name: map['name'] as String,
       barcode: map['barcode'] as String?,
-      createdAt: DateTime.parse(map['createdAt'] as String),
+      createdAt: DateTime.parse(map['created_at'] as String),
     );
   }
 
@@ -46,7 +46,7 @@ class GlobalProductModel extends GlobalProduct {
       'category_id': category.id,
       'name': name,
       'barcode': barcode,
-      'createdAt': createdAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
     };
   }
 }

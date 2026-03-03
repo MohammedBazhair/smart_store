@@ -5,7 +5,7 @@ import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../domain/entities/product_details.dart';
 import '../../controllers/product_provider.dart';
-import '../../screens/add_product_screen.dart';
+import '../../screens/upsert_product_screen.dart';
 
 class BaseProductInfoCard extends ConsumerWidget {
   const BaseProductInfoCard({
@@ -32,7 +32,7 @@ class BaseProductInfoCard extends ConsumerWidget {
         onTap: () {
           final product = ref.read(currentProductProvider);
           context.pushTo(
-            AddProductScreen(
+            UpesertProductScreen(
               product: product,
               detailsType: detailsType,
             ),
@@ -105,7 +105,7 @@ class ProductInfoCard extends ConsumerWidget {
         onTap: () {
           final product = ref.read(currentProductProvider);
           context.pushTo(
-            AddProductScreen(
+            UpesertProductScreen(
               product: product,
               detailsType: detailsType,
             ),

@@ -2,8 +2,8 @@ import '../../../../core/constants/enums.dart';
 import '../../domain/entities/store_product.dart';
 import 'global_product_model.dart';
 
-class SellerProductModel extends StoreProduct {
-  const SellerProductModel({
+class StoreProductModel extends StoreProduct {
+  const StoreProductModel({
     super.id,
     required super.storeId,
     required super.quantity,
@@ -16,8 +16,8 @@ class SellerProductModel extends StoreProduct {
   });
 
   /// تحويل من Entity إلى Model
-  factory SellerProductModel.fromEntity(StoreProduct product) {
-    return SellerProductModel(
+  factory StoreProductModel.fromEntity(StoreProduct product) {
+    return StoreProductModel(
       id: product.id,
       storeId: product.storeId,
       globalProduct: product.globalProduct,
@@ -30,8 +30,8 @@ class SellerProductModel extends StoreProduct {
     );
   }
 
-  factory SellerProductModel.fromRemote(Map<String, dynamic> map) {
-    return SellerProductModel(
+  factory StoreProductModel.fromRemote(Map<String, dynamic> map) {
+    return StoreProductModel(
       id: map['id'] as String?,
       storeId: map['store_id'] as String,
       globalProduct: GlobalProductModel.fromRemote(map['global_products']),
@@ -44,8 +44,8 @@ class SellerProductModel extends StoreProduct {
     );
   }
 
-  factory SellerProductModel.fromLocal(Map<String, dynamic> map) {
-    return SellerProductModel(
+  factory StoreProductModel.fromLocal(Map<String, dynamic> map) {
+    return StoreProductModel(
       id: map['store_product_id'],
       storeId: map['store_id'],
       price: map['price'] as num,
@@ -60,8 +60,7 @@ class SellerProductModel extends StoreProduct {
 
   Map<String, dynamic> toMap() {
     return {
-     if (id != null) 'id': id,
-
+      if (id != null) 'id': id,
       'store_id': storeId,
       'product_id': globalProduct.id,
       'price': price,
@@ -71,6 +70,5 @@ class SellerProductModel extends StoreProduct {
       'notes': notes,
       'updated_at': updatedAt.toIso8601String(),
     };
-
   }
 }

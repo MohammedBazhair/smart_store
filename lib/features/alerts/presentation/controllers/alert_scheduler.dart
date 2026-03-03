@@ -9,7 +9,7 @@ Future<void> scheduleWorkManagerAlert(
   int daysBefore,
   Duration delay,
 ) async {
-  final productModel = SellerProductModel.fromEntity(product);
+  final productModel = StoreProductModel.fromEntity(product);
   final alertParams = AlertBackgroundParams(
     product: productModel,
     daysBeforeExpire: daysBefore,

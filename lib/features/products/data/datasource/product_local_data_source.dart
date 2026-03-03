@@ -1,9 +1,10 @@
 import '../../../../core/constants/log.dart';
+import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/local_database_service.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
-import '../../domain/entities/product.dart';
 import '../../domain/entities/store_product.dart';
+import '../../domain/entities/sub_entities/global_product.dart';
 import '../models/global_product_model.dart';
 import '../models/store_product_model.dart';
 
@@ -12,13 +13,9 @@ abstract class ProductLocalDataSource {
   Future<List<Map<String, dynamic>>> getGlobalProducts();
   Future<void> saveAllCategories(List<Category> categories);
   Future<void> saveGlobalProducts(List<GlobalProductModel> products);
-  Future<Result<List<StoreProduct>>> getAllProducts(String storeId);
+  Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId);
   Future<Result<StoreProduct>> getProductById(String storeProductId);
-  Future<Result<Product?>> getProductByBarcode({
-    required String barcode,
-    required String storeId,
-  });
-  Future<bool> isBarcodeExists(String barcode);
+  Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
   Future<Result<List<StoreProduct>>> searchProducts({
     required String query,
     required String storeId,
@@ -31,7 +28,7 @@ abstract class ProductLocalDataSource {
     String storeId,
     int days,
   );
-  Future<Result<void>> addProduct(StoreProduct product);
+  Future<Result<StoreProduct>> addProduct(StoreProduct product);
   Future<Result<void>> updateProduct(StoreProduct product);
 }
 
@@ -42,7 +39,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   /// sp  -> store_products,
   /// gb  -> global_produucts,
   /// c   -> category
-  String _storeProductColumnsAndJoins([String joinType = 'LEFT']) => '''
+  String _storeProductColumnsAndJoins() => '''
           sp.id             AS store_product_id,
           sp.store_id       AS store_id,
           sp.product_id     AS product_id,
@@ -59,7 +56,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           gp.created_at     AS product_created_at
 
         FROM store_products sp
-        $joinType JOIN global_products gp ON sp.product_id = gp.id
+        LEFT JOIN global_products gp ON sp.product_id = gp.id
         LEFT JOIN categories c ON gp.category_id = c.category_id
   ''';
 
@@ -75,16 +72,22 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<Result<List<StoreProduct>>> getAllProducts(String storeId) async {
+  Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId) async {
     try {
-      final maps = await db.rawQuery(
+      final response = await db.rawQuery(
         query: '''
         SELECT ${_storeProductColumnsAndJoins()}
         WHERE sp.store_id = ?
        ''',
         arguments: [storeId],
       );
-      final products = maps.map(SellerProductModel.fromRemote).toList();
+      final products = <String, StoreProduct>{};
+
+      for (final m in response) {
+        final product = StoreProductModel.fromRemote(m);
+        final key = product.globalProduct.barcode ?? product.globalProduct.id!;
+        products[key] = product;
+      }
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -103,7 +106,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         arguments: [storeProductId],
       );
       final map = response.first;
-      final product = SellerProductModel.fromRemote(map);
+      final product = StoreProductModel.fromRemote(map);
       return SuccessState(product);
     } catch (e) {
       return ErrorState(e.toString());
@@ -111,62 +114,31 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<Result<Product?>> getProductByBarcode({
-    required String barcode,
-    required String storeId,
-  }) async {
+  Future<GlobalProduct?> getGlobalProductByBarcode(String barcode) async {
     try {
-      if (!await isBarcodeExists(barcode)) return const SuccessState(null);
-
       final response = await db.rawQuery(
         query: '''
-          SELECT ${_storeProductColumnsAndJoins()}
-          WHERE gp.barcode = ? 
-          AND sp.store_id = ? 
-          LIMIT 1
+        SELECT 
+          gp.id             AS global_product_id,
+          gp.name           AS product_name,
+          gp.barcode        AS barcode,
+          gp.created_at     AS product_created_at
+
+        FROM global_products gp
+        LEFT JOIN categories c ON gp.category_id = c.category_id
+
+        WHERE gp.barcode = ?
+        LIMIT 1
         ''',
-        arguments: [barcode, storeId],
+        arguments: [barcode],
       );
 
-      final map = response.firstOrNull;
-
-      if (map != null) {
-        final storeProduct = SellerProductModel.fromLocal(map);
-        return SuccessState(storeProduct);
-      }
-
-      final globalMap = await _getGlobalProductByBarcode(barcode);
-      final globalProduct = GlobalProductModel.fromLocal(globalMap!);
-      return SuccessState(globalProduct);
+      final globalMap = response.first;
+      final globalProduct = GlobalProductModel.fromLocal(globalMap);
+      return globalProduct;
     } catch (e) {
-      return ErrorState(e.toString());
+      return null;
     }
-  }
-
-  Future<Map<String, dynamic>?> _getGlobalProductByBarcode(
-    String barcode,
-  ) async {
-    final response = await db.rawQuery(
-      query: '''
-          SELECT ${_storeProductColumnsAndJoins('RIGHT')}
-          WHERE gb.barcode = ?
-          LIMIT 1
-        ''',
-      arguments: [barcode],
-    );
-
-    return response.firstOrNull;
-  }
-
-  @override
-  Future<bool> isBarcodeExists(String barcode) async {
-    final maps = await db.readWhereArguments(
-      table: 'global_products',
-      where: 'barcode',
-      whereArgs: [barcode],
-    );
-
-    return maps.isNotEmpty;
   }
 
   @override
@@ -184,7 +156,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         arguments: [storeId, '%$query%'],
       );
 
-      final products = maps.map(SellerProductModel.fromLocal).toList();
+      final products = maps.map(StoreProductModel.fromLocal).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -206,7 +178,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         arguments: [storeId, today],
       );
 
-      final products = maps.map(SellerProductModel.fromLocal).toList();
+      final products = maps.map(StoreProductModel.fromLocal).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -230,7 +202,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         arguments: [storeId, now.toIso8601String(), near],
       );
 
-      final products = maps.map(SellerProductModel.fromLocal).toList();
+      final products = maps.map(StoreProductModel.fromLocal).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -238,25 +210,28 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<Result<void>> addProduct(StoreProduct product) async {
+  Future<Result<StoreProduct>> addProduct(StoreProduct product) async {
     try {
-      if (!await isBarcodeExists(product.globalProduct.barcode ?? '')) {
+      final barcode = product.globalProduct.barcode ?? '';
+      final globalProduct =await getGlobalProductByBarcode(barcode);
+      if (globalProduct == null) {
         final globalProductModel =
             GlobalProductModel.fromEntity(product.globalProduct);
+
         await db.insertRow(
           table: 'global_products',
           map: globalProductModel.toMap(),
         );
       }
 
-      final storeProductModel = SellerProductModel.fromEntity(product);
+      final storeProductModel = StoreProductModel.fromEntity(product);
 
       await db.insertRow(
         table: 'store_products',
         map: storeProductModel.toMap(),
       );
 
-      return const SuccessState(null);
+      return SuccessState(product);
     } catch (e) {
       return ErrorState(e.toString());
     }
@@ -267,7 +242,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     try {
       await db.update(
         table: 'store_products',
-        updated: SellerProductModel.fromEntity(product).toMap(),
+        updated: StoreProductModel.fromEntity(product).toMap(),
         column: 'id',
         id: product.id,
       );

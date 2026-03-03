@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
-import '../../../../../features/products/presentation/screens/add_product_screen.dart';
+import '../../../../../features/products/presentation/screens/upsert_product_screen.dart';
 import '../../../../extensions/extensions.dart';
 import '../../theme/app_theme.dart';
 import 'dashboard_quick_action_card.dart';
@@ -29,7 +29,7 @@ class DashboardQuickActions extends StatelessWidget {
                 icon: Icons.add_circle_outline,
                 color: AppTheme.primaryColor,
                 onTap: () {
-                  context.pushTo(const AddProductScreen());
+                  context.pushTo(const UpesertProductScreen());
                 },
               ),
             ),

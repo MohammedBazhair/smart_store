@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
+import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/user/domain/entities/account_status.dart';
 import '../../../../features/user/presentation/screens/account_status_screen.dart';
 import '../../providers/core_providers.dart';
@@ -20,6 +21,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(userControllerProvider.notifier).loadProfile();
+      await ref.read(productControllerProvider.notifier).initialize();
     });
   }
 
@@ -40,10 +42,10 @@ class _AuthGateState extends ConsumerState<AuthGate> {
             children: [
               Image.asset(
                 'assets/images/app_logo.png',
-                width: 200,
-                height: 200,
+                width: 300,
+                height: 300,
               ),
-              const LoadingWidget(),
+              const LoadingWidget(size: 40),
             ],
           ),
         ),

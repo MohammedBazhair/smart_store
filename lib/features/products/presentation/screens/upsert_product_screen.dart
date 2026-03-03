@@ -10,6 +10,7 @@ import '../../../../errors/result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/product.dart';
 import '../../domain/entities/product_details.dart';
 import '../../domain/entities/store_product.dart';
 import '../../domain/entities/sub_entities/global_product.dart';
@@ -25,22 +26,24 @@ import '../widgets/pick_date/show_expiry_date_picker.dart';
 import '../widgets/save_product_button.dart';
 
 /// شاشة إضافة منتج جديد
-class AddProductScreen extends ConsumerStatefulWidget {
-  const AddProductScreen({
+class UpesertProductScreen extends ConsumerStatefulWidget {
+  const UpesertProductScreen({
     super.key,
     this.barcode,
     this.product,
     this.detailsType,
+    this.isEditing = false,
   });
   final String? barcode;
-  final StoreProduct? product;
+  final Product? product;
   final ProductDetailsType? detailsType;
+  final bool isEditing;
 
   @override
-  ConsumerState<AddProductScreen> createState() => _AddProductScreenState();
+  ConsumerState<UpesertProductScreen> createState() => _AddProductScreenState();
 }
 
-class _AddProductScreenState extends ConsumerState<AddProductScreen> {
+class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController();
@@ -52,7 +55,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   Category _selectedCategory = Category.undefined();
   Currency _selectedCurrency = Currency.YER;
 
-  bool get isEditingProduct => widget.product != null;
+  bool get isEditingProduct => widget.isEditing;
 
   @override
   void initState() {
@@ -75,21 +78,28 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   }
 
   void _initializeFields() {
-    if (!isEditingProduct) return;
+    if (widget.product == null) return;
 
     final product = widget.product!;
+    if (product is StoreProduct) {
+      _nameController.text = product.globalProduct.name;
+      _barcodeController.text = product.globalProduct.barcode ?? '';
+      _quantityController.text = product.quantity?.toString() ?? '';
+      _priceController.text = product.price.toString();
+      _notesController.text = product.notes ?? '';
 
-    _nameController.text = product.globalProduct.name;
-    _quantityController.text = product.quantity?.toString() ?? '';
-    _priceController.text = product.price.toString();
-    _notesController.text = product.notes ?? '';
-    _barcodeController.text = product.globalProduct.barcode ?? '';
+      _expiryDateController.text = product.expiryDate != null
+          ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
+          : '';
+      _selectedCategory = product.globalProduct.category;
+      _selectedCurrency = product.currency;
+    } else if (product is GlobalProduct) {
+      _nameController.text = product.name;
 
-    _expiryDateController.text = product.expiryDate != null
-        ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
-        : '';
-    _selectedCategory = product.globalProduct.category;
-    _selectedCurrency = product.currency;
+      _barcodeController.text = product.barcode ?? '';
+
+        _selectedCategory = product.category;
+    }
   }
 
   void _requestFocusAfterEdit() {
@@ -105,7 +115,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   StoreProduct _buildProductFromFields({StoreProduct? oldProduct}) {
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
-  
+
     final now = DateTime.now();
     final globalProduct = GlobalProduct(
       category: _selectedCategory,
@@ -161,21 +171,20 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final controller = ref.read(productControllerProvider.notifier);
 
     final product = _buildProductFromFields();
-
     final result = await controller.addProduct(product);
-
-    ref
-        .read(isLoadingProvider(IsLoading.saveProduct).notifier)
-        .update((_) => false);
 
     if (!mounted) return;
 
-    if (result is SuccessState<int>) {
+    if (result is SuccessState<void>) {
       context.showSnakbar('تم إضافة المنتج بنجاح', type: SnackBarType.success);
       _clearForm();
     } else if (result is ErrorState<int>) {
       context.showSnakbar(result.message, type: SnackBarType.error);
     }
+
+    ref
+        .read(isLoadingProvider(IsLoading.saveProduct).notifier)
+        .update((_) => false);
   }
 
   Future<void> _onEditProduct() async {
@@ -186,7 +195,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
         .update((_) => true);
     final controller = ref.read(productControllerProvider.notifier);
 
-    final oldProduct = widget.product!;
+    final oldProduct = widget.product! as StoreProduct;
     final updatedProduct = _buildProductFromFields(oldProduct: oldProduct);
 
     final result = await controller.updateProduct(
@@ -292,6 +301,13 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await ref
+              .read(productControllerProvider.notifier)
+              .getProductByBarcode('712345678911');
+        },
       ),
     );
   }

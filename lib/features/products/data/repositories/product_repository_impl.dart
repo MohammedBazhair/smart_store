@@ -1,8 +1,12 @@
+import 'package:uuid/uuid.dart';
+
+import '../../../../core/constants/log.dart';
+import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/network/connectivity_service.dart';
+import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
-import '../../domain/entities/product.dart';
 import '../../domain/entities/store_product.dart';
 import '../../domain/entities/sub_entities/global_product.dart';
 import '../../domain/repositories/product_repository.dart';
@@ -39,15 +43,15 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<StoreProduct>> getAllProducts(String storeId) async {
+  Future<ProductsByIdentifier> getStoreProducts(String storeId) async {
     final hasConnection = await _connectivity.hasConnection();
 
     final result = hasConnection
-        ? await _remoteDatabase.getSellerProducts(storeId)
-        : await _localDatabase.getAllProducts(storeId);
+        ? await _remoteDatabase.getStoreProducts(storeId)
+        : await _localDatabase.getStoreProducts(storeId);
 
-    if (result is SuccessState<List<StoreProduct>>) return result.data;
-    return [];
+    if (result is SuccessState<ProductsByIdentifier>) return result.data;
+    return {};
   }
 
   @override
@@ -67,24 +71,16 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Product?> getProductByBarcode({
-    required String barcode,
-    required String storeId,
-  }) async {
+  Future<GlobalProduct?> getGlobalProductByBarcode(
+    String barcode,
+  ) async {
     final hasConnection = await _connectivity.hasConnection();
 
-    final result = hasConnection
-        ? await _remoteDatabase.getProductByBarcode(
-            storeId: storeId,
-            barcode: barcode,
-          )
-        : await _localDatabase.getProductByBarcode(
-            storeId: storeId,
-            barcode: barcode,
-          );
+    final product = hasConnection
+        ? await _remoteDatabase.getGlobalProductByBarcode(barcode)
+        : await _localDatabase.getGlobalProductByBarcode(barcode);
 
-    if (result is SuccessState<Product?>) return result.data;
-    return null;
+    return product;
   }
 
   @override
@@ -156,26 +152,27 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<bool> isBarcodeExists(String barcode) async {
-    final hasConnection = await _connectivity.hasConnection();
-    final isExists = hasConnection
-        ? await _remoteDatabase.isBarcodeExists(barcode)
-        : await _localDatabase.isBarcodeExists(barcode);
+  Future<Result<StoreProduct>> addProduct(StoreProduct product) async {
+    final barcode = product.globalProduct.barcode ?? '';
+    final globalProduct = await getGlobalProductByBarcode(barcode);
+    final globalProductId =
+        globalProduct != null ? globalProduct.id : const Uuid().v4();
 
-    return isExists;
-  }
-
-  @override
-  Future<Result<void>> addProduct(StoreProduct product) async {
+    final newProduct = product.copyWith(
+      id: const Uuid().v4(),
+      globalProduct: product.globalProduct.copyWith(id: globalProductId),
+    );
     try {
       if (await _connectivity.hasConnection()) {
-        await _remoteDatabase.addProduct(product);
+        await _remoteDatabase.addProduct(newProduct);
       }
 
-      await _localDatabase.addProduct(product);
+      await _localDatabase.addProduct(newProduct);
 
-      return const SuccessState(null);
+      Logger.debugLog(message: 'تمت الاضافة بنجاح');
+      return SuccessState(newProduct);
     } catch (e) {
+      Logger.debugLog(error: e);
       return ErrorState('فشل في إضافة المنتج: ${e.toString()}');
     }
   }

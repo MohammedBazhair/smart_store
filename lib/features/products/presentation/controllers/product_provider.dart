@@ -37,12 +37,11 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 });
 
 /// Provider للحصول على جميع المنتجات
-final productsProvider = FutureProvider<List<StoreProduct>>((ref) async {
-  final repository = ref.read(productRepositoryProvider);
-  final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
-  final result = await repository.getAllProducts(storeId);
+final productsProvider = FutureProvider<List<StoreProduct>>((ref)  async{
+  final controller = ref.read(productControllerProvider.notifier);
+  final products =await controller.getStoreProducts();
 
-  return result;
+  return products.values.toList();
 });
 
 final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
@@ -58,7 +57,7 @@ final searchFilterProductsProvider =
   final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
   final products = query.isSearching
       ? await repository.searchProducts(storeId: storeId, query: query.search)
-      : await repository.getAllProducts(storeId);
+      : (await repository.getStoreProducts(storeId)).values.toList();
 
   if (!query.hasCategory) return products;
 
@@ -69,27 +68,19 @@ final searchFilterProductsProvider =
 
 /// Provider للمنتجات المنتهية
 final expiredProductsProvider = FutureProvider<List<StoreProduct>>((ref) async {
-  final repository = ref.read(productRepositoryProvider);
-  final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+  final controller = ref.read(productControllerProvider.notifier);
 
-  final result = await repository.getExpiredProducts(storeId);
-  if (result is SuccessState<List<StoreProduct>>) {
-    return result.data;
-  }
-  return [];
+  final products = await controller.getExpiredProducts();
+  return products;
 });
 
 /// Provider للمنتجات القريبة من الانتهاء
 final nearExpiryProductsProvider =
     FutureProvider<List<StoreProduct>>((ref) async {
-  final repository = ref.read(productRepositoryProvider);
-  final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+  final controller = ref.read(productControllerProvider.notifier);
 
-  final result = await repository.getNearExpiryProducts(storeId, 30);
-  if (result is SuccessState<List<StoreProduct>>) {
-    return result.data;
-  }
-  return [];
+  final products = await controller.getNearExpiryProducts();
+  return products;
 });
 
 final focusNodesProvider = Provider<Map<ProductDetailsType, FocusNode>>((ref) {

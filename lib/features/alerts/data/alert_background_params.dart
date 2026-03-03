@@ -9,12 +9,12 @@ class AlertBackgroundParams {
   factory AlertBackgroundParams.fromMap(Map<String, dynamic> map) {
     return AlertBackgroundParams(
       product:
-          SellerProductModel.fromRemote(map['product'] as Map<String, dynamic>),
+          StoreProductModel.fromRemote(map['product'] as Map<String, dynamic>),
       daysBeforeExpire: map['daysBeforeExpire'] as int,
     );
   }
 
-  final SellerProductModel product;
+  final StoreProductModel product;
   final int daysBeforeExpire;
 
   Map<String, dynamic> toMap() {

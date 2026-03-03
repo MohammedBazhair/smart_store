@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_theme.dart';
+
 class LoadingWidget extends StatelessWidget {
   const LoadingWidget({super.key, this.size = 25});
   final double size;
@@ -10,7 +12,11 @@ class LoadingWidget extends StatelessWidget {
       padding: const EdgeInsets.all(2),
       width: size,
       height: size,
-      child: const CircularProgressIndicator(),
+      child: const CircularProgressIndicator(
+        backgroundColor: Colors.transparent,
+        color: AppTheme.primaryColor,
+        strokeWidth: 2.5,
+      ),
     );
   }
 }

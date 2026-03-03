@@ -6,9 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
-import '../../../../errors/result.dart';
-import '../../../products/presentation/screens/add_product_screen.dart';
-import '../../domain/barcode_scan_result.dart';
+import '../../../products/presentation/screens/upsert_product_screen.dart';
 import '../controllers/barcode_controller.dart';
 import '../controllers/flashlight_controller.dart';
 import '../widgets/barcode_camera_view.dart';
@@ -53,14 +51,15 @@ class _BarcodeScannerScreenState extends ConsumerState<BarcodeScannerScreen> {
     final barcodeController = ref.read(barcodeControllerProvider.notifier);
     final result = await barcodeController.processBarcode(barcode);
 
-    if (result is ErrorState<BarcodeScanResult>) {
+    if (result.isGlobalProduct) {
       context.showSnakbar(
         'المنتج غير مسجل.. قم باضافته أولا',
         type: SnackBarType.error,
       );
       await context.pushTo(
-        AddProductScreen(
+        UpesertProductScreen(
           barcode: barcode,
+          product: result.product,
         ),
       );
       ref.read(isLoadingProvider(IsLoading.processBarcode).notifier).state =
@@ -69,14 +68,12 @@ class _BarcodeScannerScreenState extends ConsumerState<BarcodeScannerScreen> {
       return;
     }
 
-    final barcodeResult = (result as SuccessState<BarcodeScanResult>).data;
-
-    if (barcodeResult.hasPrice) {
+    if (result.isStoreProduct) {
       ref.read(isLoadingProvider(IsLoading.processBarcode).notifier).state =
           false;
       await showProductPriceDialog(
         context: context,
-        scanResult: barcodeResult,
+        scanResult: result,
       );
       await scannerController.start();
     } else {
@@ -85,7 +82,7 @@ class _BarcodeScannerScreenState extends ConsumerState<BarcodeScannerScreen> {
           false;
       await scannerController.start();
       await context.pushTo(
-        AddProductScreen(barcode: barcodeResult.barcode),
+        UpesertProductScreen(barcode: result.barcode),
       );
     }
   }

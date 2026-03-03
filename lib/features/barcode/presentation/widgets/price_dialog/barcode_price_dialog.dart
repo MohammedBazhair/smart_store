@@ -36,7 +36,7 @@ class ProductPriceDialog extends ConsumerWidget {
         child: settingsState.when(
           data: (settings) {
             final product = scanResult.product;
-            if (product == null) {
+            if (product == null|| product is! StoreProduct) {
               return const Text('هذا المنتج غير موجود');
             }
 

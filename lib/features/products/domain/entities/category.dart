@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 
 class Category extends Equatable {
@@ -27,4 +28,9 @@ class Category extends Equatable {
 
   @override
   List<Object?> get props => [id];
+
+  @override
+  String toString() {
+    return 'id: $id, name: $name';
+  }
 }

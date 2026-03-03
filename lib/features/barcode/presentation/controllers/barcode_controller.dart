@@ -1,9 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../errors/result.dart';
-import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
-import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/barcode_scan_result.dart';
 
 /// Controller لإدارة مسح الباركود
@@ -12,28 +9,17 @@ class BarcodeController extends Notifier<void> {
   void build() {}
 
   /// معالجة الباركود الممسوح
-  Future<Result<BarcodeScanResult>> processBarcode(String barcode) async {
-    final productRepo = ref.read(productRepositoryProvider);
-    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
-    // التحقق من وجود المنتج
-    final productResult = await productRepo.getProductByBarcode(
-      storeId: storeId,
-      barcode: barcode,
-    );
-    StoreProduct? product;
+  Future<BarcodeScanResult> processBarcode(String barcode) async {
+    final controller = ref.read(productControllerProvider.notifier);
+    final product =await controller.getProductByBarcode(barcode);
 
-    if (productResult is StoreProduct?) {
-      product = productResult;
-    }
-
-    if (product?.price == null) return const ErrorState('unfound product');
 
     final barcodeResult = BarcodeScanResult(
       barcode: barcode,
       product: product,
     );
 
-    return SuccessState(barcodeResult);
+    return barcodeResult;
   }
 }
 

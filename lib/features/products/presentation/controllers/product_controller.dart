@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/log.dart';
+import '../../../../core/constants/typedef.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
+import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/product.dart';
 import '../../domain/entities/store_product.dart';
 import 'product_provider.dart';
 import 'product_state.dart';
@@ -11,25 +13,14 @@ import 'product_state.dart';
 class ProductManagementController extends Notifier<ProductManagementState> {
   @override
   ProductManagementState build() {
-    return ProductManagementState(products: [], categories: []);
-  }
-
-  /// تحديث قائمة المنتجات
-  void _invalidate() {
-    ref.invalidate(productsProvider);
-    ref.invalidate(expiredProductsProvider);
-    ref.invalidate(nearExpiryProductsProvider);
+    return ProductManagementState();
   }
 
   Future<void> initialize() async {
     final categories = await getCategories();
-    final products = await getSellerProducts();
+    final products = await getStoreProducts();
 
     state = ProductManagementState(products: products, categories: categories);
-    Logger.debugLog(
-      message:
-          'ProductManagementController initialized with ${products.length} products and ${categories.length} categories',
-    );
   }
 
   Future<List<Category>> getCategories() async {
@@ -39,27 +30,71 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     return categories;
   }
 
-  Future<List<StoreProduct>> getSellerProducts() async {
+  Future<void> loadStoreProducts() async {
+    final products = await getStoreProducts();
+
+    state = state.copyWith(products: products);
+  }
+
+  Future<ProductsByIdentifier> getStoreProducts() async {
+    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
+
+    if (storeId == null) return {};
+
     final products =
-        await ref.read(productRepositoryProvider).getAllProducts('');
+        await ref.read(productRepositoryProvider).getStoreProducts(storeId);
 
     return products;
+  }
+
+  Future<List<StoreProduct>> getExpiredProducts() async {
+    final repository = ref.read(productRepositoryProvider);
+    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+
+    final result = await repository.getExpiredProducts(storeId);
+    if (result is SuccessState<List<StoreProduct>>) {
+      return result.data;
+    }
+    return [];
+  }
+
+  Future<List<StoreProduct>> getNearExpiryProducts() async {
+    final repository = ref.read(productRepositoryProvider);
+    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+
+    final result = await repository.getNearExpiryProducts(storeId, 30);
+    if (result is SuccessState<List<StoreProduct>>) {
+      return result.data;
+    }
+    return [];
+  }
+
+  bool isBarcodeExistsInStore(String? barcode) {
+    if (barcode == null) return false;
+
+    return state.products.containsKey(barcode);
   }
 
   Future<Result<void>> addProduct(
     StoreProduct product,
   ) async {
+    final barcode = product.globalProduct.barcode;
+    if (isBarcodeExistsInStore(barcode)) {
+      return const ErrorState('هذا المنتج مكرر وموجود مسبقا');
+    }
+
     final productRepository = ref.read(productRepositoryProvider);
 
-    final productResult = await productRepository.addProduct(product);
+    final result = await productRepository.addProduct(product);
 
-    if (productResult is! SuccessState<String>) return productResult;
+    if (result is SuccessState<StoreProduct>) {
+      final alertService = ref.read(alertServiceProvider);
+      await alertService.scheduleProductAlerts(result.data);
+      await loadStoreProducts();
+      return const SuccessState(null);
+    }
 
-    final alertService = ref.read(alertServiceProvider);
-    await alertService.scheduleProductAlerts(product);
-
-    _invalidate();
-    return productResult;
+    return const ErrorState('فشلت عملية إنشاء المنتج');
   }
 
   Future<Result<void>> updateProduct({
@@ -81,9 +116,21 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       await alertService.scheduleProductAlerts(newProduct);
     }
 
-    _invalidate();
-    ref.invalidate(productByIdProvider(newProduct.id!));
-
+    await loadStoreProducts();
     return result;
+  }
+
+  Future<Product?> getProductByBarcode(String barcode) async {
+    final storeProduct = state.products[barcode];
+    if (storeProduct != null) return storeProduct;
+
+    final productRepo = ref.read(productRepositoryProvider);
+
+    // التحقق من وجود المنتج
+    final globalProduct = await productRepo.getGlobalProductByBarcode(
+      barcode,
+    );
+
+    return globalProduct;
   }
 }

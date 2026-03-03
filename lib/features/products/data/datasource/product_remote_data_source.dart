@@ -1,21 +1,19 @@
+import '../../../../core/constants/log.dart';
+import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/remote/remote_database_service.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
-import '../../domain/entities/product.dart';
 import '../../domain/entities/store_product.dart';
+import '../../domain/entities/sub_entities/global_product.dart';
 import '../models/global_product_model.dart';
 import '../models/store_product_model.dart';
 
 abstract class ProductRemoteDataSource {
   Future<List<Map<String, dynamic>>> getGlobalProducts();
   Future<Result<List<Category>>> getAllCategories();
-  Future<Result<List<StoreProduct>>> getSellerProducts(String storeId);
+  Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId);
   Future<Result<StoreProduct>> getProductById(String sellerProductId);
-  Future<Result<Product?>> getProductByBarcode({
-    required String barcode,
-    required String storeId,
-  });
-  Future<bool> isBarcodeExists(String barcode);
+  Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
   Future<Result<List<StoreProduct>>> searchProducts({
     required String query,
     required String storeId,
@@ -47,7 +45,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<Result<List<StoreProduct>>> getSellerProducts(String storeId) async {
+  Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId) async {
     try {
       final response = await _client.client
           .from('store_products')
@@ -56,7 +54,13 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           )
           .eq('store_id', storeId);
 
-      final products = response.map(SellerProductModel.fromRemote).toList();
+      final products = <String, StoreProduct>{};
+
+      for (final m in response) {
+        final product = StoreProductModel.fromRemote(m);
+        final key = product.globalProduct.barcode ?? product.globalProduct.id!;
+        products[key] = product;
+      }
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -73,61 +77,27 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           )
           .eq('id', sellerProductId);
       final map = response.first;
-      return SuccessState(SellerProductModel.fromRemote(map));
+      return SuccessState(StoreProductModel.fromRemote(map));
     } catch (e) {
       return ErrorState(e.toString());
     }
   }
 
   @override
-  Future<Result<Product?>> getProductByBarcode({
-    required String barcode,
-    required String storeId,
-  }) async {
-    try {
-      if (!await isBarcodeExists(barcode)) return const SuccessState(null);
-
-      final result = await _client.client
-          .from('store_products')
-          .select(
-            '*, global_products(*, categories(*))',
-          )
-          .eq('barcode', barcode)
-          .eq('store_id', storeId)
-          .single();
-
-      if (result.isNotEmpty) {
-        final product = SellerProductModel.fromRemote(result);
-        return SuccessState(product);
-      }
-
-      final globalProductMap = (await _getGlobalProductByBarcode(barcode))!;
-      final globalProduct = GlobalProductModel.fromRemote(globalProductMap);
-      return SuccessState(globalProduct);
-    } catch (e) {
-      return ErrorState(e.toString());
-    }
-  }
-
-  Future<Map<String, dynamic>?> _getGlobalProductByBarcode(
+  Future<GlobalProduct?> getGlobalProductByBarcode(
     String barcode,
   ) async {
-    final response = await _client.client
-        .from('global_products')
-        .select('*, categories(*)')
-        .eq('barcode', barcode);
-
-    return response.firstOrNull;
-  }
-
-  @override
-  Future<bool> isBarcodeExists(String barcode) async {
     try {
-      final response = await _getGlobalProductByBarcode(barcode);
-
-      return response != null;
+      final response = await _client.client
+          .from('global_products')
+          .select('*, categories(*)')
+          .eq('barcode', barcode);
+      final globalProductMap = response.first;
+      final globalProduct = GlobalProductModel.fromRemote(globalProductMap);
+      return globalProduct;
     } catch (e) {
-      return false;
+      Logger.debugLog(error: e);
+      return null;
     }
   }
 
@@ -145,7 +115,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           .eq('store_id', storeId)
           .ilike('name', '%$query%');
 
-      final products = response.map(SellerProductModel.fromRemote).toList();
+      final products = response.map(StoreProductModel.fromRemote).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -166,7 +136,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           .eq('store_id', storeId)
           .lte('expiry_date', today);
 
-      final products = response.map(SellerProductModel.fromRemote).toList();
+      final products = response.map(StoreProductModel.fromRemote).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -190,7 +160,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           .gte('expiry_date', now.toIso8601String())
           .lte('expiry_date', near.toIso8601String());
 
-      final products = response.map(SellerProductModel.fromRemote).toList();
+      final products = response.map(StoreProductModel.fromRemote).toList();
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -198,9 +168,12 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<Result<void>> addProduct(StoreProduct product) async {
+  Future<Result<StoreProduct>> addProduct(StoreProduct product) async {
     try {
-      if (!await isBarcodeExists(product.globalProduct.barcode ?? '')) {
+      final globalProduct =
+          await getGlobalProductByBarcode(product.globalProduct.barcode ?? '');
+
+      if (globalProduct == null) {
         final globalProductMap =
             GlobalProductModel.fromEntity(product.globalProduct).toMap();
         await _client.insertRow(
@@ -208,11 +181,16 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           table: 'global_products',
         );
       }
-      final sellerProductMap = SellerProductModel.fromEntity(product).toMap();
+      final storeProductMap = StoreProductModel.fromEntity(product).toMap();
 
-      await _client.insertRow(map: sellerProductMap, table: 'store_products');
-      return const SuccessState(null);
+      await _client.insertRow(
+        map: storeProductMap,
+        table: 'store_products',
+      );
+
+      return SuccessState(product);
     } catch (e) {
+      Logger.debugLog(error: e);
       return ErrorState(e.toString());
     }
   }
@@ -220,7 +198,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<Result<void>> updateProduct(StoreProduct product) async {
     try {
-      final map = SellerProductModel.fromEntity(product).toMap();
+      final map = StoreProductModel.fromEntity(product).toMap();
       await _client.update(
         column: 'id',
         id: product.id!,

@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import '../../../../core/constants/enums.dart';
 import 'product.dart';
 import 'sub_entities/global_product.dart';
@@ -65,5 +66,10 @@ class StoreProduct extends Product {
       notes: notes ?? this.notes,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+
+  @override
+  String toString() {
+    return 'StoreProduct(id: $id, storeId: $storeId, globalProduct: $globalProduct, price: $price, expiryDate: $expiryDate, quantity: $quantity, currency: $currency, notes: $notes, updatedAt: $updatedAt)';
   }
 }

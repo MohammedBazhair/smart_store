@@ -15,12 +15,13 @@ class SaveProductButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    final isLoading = ref.watch(isLoadingProvider(IsLoading.saveProduct));
     return AbsorbPointer(
-      absorbing: ref.read(isLoadingProvider(IsLoading.saveProduct)),
+      absorbing: isLoading,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: isLoading ? null : onPressed,
         child: ConditionalBuilder(
-          condition: !ref.watch(isLoadingProvider(IsLoading.saveProduct)),
+          condition: !isLoading,
           builder: (_) => const Text('حفظ المنتج'),
           fallback: (context) => const LoadingWidget(),
         ),

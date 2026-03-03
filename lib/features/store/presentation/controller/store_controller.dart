@@ -13,10 +13,12 @@ import 'store_state.dart';
 class StoreController extends Notifier<StoreEventState> {
   @override
   StoreEventState build() {
-        final cache = ref.read(localCacheServiceProvider);
-    final selectedStoreId= cache.getString(key: 'selected_store_id');
+    final cache = ref.read(localCacheServiceProvider);
+    final selectedStoreId = cache.getString(key: 'selected_store_id');
 
-    return InitialStoreEvent(state:StoreState(selectedStoreId:selectedStoreId )) ;
+    return InitialStoreEvent(
+      state: StoreState(selectedStoreId: selectedStoreId),
+    );
   }
 
   Future<void> loadMyStores() async {
@@ -24,14 +26,13 @@ class StoreController extends Notifier<StoreEventState> {
     final profile = ref.read(userControllerProvider).profile;
     final stores = await repo.getUserStores(profile.phone ?? '');
 
-    final Map<String, StoreTest> myStores = {};
+    final Map<String, StoreWithMembers> myStores = {};
 
     for (final s in stores) {
       final members = await repo.getStoreMembers(s.id!);
-      final storeTest = StoreTest(store: s, members: members);
+      final storeTest = StoreWithMembers(store: s, members: members);
       myStores[s.id!] = storeTest;
     }
-
 
     final newState = state.state.copyWith(
       myStores: myStores,
