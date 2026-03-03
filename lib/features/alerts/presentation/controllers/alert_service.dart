@@ -15,9 +15,9 @@ import 'notification_service.dart';
 /// handle tap on notification
 void onDidReceiveNotificationResponse(NotificationResponse response) async {
   if (response.payload == null) return;
-  final sellerProductId = response.payload!;
+  final storeProductId = response.payload!;
 
-  final detatailsScreen = ProductDetailsScreen(productId: sellerProductId);
+  final detatailsScreen = ProductDetailsScreen(productId: storeProductId);
   await navigatorKey.currentState
       ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
 }
@@ -47,8 +47,6 @@ class AlertService {
       ExpiryReminder(daysBefore: 0, importance: Priority.max),
     ];
 
-    final isExpired = DateTimeUtils.isExpired(product.expiryDate)!;
-
     for (final alert in alerts) {
       final days = alert.daysBefore;
       final importance = alert.importance;
@@ -62,7 +60,7 @@ class AlertService {
       );
 
       if (isAlertDuplicated) continue;
-      if (!isNearExpired && !isExpired) continue;
+      if (!isNearExpired ) continue;
 
       await _scheduleAlert(
         product: product,

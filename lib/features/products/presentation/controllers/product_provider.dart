@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../core/shared/providers/core_providers.dart';
-import '../../../../errors/result.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/datasource/product_local_data_source.dart';
 import '../../data/datasource/product_remote_data_source.dart';
@@ -37,9 +36,9 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 });
 
 /// Provider للحصول على جميع المنتجات
-final productsProvider = FutureProvider<List<StoreProduct>>((ref)  async{
+final productsProvider = FutureProvider<List<StoreProduct>>((ref) async {
   final controller = ref.read(productControllerProvider.notifier);
-  final products =await controller.getStoreProducts();
+  final products = await controller.getStoreProducts();
 
   return products.values.toList();
 });
@@ -102,9 +101,9 @@ final expiryDateControllerProvider =
 
 final productByIdProvider = FutureProvider.family<StoreProduct?, String>(
   (ref, id) async {
-    final result = await ref.read(productRepositoryProvider).getProductById(id);
-    if (result is SuccessState<StoreProduct>) return result.data;
-    return null;
+    final product =
+        await ref.read(productControllerProvider.notifier).getProductById(id);
+    return product;
   },
 );
 

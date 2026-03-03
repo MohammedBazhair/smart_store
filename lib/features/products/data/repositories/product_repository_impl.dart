@@ -4,7 +4,6 @@ import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/network/connectivity_service.dart';
-import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/store_product.dart';

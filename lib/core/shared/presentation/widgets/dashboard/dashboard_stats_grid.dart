@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
@@ -22,93 +23,133 @@ class DashboardStatsGrid extends StatelessWidget {
         Row(
           spacing: 12,
           children: [
-            Consumer(
-              builder: (_, ref, __) {
-                final productsAsync = ref.watch(productsProvider);
-
-                return StatCard(
-                  isShimmerLoading: productsAsync.isLoading,
-                  title: 'إجمالي المنتجات',
-                  value: productsAsync.value?.length.toString() ?? '0',
-                  icon: Icons.inventory_2,
-                  color: AppTheme.primaryColor,
-                  onTap: () {
-                    context.pushTo(
-                      ProductsScreen(
-                        productsProvider: productsProvider,
-                      ),
+            Expanded(
+              child: Consumer(
+                builder: (_, ref, __) {
+                  final productsAsync = ref.watch(productsProvider);
+              
+                  Widget _child(int length) {
+                    return StatCard(
+                      title: 'إجمالي المنتجات',
+                      value: '$length',
+                      icon: Icons.inventory_2,
+                      color: AppTheme.primaryColor,
+                      onTap: () {
+                        context.pushTo(
+                          ProductsScreen(
+                            productsProvider: productsProvider,
+                          ),
+                        );
+                      },
                     );
-                  },
-                );
-              },
+                  }
+              
+                  return productsAsync.when(
+                    data: (data) => _child(data.length),
+                    loading: () => Skeletonizer(child: _child(0)),
+                    error: (error, stackTrace) => _child(0),
+                  );
+                },
+              ),
             ),
-            Consumer(
-              builder: (_, ref, __) {
-                final expiredProductsAsync = ref.watch(expiredProductsProvider);
-
-                return StatCard(
-                  isShimmerLoading: expiredProductsAsync.isLoading,
-                  title: 'منتهية الصلاحية',
-                  value: expiredProductsAsync.value?.length.toString() ?? '0',
-                  icon: Icons.cancel,
-                  color: AppTheme.expiredColor,
-                  onTap: () {
-                    context.pushTo(
-                      ProductsScreen(
-                        productsProvider: expiredProductsProvider,
-                        title: 'المنتجات منهية الصلاحية',
-                      ),
+            Expanded(
+              child: Consumer(
+                builder: (_, ref, __) {
+                  final expiredProductsAsync = ref.watch(expiredProductsProvider);
+              
+                  Widget _child(int length) {
+                    return StatCard(
+                      title: 'منتهية الصلاحية',
+                      value: '$length',
+                      icon: Icons.cancel,
+                      color: AppTheme.expiredColor,
+                      onTap: () {
+                        context.pushTo(
+                          ProductsScreen(
+                            productsProvider: expiredProductsProvider,
+                            title: 'المنتجات منهية الصلاحية',
+                          ),
+                        );
+                      },
                     );
-                  },
-                );
-              },
+                  }
+              
+                  return expiredProductsAsync.when(
+                    data: (data) => _child(data.length),
+                    loading: () => Skeletonizer(child: _child(0)),
+                    error: (error, stackTrace) => _child(0),
+                  );
+                },
+              ),
             ),
           ],
         ),
         Row(
           spacing: 12,
           children: [
-            Consumer(
-              builder: (_, ref, __) {
-                final newAlertsAsync = ref.watch(newAlertsProvider);
-
-                return StatCard(
-                  isShimmerLoading: newAlertsAsync.isLoading,
-                  title: 'تنبيهات جديدة',
-                  value: newAlertsAsync.value?.length.toString() ?? '0',
-                  icon: Icons.notifications,
-                  color: AppTheme.primaryColor,
-                  onTap: () {
-                    context.pushTo(
-                      AlertsScreen(
-                        title: 'التنبيهات الجديدة',
-                        alertsProvider: newAlertsProvider,
+            Expanded(
+              child: Consumer(
+                builder: (_, ref, __) {
+                  final newAlertsAsync = ref.watch(newAlertsProvider);
+              
+                  Widget _child(int length) {
+                    return StatCard(
+                      title: 'تنبيهات جديدة',
+                      value: '$length',
+                      icon: Icons.notifications,
+                      color: AppTheme.primaryColor,
+                      onTap: () {
+                        context.pushTo(
+                          AlertsScreen(
+                            title: 'التنبيهات الجديدة',
+                            alertsProvider: newAlertsProvider,
+                          ),
+                        );
+                      },
+                    );
+                    
+                  }
+              
+                  return newAlertsAsync.when(
+                    data: (data) => _child(data.length),
+                    loading: () => Skeletonizer(child: _child(0)),
+                    error: (error, stackTrace) => _child(0),
+                  );
+              
+                },
+              ),
+            ),
+            Expanded(
+              child: Consumer(
+                builder: (_, ref, __) {
+                  final nearExpiryProductsAsync =
+                      ref.watch(nearExpiryProductsProvider);
+              
+              
+                  Widget _child(int length) {
+                    return StatCard(
+                      title: 'قريبة من الانتهاء',
+                      value:
+                          '$length',
+                      icon: Icons.warning,
+                      color: AppTheme.nearExpiryColor,
+                      onTap: () => context.pushTo(
+                        ProductsScreen(
+                          productsProvider: nearExpiryProductsProvider,
+                          title: 'المنتجات قريبة الانتهاء',
+                        ),
                       ),
                     );
-                  },
-                );
-              },
-            ),
-            Consumer(
-              builder: (_, ref, __) {
-                final nearExpiryProductsAsync =
-                    ref.watch(nearExpiryProductsProvider);
-
-                return StatCard(
-                  isShimmerLoading: nearExpiryProductsAsync.isLoading,
-                  title: 'قريبة من الانتهاء',
-                  value:
-                      nearExpiryProductsAsync.value?.length.toString() ?? '0',
-                  icon: Icons.warning,
-                  color: AppTheme.nearExpiryColor,
-                  onTap: () => context.pushTo(
-                    ProductsScreen(
-                      productsProvider: nearExpiryProductsProvider,
-                      title: 'المنتجات قريبة الانتهاء',
-                    ),
-                  ),
-                );
-              },
+                  }
+              
+                  return nearExpiryProductsAsync.when(
+                    data: (data) => _child(data.length),
+                    loading: () => Skeletonizer(child: _child(0)),
+                    error: (error, stackTrace) => _child(0),
+                  );
+              
+                },
+              ),
             ),
           ],
         ),

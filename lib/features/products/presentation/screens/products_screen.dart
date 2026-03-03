@@ -96,15 +96,29 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
                 Expanded(
                   child: productsAsync.when(
-                    loading: () {
-                      final fakeProducts = StoreProduct.fakeProducts;
-
-                      return ProductsList(
-                        products: fakeProducts,
+                                        data: (products) {
+                      if (products.isEmpty) {
+                        return ProductsEmptyState(text: query.uiNotFoundText);
+                      }
+                      return RefreshIndicator(
                         onRefresh: () async {
                           ref.invalidate(productsProvider);
                           ref.invalidate(searchFilterProductsProvider);
                         },
+                        child: ProductsList(
+                          products: products,
+                        ),
+                      );
+                    },
+
+                    loading: () {
+                      final fakeProducts = StoreProduct.fakeProducts;
+
+                      return Skeletonizer(
+                        child: ProductsList(
+                          products: fakeProducts,
+                          
+                        ),
                       );
                     },
                     error: (error, stack) {
@@ -113,18 +127,6 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                           'حدث خطأ أثناء تحميل المنتجات',
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
-                      );
-                    },
-                    data: (products) {
-                      if (products.isEmpty) {
-                        return ProductsEmptyState(text: query.uiNotFoundText);
-                      }
-                      return ProductsList(
-                        products: products,
-                        onRefresh: () async {
-                          ref.invalidate(productsProvider);
-                          ref.invalidate(searchFilterProductsProvider);
-                        },
                       );
                     },
                   ),

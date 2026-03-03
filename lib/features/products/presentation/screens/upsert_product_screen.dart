@@ -98,7 +98,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
 
       _barcodeController.text = product.barcode ?? '';
 
-        _selectedCategory = product.category;
+      _selectedCategory = product.category;
     }
   }
 
@@ -301,13 +301,6 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await ref
-              .read(productControllerProvider.notifier)
-              .getProductByBarcode('712345678911');
-        },
       ),
     );
   }

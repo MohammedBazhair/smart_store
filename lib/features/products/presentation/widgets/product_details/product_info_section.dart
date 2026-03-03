@@ -52,7 +52,7 @@ class ProductInfoSection extends StatelessWidget {
               child: ProductInfoCard(
                 icon: Icons.category,
                 label: 'الفئة',
-                value: product.globalProduct.name,
+                value: product.globalProduct.category.name,
                 detailsType: ProductDetailsType.category,
                 iconColor: const Color(0xFF0FA4AF),
               ),

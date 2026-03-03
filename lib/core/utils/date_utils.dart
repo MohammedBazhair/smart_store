@@ -6,9 +6,13 @@ class DateTimeUtils {
   /// حساب الأيام المتبقية حتى تاريخ الانتهاء
   static int? daysUntilExpiry(DateTime? expiryDate) {
     if (expiryDate == null) return null;
-    final today = DateTime.now();
 
-    return expiryDate.difference(today).inDays;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final expiry = DateTime(expiryDate.year, expiryDate.month, expiryDate.day);
+
+    return expiry.difference(today).inDays;
   }
 
   /// المدة المتبقية بصيغة كلمات مقروءة (سنين / شهور / أيام)
@@ -51,7 +55,9 @@ class DateTimeUtils {
   /// التحقق من قرب انتهاء المنتج
   static bool isNearExpiry(DateTime expiryDate, int daysThreshold) {
     final days = daysUntilExpiry(expiryDate);
-    return days! >= 0 && days <= daysThreshold;
+
+    if (days == null) return false;
+    return days >= 0 && days <= daysThreshold;
   }
 
   /// تنسيق التاريخ للعرض

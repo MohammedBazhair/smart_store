@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
@@ -132,5 +133,16 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     );
 
     return globalProduct;
+  }
+
+  Future<StoreProduct?> getProductById(String productId) async {
+    final productRepo = ref.read(productRepositoryProvider);
+
+    // التحقق من وجود المنتج
+    final result = await productRepo.getProductById(productId);
+    Logger.debugLog(message: result.toString());
+    if (result is SuccessState<StoreProduct>) return result.data;
+
+    return null;
   }
 }
