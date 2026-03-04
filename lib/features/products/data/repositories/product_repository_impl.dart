@@ -158,7 +158,6 @@ class ProductRepositoryImpl implements ProductRepository {
         globalProduct != null ? globalProduct.id : const Uuid().v4();
 
     final newProduct = product.copyWith(
-      id: const Uuid().v4(),
       globalProduct: product.globalProduct.copyWith(id: globalProductId),
     );
     try {

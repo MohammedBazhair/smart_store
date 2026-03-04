@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/log.dart';
 import '../../domain/entities/get_profile_params.dart';
@@ -11,6 +12,7 @@ class UserRepositoryImpl implements UserRepository {
   UserRepositoryImpl(this._remoteDataSource, this._localDataSource, this._auth);
   final UserRemoteDataSource _remoteDataSource;
   final UserLocalDataSource _localDataSource;
+
   final GoTrueClient _auth;
 
   @override
@@ -35,7 +37,9 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<void> updateProfile(ProfileEntity profile) async {
     try {
+      await _localDataSource.saveProfile(profile);
       await _remoteDataSource.updateProfile(profile);
+    } on ClientException catch (_) {
     } catch (e) {
       Logger.debugLog(error: e);
       rethrow;
@@ -43,7 +47,7 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<bool> isPhoneSignUp(String phoneNumber){
+  Future<bool> isPhoneSignUp(String phoneNumber) {
     return _remoteDataSource.isPhoneSignUp(phoneNumber);
   }
 }

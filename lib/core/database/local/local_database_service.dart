@@ -37,8 +37,7 @@ abstract interface class LocalDatabaseService {
 
   Future<int> update({
     required Map<String, dynamic> updated,
-    required Object? id,
-    required String column,
+    required Map<String, dynamic> filterWhere,
     required String table,
   });
 
@@ -91,22 +90,6 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
   @override
   Future<List<Map<String, dynamic>>> readRows({required String table}) {
     return _database.rawQuery('SELECT * FROM $table');
-  }
-
-  @override
-  Future<int> update({
-    required Map<String, dynamic> updated,
-    required Object? id,
-    required String column,
-    required String table,
-  }) {
-    return _database.update(
-      table,
-      updated,
-      where: '$column = ?',
-      whereArgs: [id],
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
   }
 
   @override
@@ -191,5 +174,21 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     bool? exclusive,
   }) {
     return _database.transaction(action);
+  }
+
+  @override
+  Future<int> update({
+    required Map<String, dynamic> updated,
+    required Map<String, dynamic> filterWhere,
+    required String table,
+  }) {
+    final where = filterWhere.keys.map((k) => '$k = ?').join(' AND ');
+    final whereArgs = filterWhere.values.toList();
+    return _database.update(
+      table,
+      updated,
+      where:filterWhere.isEmpty? null: where,
+      whereArgs: filterWhere.isEmpty ? null : whereArgs,
+    );
   }
 }

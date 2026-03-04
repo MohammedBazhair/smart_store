@@ -105,7 +105,7 @@ class AlertCard extends ConsumerWidget {
               .getProductById(alert.productId);
           if (product is SuccessState<StoreProduct>) {
             await context.pushTo(
-              ProductDetailsScreen(productId: product.data.id!),
+              ProductDetailsScreen(productId: product.data.globalProduct.id!),
             );
           } else {
             context.showSnakbar(

@@ -4,7 +4,6 @@ import 'global_product_model.dart';
 
 class StoreProductModel extends StoreProduct {
   const StoreProductModel({
-    super.id,
     required super.storeId,
     required super.quantity,
     required super.expiryDate,
@@ -15,10 +14,8 @@ class StoreProductModel extends StoreProduct {
     super.notes,
   });
 
-  /// تحويل من Entity إلى Model
   factory StoreProductModel.fromEntity(StoreProduct product) {
     return StoreProductModel(
-      id: product.id,
       storeId: product.storeId,
       globalProduct: product.globalProduct,
       quantity: product.quantity,
@@ -32,7 +29,6 @@ class StoreProductModel extends StoreProduct {
 
   factory StoreProductModel.fromRemote(Map<String, dynamic> map) {
     return StoreProductModel(
-      id: map['id'] as String?,
       storeId: map['store_id'] as String,
       globalProduct: GlobalProductModel.fromRemote(map['global_products']),
       quantity: map['quantity'] as int?,
@@ -46,7 +42,6 @@ class StoreProductModel extends StoreProduct {
 
   factory StoreProductModel.fromLocal(Map<String, dynamic> map) {
     return StoreProductModel(
-      id: map['store_product_id'],
       storeId: map['store_id'],
       price: map['price'] as num,
       quantity: map['quantity'],
@@ -60,7 +55,6 @@ class StoreProductModel extends StoreProduct {
 
   Map<String, dynamic> toMap() {
     return {
-      if (id != null) 'id': id,
       'store_id': storeId,
       'product_id': globalProduct.id,
       'price': price,

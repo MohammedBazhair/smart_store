@@ -196,15 +196,17 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<Result<void>> updateProduct(StoreProduct product) async {
+  Future<Result<void>> updateProduct(
+    StoreProduct product,
+  ) async {
     try {
       final map = StoreProductModel.fromEntity(product).toMap();
-      await _client.update(
-        column: 'id',
-        id: product.id!,
-        table: 'store_products',
-        updated: map,
-      );
+      await _client.client
+          .from('store_products')
+          .update(map)
+          .eq('product_id', product.globalProduct.id!)
+          .eq('store_id', product.storeId);
+
       return const SuccessState(null);
     } catch (e) {
       return ErrorState(e.toString());

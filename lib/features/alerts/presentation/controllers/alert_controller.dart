@@ -19,7 +19,7 @@ class AlertController extends Notifier<void> {
   }) async {
     final repository = ref.read(alertRepositoryProvider);
     final alert = Alert(
-      productId: product.id!,
+      productId: product.globalProduct.id!,
       daysBeforeExpiry: daysBeforeExpiry,
       importance: importance,
       isRead: false,

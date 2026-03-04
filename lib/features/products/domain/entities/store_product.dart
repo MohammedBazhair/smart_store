@@ -1,11 +1,9 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import '../../../../core/constants/enums.dart';
 import 'product.dart';
 import 'sub_entities/global_product.dart';
 
 class StoreProduct extends Product {
   const StoreProduct({
-    this.id,
     required this.storeId,
     required this.globalProduct,
     required this.price,
@@ -30,7 +28,6 @@ class StoreProduct extends Product {
     );
   }
 
-  final String? id;
   final String storeId;
   final GlobalProduct globalProduct;
   final num price;
@@ -45,7 +42,6 @@ class StoreProduct extends Product {
   static final fakeProducts = List.generate(8, (_) => StoreProduct.fake());
 
   StoreProduct copyWith({
-    String? id,
     String? storeId,
     GlobalProduct? globalProduct,
     num? price,
@@ -56,7 +52,6 @@ class StoreProduct extends Product {
     DateTime? updatedAt,
   }) {
     return StoreProduct(
-      id: id ?? this.id,
       storeId: storeId ?? this.storeId,
       globalProduct: globalProduct ?? this.globalProduct,
       price: price ?? this.price,
@@ -70,6 +65,6 @@ class StoreProduct extends Product {
 
   @override
   String toString() {
-    return 'StoreProduct(id: $id, storeId: $storeId, globalProduct: $globalProduct, price: $price, expiryDate: $expiryDate, quantity: $quantity, currency: $currency, notes: $notes, updatedAt: $updatedAt)';
+    return 'StoreProduct(storeId: $storeId, globalProduct: $globalProduct, price: $price, expiryDate: $expiryDate, quantity: $quantity, currency: $currency, notes: $notes, updatedAt: $updatedAt)';
   }
 }

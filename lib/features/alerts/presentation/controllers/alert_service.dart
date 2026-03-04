@@ -54,7 +54,7 @@ class AlertService {
           DateTimeUtils.isNearExpiry(product.expiryDate!, days);
 
       final isAlertDuplicated = await alertController.isAlertDuplicated(
-        productId: product.id!,
+        productId: product.globalProduct.id!,
         expiryDate: product.expiryDate!,
         daysBeforeExpiry: days,
       );
@@ -74,7 +74,7 @@ class AlertService {
     required int daysBefore,
     required Priority importance,
   }) async {
-    final payload = product.id?.toString();
+    final payload = product.globalProduct.id?.toString();
 
     await _notifications.show(
       id: AlertUtils.notificationId(product, daysBefore),
@@ -108,7 +108,7 @@ class AlertService {
       );
       return;
     }
-    final payload = product.id?.toString();
+    final payload = product.globalProduct.id?.toString();
 
     await _notifications.schedule(
       id: AlertUtils.notificationId(product, daysBefore),

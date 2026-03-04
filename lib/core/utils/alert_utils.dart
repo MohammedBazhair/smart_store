@@ -6,7 +6,7 @@ class AlertUtils {
   AlertUtils._();
 
   static int notificationId(StoreProduct product, int daysBefore) {
-    final productId = product.id!;
+    final productId = product.globalProduct.id!;
     final notificationId = '${productId}_$daysBefore';
     const t = 0x7fffffff; // رقم موجب فقط
     return notificationId.hashCode & t;

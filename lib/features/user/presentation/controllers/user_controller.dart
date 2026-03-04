@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/log.dart';
+import '../../../../errors/result.dart';
 import '../../domain/entities/get_profile_params.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -35,13 +36,18 @@ class UserController extends StateNotifier<UserState> {
     }
   }
 
-  Future<void> updateProfile(ProfileEntity newProfile) async {
+  Future<Result<void>> updateProfile(ProfileEntity newProfile) async {
     try {
       await _userRepository.updateProfile(newProfile);
       state = UserUpdatedProfileState(newProfile);
+      return const SuccessState(null);
     } catch (e) {
       Logger.debugLog(error: e);
-      state = UserErrorState(state.profile, 'حصل خطا أثناء التحديث');
+      state = UserErrorState(
+        state.profile,
+        'حصل خطا أثناء التحديث معلومات المستخدم',
+      );
+      return ErrorState(e.toString());
     }
   }
 }

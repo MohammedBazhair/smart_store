@@ -16,10 +16,37 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
 
   @override
   Future<void> saveProfile(ProfileEntity profile) async {
-    await _localService.insertRow(
-      map: profile.toMap(),
+    await _cacheService.setString(
+      key: AppConstants.profileUserIdKey,
+      value: profile.userId,
+    );
+
+    final row = await _localService.readRow(
+      id: profile.userId,
+      column: 'id',
       table: AppConstants.profilesTable,
     );
+
+    final map = profile.toMap();
+
+    if (row.isEmpty) {
+      await _localService.insertRow(
+        map: map,
+        table: AppConstants.profilesTable,
+      );
+      return;
+    }
+
+    map.remove('id');
+
+    await _localService.update(
+      filterWhere: {
+        'id': profile.userId,
+      },
+      updated: map,
+      table: AppConstants.profilesTable,
+    );
+
     await _cacheService.setString(
       key: AppConstants.profileUserIdKey,
       value: profile.userId,

@@ -124,7 +124,6 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
       createdAt: now,
     );
     return StoreProduct(
-      id: oldProduct?.id,
       storeId: storeId,
       quantity: int.tryParse(_quantityController.text),
       expiryDate: DateTime.tryParse(_expiryDateController.text),

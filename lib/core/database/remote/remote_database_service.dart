@@ -43,6 +43,7 @@ abstract interface class RemoteDatabaseService {
     required String table,
   });
 
+
   Future<void> delete({
     required String id,
     required String column,
@@ -68,7 +69,7 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
 
   @override
   SupabaseClient get client => _client;
-  
+
   String _listToSelectColumns(List<String> columns) {
     return columns.join(', ');
   }
@@ -189,4 +190,6 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
       debugPrint(e.toString());
     }
   }
+
+
 }

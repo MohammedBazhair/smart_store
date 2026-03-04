@@ -35,7 +35,7 @@ void callbackDispatcher() {
 
           final backgroundParams = AlertBackgroundParams.fromMap(inputData!);
 
-          if (backgroundParams.product.id == null) return Future.value(false);
+          if (backgroundParams.product.globalProduct.id == null) return Future.value(false);
 
           await tasksUtils.addAlertInBackground(container, backgroundParams);
       }

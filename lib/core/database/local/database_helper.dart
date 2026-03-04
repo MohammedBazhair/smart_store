@@ -82,14 +82,13 @@ class DatabaseHelper {
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (store_id) REFERENCES stores(id),
-        FOREIGN KEY (member_phone) REFERENCES profiles(phone),
+        FOREIGN KEY (member_phone) REFERENCES profiles(phone) ON UPDATE CASCADE,
         PRIMARY KEY (store_id, member_phone)
       );
     ''');
 
     await db.execute('''
       CREATE TABLE store_products (
-        id TEXT PRIMARY KEY,
         store_id TEXT NOT NULL,
         product_id TEXT NOT NULL,
         price REAL NOT NULL,
@@ -100,7 +99,7 @@ class DatabaseHelper {
         updated_at TEXT NOT NULL,
         FOREIGN KEY (product_id) REFERENCES global_products(id),
         FOREIGN KEY (store_id) REFERENCES stores(id),
-        UNIQUE (store_id, product_id)
+        PRIMARY KEY (store_id, product_id)
       );
     ''');
 

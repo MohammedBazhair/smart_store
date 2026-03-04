@@ -24,7 +24,7 @@ class BackgroundUtils {
     final product = params.product;
     final repository = container.read(alertRepositoryProvider);
     final alert = Alert(
-      productId: product.id!,
+      productId: product.globalProduct.id!,
       daysBeforeExpiry: params.daysBeforeExpire,
       importance: Priority.high,
       isRead: false,

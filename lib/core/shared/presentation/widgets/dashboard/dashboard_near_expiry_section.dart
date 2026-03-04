@@ -93,7 +93,7 @@ class _NearbySectionBody extends StatelessWidget {
           onTap: () {
             context.pushTo(
               ProductDetailsScreen(
-                productId: product.id!,
+                productId: product.globalProduct.id!,
               ),
             );
           },

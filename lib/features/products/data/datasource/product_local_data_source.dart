@@ -40,7 +40,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   /// gb  -> global_produucts,
   /// c   -> category
   String _storeProductColumnsAndJoins() => '''
-          sp.id             AS store_product_id,
           sp.store_id       AS store_id,
           sp.product_id     AS product_id,
           sp.price          AS price,
@@ -214,7 +213,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     try {
       final barcode = product.globalProduct.barcode ?? '';
       final globalProduct = await getGlobalProductByBarcode(barcode);
-      
+
       if (globalProduct == null) {
         final globalProductModel =
             GlobalProductModel.fromEntity(product.globalProduct);
@@ -243,11 +242,16 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   @override
   Future<Result<void>> updateProduct(StoreProduct product) async {
     try {
+      final updated = StoreProductModel.fromEntity(product).toMap();
+      final filterWhere = {
+        'store_id': product.storeId,
+        'product_id': product.globalProduct.id,
+      };
+      
       await db.update(
+        updated: updated,
+        filterWhere: filterWhere,
         table: 'store_products',
-        updated: StoreProductModel.fromEntity(product).toMap(),
-        column: 'id',
-        id: product.id,
       );
 
       return const SuccessState(null);
