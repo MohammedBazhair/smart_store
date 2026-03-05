@@ -84,7 +84,7 @@ class BackupSettingsCard extends ConsumerWidget {
             type: SnackBarType.success,
           );
           // إعادة تحميل البيانات
-          ref.invalidate(appSettingsProvider);
+          ref.invalidate(settingsControllerProvider);
         } else if (restoreResult is ErrorState<void>) {
           context.showSnakbar(restoreResult.message, type: SnackBarType.error);
         }

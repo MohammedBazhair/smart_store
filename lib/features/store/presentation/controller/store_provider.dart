@@ -10,12 +10,12 @@ import 'store_state.dart';
 
 final storeRemoteDataSourceProvider = Provider((ref) {
   final _clint = ref.read(remoteDatabaseServiceProvider);
-  return StoreRemoteDataSource(_clint);
+  return StoreRemoteDataSourceImpl(_clint);
 });
 
 final storeLocalDataSourceProvider = Provider((ref) {
   final _clint = ref.read(localDatabaseServiceProvider);
-  return StoreLocalDataSource(_clint);
+  return StoreLocalDataSourceImpl(_clint);
 });
 
 final storeRepositoryProvider = Provider<StoreRepository>((ref) {

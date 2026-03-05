@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../errors/result.dart';
 import '../../../../features/alerts/presentation/controllers/alert_provider.dart';
@@ -16,20 +16,27 @@ import '../widgets/dashboard/dashboard_quick_actions.dart';
 import '../widgets/dashboard/dashboard_stats_grid.dart';
 import 'permission_denied_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+
   @override
   void initState() {
     super.initState();
+
+     WidgetsBinding.instance.addPostFrameCallback((_)async{
+     await  ref.read(productControllerProvider.notifier).initialize();
+
+     });
+
+
     _handleInitialNotification();
     checkPermission();
-  FlutterNativeSplash.remove();
 
   }
 
@@ -77,30 +84,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: Consumer(
-        builder: (_, ref, __) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(productsProvider);
-              ref.invalidate(expiredProductsProvider);
-              ref.invalidate(nearExpiryProductsProvider);
-              ref.invalidate(newAlertsProvider);
-            },
-            child: const SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 24,
-                children: [
-                  DashboardStatsGrid(),
-                  DashboardQuickActions(),
-                  DashboardNearExpirySection(),
-                ],
+      body: Skeletonizer(
+        enabled: ref.watch(productControllerProvider.select((s)=>s.isInitilizating)),
+        child: Consumer(
+          builder: (_, ref, __) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(productsProvider);
+                ref.invalidate(expiredProductsProvider);
+                ref.invalidate(nearExpiryProductsProvider);
+                ref.invalidate(newAlertsProvider);
+              },
+              child: const SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 24,
+                  children: [
+                    DashboardStatsGrid(),
+                    DashboardQuickActions(),
+                    DashboardNearExpirySection(),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton.extended(

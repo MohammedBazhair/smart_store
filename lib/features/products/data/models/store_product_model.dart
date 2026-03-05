@@ -1,4 +1,4 @@
-import '../../../../core/constants/enums.dart';
+import '../../../settings/domain/entities/currence_code.dart';
 import '../../domain/entities/store_product.dart';
 import 'global_product_model.dart';
 
@@ -35,7 +35,7 @@ class StoreProductModel extends StoreProduct {
       expiryDate: DateTime.tryParse((map['expiry_date'] as String?) ?? ''),
       notes: map['notes'] as String?,
       updatedAt: DateTime.parse(map['updated_at'] as String),
-      currency: Currency.values.byName(map['currency']),
+      currency: CurrencyCode.values.byName(map['currency']),
       price: map['price'] as num,
     );
   }
@@ -45,7 +45,7 @@ class StoreProductModel extends StoreProduct {
       storeId: map['store_id'],
       price: map['price'] as num,
       quantity: map['quantity'],
-      currency: Currency.values.byName(map['currency']),
+      currency: CurrencyCode.values.byName(map['currency']),
       expiryDate: DateTime.tryParse(map['expiry_date']),
       notes: map['notes'],
       globalProduct: GlobalProductModel.fromLocal(map),

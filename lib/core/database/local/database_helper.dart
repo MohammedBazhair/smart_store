@@ -52,6 +52,14 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
+      CREATE TABLE exchange_rates ( 
+        currency TEXT PRIMARY KEY, 
+        rate_to_base INTEGER NOT NULL, 
+        updated_at TEXT NOT NULL 
+      );
+    ''');
+
+    await db.execute('''
       CREATE TABLE stores (
         id TEXT PRIMARY KEY,
         owner_id TEXT NOT NULL,
@@ -59,7 +67,8 @@ class DatabaseHelper {
         currency TEXT NOT NULL,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
-        FOREIGN KEY (owner_id) REFERENCES profiles(id)
+        FOREIGN KEY (owner_id) REFERENCES profiles(id),
+        FOREIGN KEY (currency) REFERENCES exchange_rates(currency) ON UPDATE CASCADE
       );
     ''');
 
@@ -99,6 +108,7 @@ class DatabaseHelper {
         updated_at TEXT NOT NULL,
         FOREIGN KEY (product_id) REFERENCES global_products(id),
         FOREIGN KEY (store_id) REFERENCES stores(id),
+        FOREIGN KEY (currency) REFERENCES exchange_rates(currency) ON UPDATE CASCADE,
         PRIMARY KEY (store_id, product_id)
       );
     ''');

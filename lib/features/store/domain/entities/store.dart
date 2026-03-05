@@ -1,4 +1,4 @@
-import '../../../../core/constants/enums.dart';
+import '../../../settings/domain/entities/currence_code.dart';
 
 class Store {
   Store({
@@ -13,7 +13,7 @@ class Store {
   final String? id;
   final String  ownerId;
   final String name;
-  final Currency currency;
+  final CurrencyCode currency;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -21,7 +21,7 @@ class Store {
     String? id,
     String? ownerId,
     String? name,
-    Currency? currency,
+    CurrencyCode? currency,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {

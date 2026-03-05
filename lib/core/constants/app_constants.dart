@@ -1,4 +1,3 @@
-import 'enums.dart';
 
 /// ثوابت التطبيق العامة
 class AppConstants {
@@ -8,8 +7,6 @@ class AppConstants {
   static const int databaseVersion = 1;
 
   // Currency
-  static const defaultCurrency = Currency.YER;
-  static const defaultExchangeRate = 400.0; // 1 SAR = 300 YER
 
   // Notification IDs
   static const int notificationIdExpired = 1000;

@@ -4,11 +4,15 @@ import '../../../core/constants/enums.dart';
 import '../../../core/extensions/extensions.dart';
 import 'controller/store_state.dart';
 
-Future<void> handleStoreStates(StoreEventState event, BuildContext context) async{
+Future<void> handleStoreStates(
+  StoreEventState event,
+  BuildContext context,
+) async {
   switch (event) {
     case InitialStoreEvent():
     case LoadMyStoresEvent():
     case SelectStoreEvent():
+    case LoadinMyStoresEvent():
       break;
     case CreateStoreEvent(:final storeName):
       context.showSnakbar(

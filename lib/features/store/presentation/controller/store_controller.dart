@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
+import '../../../settings/domain/entities/currence_code.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store.dart';
 import '../../domain/entities/store_member.dart';
@@ -22,6 +21,8 @@ class StoreController extends Notifier<StoreEventState> {
   }
 
   Future<void> loadMyStores() async {
+    state = LoadinMyStoresEvent(state: state.state);
+
     final repo = ref.read(storeRepositoryProvider);
     final profile = ref.read(userControllerProvider).profile;
     final stores = await repo.getUserStores(profile.phone ?? '');
@@ -39,7 +40,6 @@ class StoreController extends Notifier<StoreEventState> {
     );
 
     state = LoadMyStoresEvent(state: newState);
-    Logger.debugLog(message: state.state.myStores.keys.toString());
   }
 
   Future<void> addStoreMember(String phoneNumber) async {
@@ -81,7 +81,7 @@ class StoreController extends Notifier<StoreEventState> {
       final store = Store(
         name: storeName,
         ownerId: profile.userId,
-        currency: Currency.YER,
+        currency: CurrencyCode.theDefault,
         createdAt: now,
         updatedAt: now,
       );

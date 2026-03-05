@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
-import '../../../../features/products/presentation/controllers/product_provider.dart';
+import '../../../../features/store/presentation/controller/store_provider.dart';
+import '../../../../features/store/presentation/controller/store_state.dart';
+import '../../../../features/store/presentation/screens/store_selection_screen.dart';
 import '../../../../features/user/domain/entities/account_status.dart';
 import '../../../../features/user/presentation/screens/account_status_screen.dart';
 import '../../providers/core_providers.dart';
@@ -21,7 +23,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(userControllerProvider.notifier).loadProfile();
-      await ref.read(productControllerProvider.notifier).initialize();
+      await ref.read(storeControllerProvider.notifier).loadMyStores();
     });
   }
 
@@ -34,22 +36,16 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     }
     final profile = ref.watch(userControllerProvider).profile;
 
-    if (!profile.isDataComplete) {
-      return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'assets/images/app_logo.png',
-                width: 300,
-                height: 300,
-              ),
-              const LoadingWidget(size: 40),
-            ],
-          ),
-        ),
-      );
+    final isLoadingStores =
+        ref.watch(storeControllerProvider) is LoadinMyStoresEvent;
+    if (!profile.isDataComplete || isLoadingStores) {
+      return const SplashScreen();
+    }
+
+    final stores = ref.watch(storeControllerProvider).state;
+
+    if (stores.selectedStoreId == null) {
+      return const StoreSelectionScreen();
     }
 
     switch (profile.accountStatus) {
@@ -59,5 +55,28 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       case AccountStatus.pending:
         return AccountStatusScreen(profile: profile);
     }
+  }
+}
+
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/app_logo.png',
+              width: 300,
+              height: 300,
+            ),
+            const LoadingWidget(size: 40),
+          ],
+        ),
+      ),
+    );
   }
 }

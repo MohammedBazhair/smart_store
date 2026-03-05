@@ -4,13 +4,6 @@ import '../shared/presentation/theme/app_theme.dart';
 
 
 
-enum Currency {
-  YER(label: 'يمني'),
-  SAR(label: 'سعودي');
-
-  const Currency({required this.label});
-  final String label;
-}
 
 enum SnackBarType {
   error(

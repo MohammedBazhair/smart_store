@@ -4,7 +4,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/shared/presentation/widgets/common/error_widget.dart';
 import '../../../auth/auth_listeners.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
-import '../../domain/settings.dart';
+import '../../domain/entities/settings.dart';
 import '../controllers/settings_provider.dart';
 import '../widgets/settings_app_bar.dart';
 import '../widgets/settings_form.dart';
@@ -23,7 +23,7 @@ class SettingsScreen extends ConsumerWidget {
       );
     });
 
-    final settingsAsync = ref.watch(appSettingsProvider);
+    final settingsAsync = ref.watch(settingsControllerProvider);
 
     return Scaffold(
       appBar: const SettingsAppBar(),
@@ -33,16 +33,14 @@ class SettingsScreen extends ConsumerWidget {
         ),
         loading: () => Skeletonizer(
           child: SettingsForm(
-            settings: Settings.theDefault(),
+            settings: Settings.theDefault(const []),
           ),
         ),
         error: (e, _) => ErrorDisplayWidget(
           message: e.toString(),
-          onRetry: () => ref.invalidate(appSettingsProvider),
+          onRetry: () => ref.invalidate(settingsControllerProvider),
         ),
       ),
     );
   }
-
- 
 }

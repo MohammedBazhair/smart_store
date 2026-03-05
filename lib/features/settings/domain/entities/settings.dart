@@ -1,0 +1,47 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:equatable/equatable.dart';
+
+import 'currence_code.dart';
+import 'exchange_rate.dart';
+
+class Settings extends Equatable {
+  const Settings({
+    required this.defaultCurrency,
+    required this.enableNotifications,
+    required this.exchageRates,
+  });
+
+  factory Settings.theDefault(List<ExchangeRate> exchangeRates) {
+    return Settings(
+      defaultCurrency: CurrencyCode.YER,
+      enableNotifications: true,
+      exchageRates: exchangeRates,
+    );
+  }
+  
+  final CurrencyCode defaultCurrency;
+  final bool enableNotifications;
+  final List<ExchangeRate> exchageRates;
+
+  ExchangeRate get defaultExchangeRate {
+    final result =
+        exchageRates.firstWhere((e) => e.currency == defaultCurrency);
+
+    return result;
+  }
+
+  @override
+  List<Object?> get props => [defaultCurrency, enableNotifications];
+
+  Settings copyWith({
+    CurrencyCode? defaultCurrency,
+    bool? enableNotifications,
+    List<ExchangeRate>? exchageRates,
+  }) {
+    return Settings(
+      defaultCurrency: defaultCurrency ?? this.defaultCurrency,
+      enableNotifications: enableNotifications ?? this.enableNotifications,
+      exchageRates: exchageRates ?? this.exchageRates,
+    );
+  }
+}

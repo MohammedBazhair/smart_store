@@ -40,6 +40,10 @@ class InitialStoreEvent extends StoreEventState {
   const InitialStoreEvent({super.state = const StoreState()});
 }
 
+class LoadinMyStoresEvent extends StoreEventState {
+  const LoadinMyStoresEvent({required super.state});
+}
+
 class LoadMyStoresEvent extends StoreEventState {
   const LoadMyStoresEvent({required super.state});
 }

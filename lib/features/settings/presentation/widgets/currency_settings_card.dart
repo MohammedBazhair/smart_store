@@ -1,65 +1,21 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
-
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/presentation/widgets/common/conditional_builder.dart';
-import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../../errors/result.dart';
-import '../../domain/settings.dart';
-import '../controllers/settings_controller.dart';
+import '../../domain/entities/currence_code.dart';
+import '../../domain/entities/settings.dart';
+import '../controllers/settings_provider.dart';
 
-final _isWritingOnField = StateProvider.autoDispose((_) => false);
-
-class CurrencySettingsCard extends ConsumerStatefulWidget {
+class CurrencySettingsCard extends ConsumerWidget {
   const CurrencySettingsCard({
     super.key,
     required this.settings,
-    this.exchangeRateController,
   });
   final Settings settings;
-  final TextEditingController? exchangeRateController;
 
   @override
-  ConsumerState<CurrencySettingsCard> createState() =>
-      _CurrencySettingsCardState();
-}
-
-class _CurrencySettingsCardState extends ConsumerState<CurrencySettingsCard> {
-  Timer? _debounceTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.exchangeRateController?.text =
-        widget.settings.exchangeRate.formatDouble();
-  }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _showMessages(Settings updatedSettings) async {
-    final controller = ref.read(settingsControllerProvider.notifier);
-
-    final result = await controller.updateSettings(updatedSettings);
-
-    if (!context.mounted) return;
-
-    if (result is SuccessState<void>) {
-      context.showSnakbar('تم تحديث الإعدادات', type: SnackBarType.success);
-    } else if (result is ErrorState<void>) {
-      context.showSnakbar(result.message, type: SnackBarType.error);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -71,10 +27,10 @@ class _CurrencySettingsCardState extends ConsumerState<CurrencySettingsCard> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<Currency>(
-              value: widget.settings.defaultCurrency,
+            DropdownButtonFormField<CurrencyCode>(
+              value: settings.defaultCurrency,
               decoration: const InputDecoration(labelText: 'العملة الافتراضية'),
-              items: Currency.values
+              items: CurrencyCode.values
                   .map(
                     (currency) => DropdownMenuItem(
                       value: currency,
@@ -85,49 +41,32 @@ class _CurrencySettingsCardState extends ConsumerState<CurrencySettingsCard> {
               onChanged: (value) async {
                 if (value == null) return;
                 final updatedSettings =
-                    widget.settings.copyWith(defaultCurrency: value);
+                    settings.copyWith(defaultCurrency: value);
 
-                await _showMessages(updatedSettings);
+                final controller =
+                    ref.read(settingsControllerProvider.notifier);
+
+                final result = await controller.updateSettings(updatedSettings);
+
+                if (!context.mounted) return;
+
+                if (result is SuccessState<void>) {
+                  context.showSnakbar(
+                    'تم تحديث الإعدادات',
+                    type: SnackBarType.success,
+                  );
+                } else if (result is ErrorState<void>) {
+                  context.showSnakbar(result.message, type: SnackBarType.error);
+                }
               },
             ),
             const SizedBox(height: 24),
-            Consumer(
-              builder: (_, ref, __) {
-                final isLoading = ref.watch(_isWritingOnField);
-
-                return TextField(
-                  controller: widget.exchangeRateController,
-                  decoration: InputDecoration(
-                    labelText: 'سعر الصرف',
-                    helperText:
-                        '1 ريال سعودي = ${widget.exchangeRateController?.text} ريال يمني',
-                    helperStyle: const TextStyle(height: 2),
-                    suffix: ConditionalBuilder(
-                      condition: isLoading,
-                      builder: (_) => const LoadingWidget(
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    ref.read(_isWritingOnField.notifier).state = true;
-                    _debounceTimer?.cancel();
-
-                    _debounceTimer =
-                        Timer(const Duration(milliseconds: 1350), () async {
-                      final rate = double.tryParse(value);
-                      if (rate == null || rate <= 0) return;
-
-                      final updatedSettings =
-                          widget.settings.copyWith(exchangeRate: rate);
-
-                      ref.read(_isWritingOnField.notifier).state = false;
-                      await _showMessages(updatedSettings);
-                    });
-                  },
-                );
-              },
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'سعر الصرف',
+                helperStyle: TextStyle(height: 2),
+              ),
+              readOnly: true,
             ),
           ],
         ),

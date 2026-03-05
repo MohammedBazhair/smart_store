@@ -8,6 +8,7 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
+import '../../../settings/domain/entities/currence_code.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
@@ -53,7 +54,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
   final _expiryDateController = TextEditingController();
 
   Category _selectedCategory = Category.undefined();
-  Currency _selectedCurrency = Currency.YER;
+  CurrencyCode _selectedCurrency = CurrencyCode.theDefault;
 
   bool get isEditingProduct => widget.isEditing;
 
@@ -301,19 +302,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-         
-        
-
-          final stores = await ref
-              .read(storeLocalDataSourceProvider)
-              .getUserStores('776793111');
-
-          print(stores.length);
-          print(stores);
-        },
-      ),
+     
     );
   }
 }

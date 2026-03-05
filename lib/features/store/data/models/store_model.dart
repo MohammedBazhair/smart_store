@@ -1,4 +1,4 @@
-import '../../../../core/constants/enums.dart';
+import '../../../settings/domain/entities/currence_code.dart';
 import '../../domain/entities/store.dart';
 
 class StoreModel extends Store {
@@ -27,7 +27,7 @@ class StoreModel extends Store {
       id: map['id'],
       ownerId: map['owner_id'],
       name: map['store_name'],
-      currency: Currency.values.byName(map['currency']),
+      currency: CurrencyCode.values.byName(map['currency']),
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
     );

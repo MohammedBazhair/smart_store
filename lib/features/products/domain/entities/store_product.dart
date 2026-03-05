@@ -1,4 +1,4 @@
-import '../../../../core/constants/enums.dart';
+import '../../../settings/domain/entities/currence_code.dart';
 import 'product.dart';
 import 'sub_entities/global_product.dart';
 
@@ -23,7 +23,7 @@ class StoreProduct extends Product {
       expiryDate: date,
       notes: 'mhjhjh',
       updatedAt: date,
-      currency: Currency.YER,
+      currency: CurrencyCode.YER,
       price: 1500,
     );
   }
@@ -33,7 +33,7 @@ class StoreProduct extends Product {
   final num price;
   final DateTime? expiryDate;
   final int? quantity;
-  final Currency currency;
+  final CurrencyCode currency;
   final String? notes;
   final DateTime updatedAt;
 
@@ -47,7 +47,7 @@ class StoreProduct extends Product {
     num? price,
     DateTime? expiryDate,
     int? quantity,
-    Currency? currency,
+    CurrencyCode? currency,
     String? notes,
     DateTime? updatedAt,
   }) {

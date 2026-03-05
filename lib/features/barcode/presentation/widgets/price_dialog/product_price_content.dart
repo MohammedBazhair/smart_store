@@ -1,62 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../../products/domain/entities/store_product.dart';
-import '../../../../settings/domain/settings.dart';
+import '../../../../settings/presentation/controllers/settings_provider.dart';
 import 'animated_price.dart';
 import 'converted_price_text.dart';
 
-class ProductPriceContent extends StatelessWidget {
+class ProductPriceContent extends ConsumerWidget {
   const ProductPriceContent({
     super.key,
     required this.product,
-    required this.settings,
   });
 
   final StoreProduct product;
-  final Settings settings;
-
-  bool get _shouldShowConvertedPrice =>
-      product.currency != settings.defaultCurrency;
 
   @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+  Widget build(BuildContext context, ref) {
+    final asyncSettings = ref.watch(settingsControllerProvider);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'المنتج',
-          textAlign: TextAlign.center,
-          style: textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+    return asyncSettings.when(
+      data: (settings) {
+        final defaultCurrency = settings.defaultCurrency;
+        final _shouldShowConvertedPrice = product.currency != defaultCurrency;
 
-        const SizedBox(height: 12),
+        final textTheme = Theme.of(context).textTheme;
 
-        // اسم المنتج (ثانوي)
-        Text(
-          product.globalProduct.name,
-          textAlign: TextAlign.center,
-          style: textTheme.bodyMedium?.copyWith(
-            color: AppTheme.textSecondary,
-          ),
-        ),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'المنتج',
+              textAlign: TextAlign.center,
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
 
-        const SizedBox(height: 24),
+            const SizedBox(height: 12),
 
-        AnimatedPrice(product),
+            // اسم المنتج (ثانوي)
+            Text(
+              product.globalProduct.name,
+              textAlign: TextAlign.center,
+              style: textTheme.bodyMedium?.copyWith(
+                color: AppTheme.textSecondary,
+              ),
+            ),
 
-        if (_shouldShowConvertedPrice)
-          ConvertedPriceText(
-            product: product,
-            settings: settings,
-          ),
-        const SizedBox(height: 30),
-      ],
+            const SizedBox(height: 24),
+
+            AnimatedPrice(product),
+
+            if (_shouldShowConvertedPrice)
+              ConvertedPriceText(
+                product: product,
+              ),
+            const SizedBox(height: 30),
+          ],
+        );
+      },
+      loading: () => const Center(child: LoadingWidget()),
+      error: (_, __) => const Center(child: Text('حدث خطا ما')),
     );
   }
 }

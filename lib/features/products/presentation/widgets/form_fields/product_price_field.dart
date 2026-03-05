@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../../core/constants/enums.dart';
+import '../../../../settings/domain/entities/currence_code.dart';
 import '../../../domain/entities/product_details.dart';
 import '../../controllers/product_provider.dart';
 
@@ -14,8 +13,8 @@ class ProductPriceField extends ConsumerWidget {
     required this.currency,
   });
   final TextEditingController controller;
-  final ValueChanged<Currency?> onCurrencyChanged;
-  final Currency currency;
+  final ValueChanged<CurrencyCode?> onCurrencyChanged;
+  final CurrencyCode currency;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -48,14 +47,14 @@ class ProductPriceField extends ConsumerWidget {
         ),
         SizedBox(
           width: 180,
-          child: DropdownButtonFormField<Currency>(
+          child: DropdownButtonFormField<CurrencyCode>(
             value: currency,
             decoration: const InputDecoration(
               labelText: 'العملة *',
               prefixIcon: Icon(Icons.price_check_rounded),
               helperText: '',
             ),
-            items: Currency.values.map((currency) {
+            items: CurrencyCode.values.map((currency) {
               return DropdownMenuItem(
                 value: currency,
                 child: Text(currency.label),

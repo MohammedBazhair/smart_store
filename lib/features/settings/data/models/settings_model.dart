@@ -1,46 +1,46 @@
 import 'dart:convert';
+import '../../domain/entities/currence_code.dart';
+import '../../domain/entities/exchange_rate.dart';
+import '../../domain/entities/settings.dart';
 
-import '../../../core/constants/enums.dart';
-import '../domain/settings.dart';
-
-/// نموذج الإعدادات للتعامل مع قاعدة البيانات
 class SettingsModel extends Settings {
   const SettingsModel({
     required super.defaultCurrency,
-    required super.exchangeRate,
     required super.enableNotifications,
+    required super.exchageRates,
   });
 
-  /// تحويل من JSON (String) إلى SettingsModel
-  factory SettingsModel.fromJson(String source) {
+  factory SettingsModel.fromJson(
+    String source,
+    List<ExchangeRate> exchangeRates,
+  ) {
     final map = jsonDecode(source);
-    return SettingsModel.fromMap(map);
+    return SettingsModel.fromMap(map, exchangeRates);
   }
 
-  /// تحويل من Entity إلى Model
   factory SettingsModel.fromEntity(Settings settings) {
     return SettingsModel(
       defaultCurrency: settings.defaultCurrency,
-      exchangeRate: settings.exchangeRate,
       enableNotifications: settings.enableNotifications,
+      exchageRates: settings.exchageRates,
     );
   }
 
-  /// تحويل من Map إلى SettingsModel
-  factory SettingsModel.fromMap(Map<String, dynamic> map) {
+  factory SettingsModel.fromMap(
+    Map<String, dynamic> map,
+    List<ExchangeRate> exchangeRates,
+  ) {
     return SettingsModel(
       defaultCurrency:
-          Currency.values.byName(map['default_currency'] as String),
-      exchangeRate: (map['exchange_rate'] as num).toDouble(),
+          CurrencyCode.values.byName(map['default_currency'] as String),
       enableNotifications: (map['enable_notifications'] as int) == 1,
+      exchageRates: exchangeRates,
     );
   }
 
-  /// تحويل من SettingsModel إلى Map
   Map<String, dynamic> toMap() {
     return {
       'default_currency': defaultCurrency.name,
-      'exchange_rate': exchangeRate,
       'enable_notifications': enableNotifications ? 1 : 0,
     };
   }

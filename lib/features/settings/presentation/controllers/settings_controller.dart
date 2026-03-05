@@ -1,35 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
-import '../../domain/settings.dart';
+import '../../domain/entities/settings.dart';
 import 'settings_provider.dart';
 
-/// Controller لإدارة الإعدادات
-class SettingsController extends Notifier<void> {
+class SettingsController extends AsyncNotifier<Settings> {
   @override
-  void build() {}
+  Future<Settings> build() {
+    return _getSettings();
+  }
 
-  /// تحديث الإعدادات
+  Future<Settings> _getSettings() {
+    final repository = ref.read(settingsRepositoryProvider);
+    return repository.getSettings();
+  }
+
   Future<Result<void>> updateSettings(Settings settings) async {
     try {
       final repository = ref.read(settingsRepositoryProvider);
       final result = await repository.updateSettings(settings);
 
       if (result is SuccessState<void>) {
-        // تحديث provider الإعدادات
-        ref.invalidate(appSettingsProvider);
+        state = AsyncValue.data(settings);
       }
-      return result;
+      return const SuccessState(null);
     } catch (e) {
-
       return ErrorState(e.toString());
     }
   }
 }
-
-/// Provider للـ SettingsController
-final settingsControllerProvider =
-    NotifierProvider<SettingsController, void>(() {
-  return SettingsController();
-});

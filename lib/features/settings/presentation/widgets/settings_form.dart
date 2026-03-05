@@ -5,8 +5,8 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../errors/result.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
-import '../../domain/settings.dart';
-import '../controllers/settings_controller.dart';
+import '../../domain/entities/settings.dart';
+import '../controllers/settings_provider.dart';
 import 'backup_settings_card.dart';
 import 'change_phone_card.dart';
 import 'change_store_selection.dart';
@@ -17,7 +17,7 @@ class SettingsForm extends ConsumerStatefulWidget {
   const SettingsForm({
     super.key,
     required this.settings,
-     this.isShimmerLoading= false,
+    this.isShimmerLoading = false,
   });
   final Settings settings;
   final bool isShimmerLoading;
@@ -27,12 +27,11 @@ class SettingsForm extends ConsumerStatefulWidget {
 }
 
 class _SettingsFormState extends ConsumerState<SettingsForm> {
-  final _exchangeRateController = TextEditingController();
   final _phoneController = TextEditingController();
-final _formKey= GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
+
   @override
   void dispose() {
-    _exchangeRateController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -53,14 +52,11 @@ final _formKey= GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Form(
-      key:_formKey ,
+      key: _formKey,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          CurrencySettingsCard(
-            settings: widget.settings,
-            exchangeRateController: widget.isShimmerLoading?null: _exchangeRateController,
-          ),
+          CurrencySettingsCard(settings: widget.settings),
           const SizedBox(height: 16),
           NotificationsSettingsCard(
             settings: widget.settings,
@@ -71,7 +67,9 @@ final _formKey= GlobalKey<FormState>();
           const SizedBox(height: 16),
           const BackupSettingsCard(),
           const SizedBox(height: 16),
-          ChangePhoneCard(phoneController: widget.isShimmerLoading ? null :  _phoneController),
+          ChangePhoneCard(
+            phoneController: widget.isShimmerLoading ? null : _phoneController,
+          ),
           const SizedBox(height: 16),
           Consumer(
             builder: (_, ref, __) {

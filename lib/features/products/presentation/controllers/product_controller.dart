@@ -18,10 +18,21 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   }
 
   Future<void> initialize() async {
+    state = ProductManagementState(isInitilizating: true);
     final categories = await getCategories();
     final products = await getStoreProducts();
 
-    state = ProductManagementState(products: products, categories: categories);
+    state = state.copyWith(
+      products: products,
+      categories: categories,
+      isInitilizating: false,
+    );
+  }
+
+  Future<List<Category>> getExchangeRates() async {
+    final exchangeRates =
+        await ref.read(productRepositoryProvider).getAllCategories();
+    return exchangeRates;
   }
 
   Future<List<Category>> getCategories() async {

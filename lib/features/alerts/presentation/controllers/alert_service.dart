@@ -6,7 +6,7 @@ import '../../../../core/utils/permissions.dart';
 import '../../../../main.dart';
 import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
-import '../../../settings/domain/settings_repository.dart';
+import '../../../settings/domain/repository/settings_repository.dart';
 import '../../domain/expiry_reminder.dart';
 import 'alert_controller.dart';
 import 'alert_scheduler.dart';
