@@ -39,10 +39,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<Result<void>> updateSettings(Settings settings) async {
     try {
-      final model = SettingsModel.fromEntity(settings);
-
-      await _cache.setString(key: 'settings', value: model.toJson());
-
+      await setSettings(settings);
       return const SuccessState(null);
     } catch (e) {
       return const ErrorState('فشل في تحديث الإعدادات: ');
@@ -53,7 +50,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
   Future<List<ExchangeRate>> getExchangeRates() async {
     try {
       if (await _connectivityService.hasConnection()) {
-        return _remoteSettings.getExchangeRates();
+        final exchangeRates = await _remoteSettings.getExchangeRates();
+        await _localSettings.setExchangeRates(exchangeRates);
+        return exchangeRates;
       }
 
       return _localSettings.getExchangeRates();
