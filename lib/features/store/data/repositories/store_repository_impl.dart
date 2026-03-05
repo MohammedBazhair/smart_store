@@ -42,13 +42,23 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
-  Future<List<Store>> getUserStores(String userPhone) {
-    return remote.getUserStores(userPhone);
+  Future<List<Store>> getUserStores(String userPhone) async {
+    final hasConnection = await connectivityService.hasConnection();
+
+    final userStores = hasConnection
+        ? await remote.getUserStores(userPhone)
+        : await local.getUserStores(userPhone);
+
+    return userStores;
   }
 
   @override
   Future<Set<StoreMember>> getStoreMembers(String storeId) async {
-    final members = await remote.getMembers(storeId);
+    final hasConnection = await connectivityService.hasConnection();
+    final members = hasConnection
+        ? await remote.getMembers(storeId)
+        : await local.getMembers(storeId);
+
     return members.toSet();
   }
 
@@ -60,16 +70,24 @@ class StoreRepositoryImpl implements StoreRepository {
     final isUserExist = await userRepository.isPhoneSignUp(member.memberPhone);
 
     if (!isUserExist) {
-      throw const UserPhoneNotFoundException('رقم هاتف العضو غير مسجل');
+      throw const UserPhoneNotFoundException(
+        'رقم هاتف العضو غير مسجل في التطبيق',
+      );
     }
 
     final model = StoreMemberModel.fromEntity(member);
 
-    return remote.insertMember(model);
+    await remote.insertMember(model);
+    await local.insertMember(model);
   }
 
   @override
-  Future<void> removeStoreMember(String memberId) {
-    return remote.deleteMember(memberId);
+  Future<void> removeStoreMember(String memberId) async {
+    if (!await connectivityService.hasConnection()) {
+      throw const InternetException();
+    }
+
+    await remote.deleteMember(memberId);
+    await local.deleteMember(memberId);
   }
 }

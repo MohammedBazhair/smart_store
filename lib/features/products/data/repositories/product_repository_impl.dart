@@ -54,13 +54,16 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<StoreProduct>> getProductById(String sellerProductId) async {
+  Future<Result<StoreProduct>> getProductById({
+    required String productId,
+    required String storeId,
+  }) async {
     try {
       final hasConnection = await _connectivity.hasConnection();
 
       final result = hasConnection
-          ? await _remoteDatabase.getProductById(sellerProductId)
-          : await _localDatabase.getProductById(sellerProductId);
+          ? await _remoteDatabase.getProductById(productId: productId, storeId: storeId)
+          : await _localDatabase.getProductById(productId: productId, storeId: storeId);
 
       if (result is ErrorState) throw Exception();
       return result;

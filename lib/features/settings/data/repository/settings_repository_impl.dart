@@ -22,11 +22,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
   final LocalSettingsDataSource _localSettings;
 
   final LocalCacheService _cache;
-  final _settingsKey = 'app_settings';
 
   @override
   Future<Settings> getSettings() async {
-    final raw = _cache.getString(key: _settingsKey);
+    final raw = _cache.getString(key: 'settings');
 
     final exchangeRates = await getExchangeRates();
 
@@ -42,7 +41,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     try {
       final model = SettingsModel.fromEntity(settings);
 
-      await _cache.setString(key: _settingsKey, value: model.toJson());
+      await _cache.setString(key: 'settings', value: model.toJson());
 
       return const SuccessState(null);
     } catch (e) {
@@ -61,6 +60,17 @@ class SettingsRepositoryImpl implements SettingsRepository {
     } catch (e) {
       Logger.debugLog(error: e);
       return _localSettings.getExchangeRates();
+    }
+  }
+
+  @override
+  Future<void> setSettings(Settings settings) async {
+    try {
+      final model = SettingsModel.fromEntity(settings);
+
+      await _cache.setString(key: 'settings', value: model.toJson());
+    } catch (e) {
+      Logger.debugLog(error: e);
     }
   }
 }

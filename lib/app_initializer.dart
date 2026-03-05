@@ -17,6 +17,7 @@ import 'main.dart';
 
 Future<ProviderContainer> configureDependencies() async {
   await initializeDateFormatting('ar');
+  await _initializeSupabase();
 
   final sharedPrefs = await SharedPreferences.getInstance();
   final database = await DatabaseHelper.instance.database;
@@ -35,7 +36,6 @@ Future<ProviderContainer> configureDependencies() async {
 Future<void> _initializeServices(ProviderContainer container) async {
   await _initializeAlertService(container);
   await _initializeWorkManager();
-  await _initializeSupabase();
   await _initializePushNotification();
 }
 

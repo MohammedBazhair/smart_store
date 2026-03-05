@@ -3,7 +3,7 @@
 class AppConstants {
   AppConstants._();
   // Database
-  static const String databaseName = 'SmartStore1.3.db';
+  static const String databaseName = 'SmartStore1.4.db';
   static const int databaseVersion = 1;
 
   // Currency

@@ -31,6 +31,7 @@ class UserController extends StateNotifier<UserState> {
       state = UserLoadedProfileState(newProfile);
       return newProfile;
     } catch (e, _) {
+      Logger.debugLog(error: e);
       state = UserErrorState(state.profile, 'Can\'t get profile error');
       return null;
     }

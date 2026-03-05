@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/utils/send_messages_utils.dart';
+import '../../../store/presentation/controller/store_provider.dart';
 import '../../../store/presentation/screens/store_selection_screen.dart';
 import '../../domain/entities/status_config.dart';
 
@@ -33,7 +34,7 @@ class ContinueButtonWidget extends ConsumerWidget {
       child: ElevatedButton(
         onPressed: () async {
           if (canContinue) {
-          
+            await ref.read(storeControllerProvider.notifier).loadMyStores();
             await context.pushReplacementTo(const StoreSelectionScreen());
             return;
           }

@@ -14,7 +14,10 @@ abstract class ProductLocalDataSource {
   Future<void> saveAllCategories(List<Category> categories);
   Future<void> saveGlobalProducts(List<GlobalProductModel> products);
   Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId);
-  Future<Result<StoreProduct>> getProductById(String storeProductId);
+  Future<Result<StoreProduct>> getProductById({
+    required String productId,
+    required String storeId,
+  });
   Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
   Future<Result<List<StoreProduct>>> searchProducts({
     required String query,
@@ -94,15 +97,18 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<Result<StoreProduct>> getProductById(String storeProductId) async {
+  Future<Result<StoreProduct>> getProductById({
+    required String productId,
+    required String storeId,
+  }) async {
     try {
       final response = await db.rawQuery(
         query: '''
           SELECT ${_storeProductColumnsAndJoins()}
-          WHERE sp.id = ?
+          WHERE sp.store_id = ? AND sp.product_id = ?
           LIMIT 1
         ''',
-        arguments: [storeProductId],
+        arguments: [storeId, productId],
       );
       final map = response.first;
       final product = StoreProductModel.fromRemote(map);
@@ -149,7 +155,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       final maps = await db.rawQuery(
         query: '''
           SELECT ${_storeProductColumnsAndJoins()}
-          WHERE sp.id = ? 
+          WHERE sp.store_id = ? 
           AND LOWER(sp.name) LIKE LOWER(?)
         ''',
         arguments: [storeId, '%$query%'],
@@ -171,7 +177,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       final maps = await db.rawQuery(
         query: '''
           SELECT ${_storeProductColumnsAndJoins()}
-          WHERE sp.id = ?
+          WHERE sp.store_id = ?
           AND DATE(sp.expiry_date) <= DATE(?) 
         ''',
         arguments: [storeId, today],
@@ -195,7 +201,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       final maps = await db.rawQuery(
         query: '''
           SELECT ${_storeProductColumnsAndJoins()}
-          WHERE sp.id = ?
+          WHERE sp.store_id = ?
           AND DATE(sp.expiry_date) BETWEEN DATE(?) AND DATE(?) 
         ''',
         arguments: [storeId, now.toIso8601String(), near],
@@ -247,7 +253,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         'store_id': product.storeId,
         'product_id': product.globalProduct.id,
       };
-      
+
       await db.update(
         updated: updated,
         filterWhere: filterWhere,

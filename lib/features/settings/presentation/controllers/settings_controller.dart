@@ -5,6 +5,7 @@ import '../../domain/entities/settings.dart';
 import 'settings_provider.dart';
 
 class SettingsController extends AsyncNotifier<Settings> {
+  
   @override
   Future<Settings> build() {
     return _getSettings();
@@ -14,6 +15,8 @@ class SettingsController extends AsyncNotifier<Settings> {
     final repository = ref.read(settingsRepositoryProvider);
     return repository.getSettings();
   }
+
+
 
   Future<Result<void>> updateSettings(Settings settings) async {
     try {

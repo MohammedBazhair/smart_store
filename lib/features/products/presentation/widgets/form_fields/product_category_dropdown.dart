@@ -25,6 +25,7 @@ class ProductCategoryDropdown extends ConsumerWidget {
       menuHeight: 200,
       leadingIcon: const Icon(Icons.category),
       trailingIcon: const Icon(Icons.keyboard_arrow_down),
+      selectedTrailingIcon: const Icon(Icons.keyboard_arrow_up),
       inputDecorationTheme: const InputDecorationThemeData(
         fillColor: Colors.white,
         filled: true,
@@ -32,7 +33,6 @@ class ProductCategoryDropdown extends ConsumerWidget {
       hintText: 'اختر فئة *',
       helperText: '',
       label: const Text('الفئة'),
-      selectedTrailingIcon: const Icon(Icons.keyboard_arrow_up),
       dropdownMenuEntries: categories.map((category) {
         return DropdownMenuEntry(
           value: category,

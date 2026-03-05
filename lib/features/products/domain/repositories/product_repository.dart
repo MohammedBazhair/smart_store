@@ -10,7 +10,10 @@ abstract class ProductRepository {
 
   Future<List<GlobalProduct>> getProductsGlobal();
 
-  Future<Result<StoreProduct>> getProductById(String sellerProductId);
+  Future<Result<StoreProduct>> getProductById({
+    required String productId,
+    required String storeId,
+  });
 
   Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
 

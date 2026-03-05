@@ -2,12 +2,14 @@ import '../../../../errors/result.dart';
 import '../entities/exchange_rate.dart';
 import '../entities/settings.dart';
 
-/// واجهة مستودع الإعدادات
 abstract class SettingsRepository {
   Future<List<ExchangeRate>> getExchangeRates();
 
- Future< Settings> getSettings();
+  Future<Settings> getSettings();
+  Future<void> setSettings(Settings settings);
 
   /// تحديث الإعدادات
   Future<Result<void>> updateSettings(Settings settings);
+
+
 }

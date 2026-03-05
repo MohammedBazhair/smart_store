@@ -9,4 +9,7 @@ class ExchangeRate {
   final CurrencyCode currency;
   final int rateToBase;
   final DateTime updatedAt;
+
+  @override
+  String toString() => 'ExchangeRate(currency: $currency, rateToBase: $rateToBase, updatedAt: $updatedAt)';
 }

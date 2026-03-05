@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/constants/log.dart';
 import 'currence_code.dart';
 import 'exchange_rate.dart';
 
@@ -18,16 +19,25 @@ class Settings extends Equatable {
       exchageRates: exchangeRates,
     );
   }
-  
+
   final CurrencyCode defaultCurrency;
   final bool enableNotifications;
   final List<ExchangeRate> exchageRates;
 
   ExchangeRate get defaultExchangeRate {
-    final result =
-        exchageRates.firstWhere((e) => e.currency == defaultCurrency);
+    try {
+      Logger.debugLog(message: exchageRates.toString());
+      final result =
+          exchageRates.firstWhere((e) => e.currency == defaultCurrency);
 
-    return result;
+      return result;
+    } catch (e) {
+      return ExchangeRate(
+        currency: CurrencyCode.theDefault,
+        rateToBase: 1,
+        updatedAt: DateTime.now(),
+      );
+    }
   }
 
   @override

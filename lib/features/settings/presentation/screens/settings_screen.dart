@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/shared/presentation/widgets/common/error_widget.dart';
-import '../../../auth/auth_listeners.dart';
+import '../../../auth/handle_auth_listeners.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../domain/entities/settings.dart';
 import '../controllers/settings_provider.dart';
@@ -37,7 +37,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         error: (e, _) => ErrorDisplayWidget(
-          message: e.toString(),
+          message: 'حصل خطأ ما تواصل معنا',
           onRetry: () => ref.invalidate(settingsControllerProvider),
         ),
       ),

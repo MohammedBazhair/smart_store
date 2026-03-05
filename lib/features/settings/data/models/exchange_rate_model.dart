@@ -1,3 +1,4 @@
+import '../../domain/entities/currence_code.dart';
 import '../../domain/entities/exchange_rate.dart';
 
 class ExchangeRateModel extends ExchangeRate {
@@ -9,7 +10,7 @@ class ExchangeRateModel extends ExchangeRate {
 
   factory ExchangeRateModel.fromMap(Map<String, dynamic> map) {
     return ExchangeRateModel(
-      currency: map['currency'],
+      currency:CurrencyCode.values.byName( map['currency']),
       rateToBase: map['rate_to_base'],
       updatedAt: DateTime.parse(map['updated_at']),
     );

@@ -8,6 +8,7 @@ import '../../../../features/alerts/presentation/controllers/notification_cache.
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/products/presentation/screens/product_details_screen.dart';
+import '../../../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
@@ -32,6 +33,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
      WidgetsBinding.instance.addPostFrameCallback((_)async{
      await  ref.read(productControllerProvider.notifier).initialize();
 
+    ref.read(settingsControllerProvider.notifier);
      });
 
 

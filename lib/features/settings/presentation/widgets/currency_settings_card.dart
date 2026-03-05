@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/currence_code.dart';
 import '../../domain/entities/exchange_rate.dart';
@@ -24,22 +25,35 @@ class CurrencySettingsCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'إعدادات العملة',
+              'العملة',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<CurrencyCode>(
-              value: settings.defaultCurrency,
-              decoration: const InputDecoration(labelText: 'العملة الافتراضية'),
-              items: CurrencyCode.values
+            const SizedBox(height: 24),
+            DropdownMenuFormField<CurrencyCode>(
+              initialSelection: settings.defaultCurrency,
+              label: const Text('العملة الافتراضية'),
+              expandedInsets: const EdgeInsets.all(0),
+              menuHeight: 200,
+              enableSearch: false,
+              menuStyle: const MenuStyle(
+                elevation: WidgetStatePropertyAll(2),
+              ),
+              trailingIcon: const Icon(Icons.keyboard_arrow_down),
+              selectedTrailingIcon: const Icon(Icons.keyboard_arrow_up),
+              dropdownMenuEntries: CurrencyCode.values
                   .map(
-                    (currency) => DropdownMenuItem(
+                    (currency) => DropdownMenuEntry(
                       value: currency,
-                      child: Text(currency.label),
+                      label: currency.label,
                     ),
                   )
                   .toList(),
-              onChanged: (value) async {
+              inputDecorationTheme: const InputDecorationThemeData(
+                fillColor: Colors.white,
+                filled: true,
+              ),
+              hintText: 'اختر فئة *',
+              onSelected: (value) async {
                 if (value == null) return;
                 final updatedSettings =
                     settings.copyWith(defaultCurrency: value);
@@ -77,56 +91,158 @@ class ExchangeRateWidget extends StatelessWidget {
     super.key,
     required this.currentExchangeRate,
   });
+
   final ExchangeRate currentExchangeRate;
 
   CurrencyCode get primaryCurrency => CurrencyCode.theDefault;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[400]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // قيمة سعر الصرف
-          Text(
-            '${currentExchangeRate.rateToBase}',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+    return Column(
+      spacing: 20,
+      children: [
+        // Header
+        Row(
+          children: [
+            const Icon(
+              Icons.currency_exchange,
+              color: AppTheme.primaryColor,
+              size: 15,
             ),
-          ),
-          const SizedBox(width: 8),
-          // العملة الثانوية
-          Text(
-            currentExchangeRate.currency.label,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+            const SizedBox(
+              width: 8,
             ),
-          ),
-          const Spacer(),
-          // الوصف أو label
-          Text(
-            'سعر 1 ${currentExchangeRate.currency.label} مقابل ${primaryCurrency.label}',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
+            Text(
+              'سعر الصرف الحالي',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+                letterSpacing: 0.3,
+              ),
             ),
-          ),
-        ],
-      ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.trending_up,
+                    size: 14,
+                    color: AppTheme.primaryColor,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'مباشر',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        // Main Exchange Rate Display
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // العملة المصدر
+            Expanded(
+              child: Column(
+                children: [
+                  const Text(
+                    '1',
+                    style: TextStyle(
+                      fontSize: 24,
+                    ),
+                  ),
+                  Text(
+                    currentExchangeRate.currency.label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryColor,
+                      height: 2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            // أيقونة التحويل
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppTheme.primaryColor.withOpacity(0.5),
+              size: 30,
+            ),
+
+            const SizedBox(width: 8),
+
+            // العملة الهدف
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    currentExchangeRate.rateToBase.toString(),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  Text(
+                    primaryCurrency.label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[600],
+                      height: 2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        // Footer Info
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 5),
+            const Icon(
+              Icons.info_outline_rounded,
+              size: 16,
+              color: AppTheme.primaryColor,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'اسحب الشاشة للاسفل لتحديث سعر الصرف',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[900],
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -147,13 +147,23 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   }
 
   Future<StoreProduct?> getProductById(String productId) async {
-    final productRepo = ref.read(productRepositoryProvider);
+    try {
+      final productRepo = ref.read(productRepositoryProvider);
+      final storeId = ref.watch(
+        storeControllerProvider.select((s) => s.state.selectedStoreId),
+      );
 
-    // التحقق من وجود المنتج
-    final result = await productRepo.getProductById(productId);
-    Logger.debugLog(message: result.toString());
-    if (result is SuccessState<StoreProduct>) return result.data;
+      final result = await productRepo.getProductById(
+        productId: productId,
+        storeId: storeId!,
+      );
 
-    return null;
+      if (result is SuccessState<StoreProduct>) return result.data;
+
+      return null;
+    } on Exception catch (e) {
+      Logger.debugLog(error: e);
+      return null;
+    }
   }
 }

@@ -20,7 +20,7 @@ class NotificationsSettingsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'إعدادات التنبيهات',
+              'التنبيهات',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),

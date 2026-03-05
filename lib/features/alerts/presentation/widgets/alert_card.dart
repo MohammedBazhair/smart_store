@@ -6,8 +6,6 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../errors/result.dart';
-import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../domain/alert.dart';
@@ -101,11 +99,11 @@ class AlertCard extends ConsumerWidget {
         ),
         onTap: () async {
           final product = await ref
-              .read(productRepositoryProvider)
+              .read(productControllerProvider.notifier)
               .getProductById(alert.productId);
-          if (product is SuccessState<StoreProduct>) {
+          if (product != null) {
             await context.pushTo(
-              ProductDetailsScreen(productId: product.data.globalProduct.id!),
+              ProductDetailsScreen(productId: product.globalProduct.id!),
             );
           } else {
             context.showSnakbar(

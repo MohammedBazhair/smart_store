@@ -12,7 +12,10 @@ abstract class ProductRemoteDataSource {
   Future<List<Map<String, dynamic>>> getGlobalProducts();
   Future<Result<List<Category>>> getAllCategories();
   Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId);
-  Future<Result<StoreProduct>> getProductById(String sellerProductId);
+  Future<Result<StoreProduct>> getProductById({
+    required String productId,
+    required String storeId,
+  });
   Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
   Future<Result<List<StoreProduct>>> searchProducts({
     required String query,
@@ -68,14 +71,18 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<Result<StoreProduct>> getProductById(String sellerProductId) async {
+  Future<Result<StoreProduct>> getProductById({
+    required String productId,
+    required String storeId,
+  }) async {
     try {
       final response = await _client.client
           .from('store_products')
           .select(
             '*, global_products(*, categories(*))',
           )
-          .eq('id', sellerProductId);
+          .eq('store_id', storeId)
+          .eq('product_id', productId);
       final map = response.first;
       return SuccessState(StoreProductModel.fromRemote(map));
     } catch (e) {
