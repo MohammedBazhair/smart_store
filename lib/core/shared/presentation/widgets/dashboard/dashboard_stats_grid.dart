@@ -26,28 +26,24 @@ class DashboardStatsGrid extends StatelessWidget {
             Expanded(
               child: Consumer(
                 builder: (_, ref, __) {
-                  final productsAsync = ref.watch(productsProvider);
-              
-                  Widget _child(int length) {
-                    return StatCard(
-                      title: 'إجمالي المنتجات',
-                      value: '$length',
-                      icon: Icons.inventory_2,
-                      color: AppTheme.primaryColor,
-                      onTap: () {
-                        context.pushTo(
-                          ProductsScreen(
-                            productsProvider: productsProvider,
-                          ),
-                        );
-                      },
-                    );
-                  }
-              
-                  return productsAsync.when(
-                    data: (data) => _child(data.length),
-                    loading: () => Skeletonizer(child: _child(0)),
-                    error: (error, stackTrace) => _child(0),
+                  final products = ref
+                      .watch(
+                        productControllerProvider.select((s) => s.products),
+                      )
+                      .values;
+
+                  return StatCard(
+                    title: 'إجمالي المنتجات',
+                    value: products.length.toString(),
+                    icon: Icons.inventory_2,
+                    color: AppTheme.primaryColor,
+                    onTap: () {
+                      context.pushTo(
+                        ProductsScreen(
+                          products: products.toList(),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -55,29 +51,23 @@ class DashboardStatsGrid extends StatelessWidget {
             Expanded(
               child: Consumer(
                 builder: (_, ref, __) {
-                  final expiredProductsAsync = ref.watch(expiredProductsProvider);
-              
-                  Widget _child(int length) {
-                    return StatCard(
-                      title: 'منتهية الصلاحية',
-                      value: '$length',
-                      icon: Icons.cancel,
-                      color: AppTheme.expiredColor,
-                      onTap: () {
-                        context.pushTo(
-                          ProductsScreen(
-                            productsProvider: expiredProductsProvider,
-                            title: 'المنتجات منهية الصلاحية',
-                          ),
-                        );
-                      },
-                    );
-                  }
-              
-                  return expiredProductsAsync.when(
-                    data: (data) => _child(data.length),
-                    loading: () => Skeletonizer(child: _child(0)),
-                    error: (error, stackTrace) => _child(0),
+                  final expiredProducts = ref.watch(
+                    productControllerProvider.select((s) => s.expiredProducts),
+                  );
+
+                  return StatCard(
+                    title: 'منتهية الصلاحية',
+                    value: expiredProducts.length.toString(),
+                    icon: Icons.cancel,
+                    color: AppTheme.expiredColor,
+                    onTap: () {
+                      context.pushTo(
+                        ProductsScreen(
+                          products: expiredProducts,
+                          title: 'المنتجات منهية الصلاحية',
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -91,7 +81,7 @@ class DashboardStatsGrid extends StatelessWidget {
               child: Consumer(
                 builder: (_, ref, __) {
                   final newAlertsAsync = ref.watch(newAlertsProvider);
-              
+
                   Widget _child(int length) {
                     return StatCard(
                       title: 'تنبيهات جديدة',
@@ -107,47 +97,36 @@ class DashboardStatsGrid extends StatelessWidget {
                         );
                       },
                     );
-                    
                   }
-              
+
                   return newAlertsAsync.when(
                     data: (data) => _child(data.length),
                     loading: () => Skeletonizer(child: _child(0)),
                     error: (error, stackTrace) => _child(0),
                   );
-              
                 },
               ),
             ),
             Expanded(
               child: Consumer(
                 builder: (_, ref, __) {
-                  final nearExpiryProductsAsync =
-                      ref.watch(nearExpiryProductsProvider);
-              
-              
-                  Widget _child(int length) {
-                    return StatCard(
-                      title: 'قريبة من الانتهاء',
-                      value:
-                          '$length',
-                      icon: Icons.warning,
-                      color: AppTheme.nearExpiryColor,
-                      onTap: () => context.pushTo(
-                        ProductsScreen(
-                          productsProvider: nearExpiryProductsProvider,
-                          title: 'المنتجات قريبة الانتهاء',
-                        ),
-                      ),
-                    );
-                  }
-              
-                  return nearExpiryProductsAsync.when(
-                    data: (data) => _child(data.length),
-                    loading: () => Skeletonizer(child: _child(0)),
-                    error: (error, stackTrace) => _child(0),
+                  final nearExpiryProducts = ref.watch(
+                    productControllerProvider
+                        .select((s) => s.nearbyExpiredProducts),
                   );
-              
+
+                  return StatCard(
+                    title: 'قريبة من الانتهاء',
+                    value: nearExpiryProducts.length.toString(),
+                    icon: Icons.warning,
+                    color: AppTheme.nearExpiryColor,
+                    onTap: () => context.pushTo(
+                      ProductsScreen(
+                        products: nearExpiryProducts,
+                        title: 'المنتجات قريبة الانتهاء',
+                      ),
+                    ),
+                  );
                 },
               ),
             ),

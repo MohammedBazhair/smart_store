@@ -46,7 +46,7 @@ class PermissionDeniedScreen extends StatelessWidget {
 
                 if (result is SuccessState<bool> && result.data) {
                   // إعادة تشغيل التطبيق
-                  await context.pushReplacementTo(const AuthGate());
+                  await context.pushAndRemoveUntilTo(const AuthGate());
                 }
               },
               child: const Text('إعادة المحاولة'),

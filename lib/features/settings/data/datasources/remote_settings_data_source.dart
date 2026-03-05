@@ -1,8 +1,11 @@
 import '../../../../core/database/remote/remote_database_service.dart';
+import '../../domain/entities/currence_code.dart';
 import '../models/exchange_rate_model.dart';
 
 abstract class RemoteSettingsDataSource {
   Future<List<ExchangeRateModel>> getExchangeRates();
+
+  Future<void> changeDefaultCurrency(CurrencyCode currency, String storeId);
 }
 
 class RemoteSettingsDataSourceImpl implements RemoteSettingsDataSource {
@@ -17,5 +20,21 @@ class RemoteSettingsDataSourceImpl implements RemoteSettingsDataSource {
     final exchangeRates = rows.map(ExchangeRateModel.fromMap);
 
     return exchangeRates.toList();
+  }
+
+  @override
+  Future<void> changeDefaultCurrency(
+    CurrencyCode currency,
+    String storeId,
+  ) async {
+    await _remoteDatabase.update(
+      updated: {
+        'currency': currency.name,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      id: storeId,
+      column: 'id',
+      table: 'stores',
+    );
   }
 }

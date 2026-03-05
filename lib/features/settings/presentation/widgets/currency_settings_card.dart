@@ -43,8 +43,12 @@ class CurrencySettingsCard extends ConsumerWidget {
               dropdownMenuEntries: CurrencyCode.values
                   .map(
                     (currency) => DropdownMenuEntry(
-                      value: currency,
                       label: currency.label,
+                      value: currency,
+                      labelWidget: Text(
+                        currency.label,
+                        style: const TextStyle(height: 3),
+                      ),
                     ),
                   )
                   .toList(),
@@ -53,24 +57,22 @@ class CurrencySettingsCard extends ConsumerWidget {
                 filled: true,
               ),
               hintText: 'اختر فئة *',
-              onSelected: (value) async {
-                if (value == null) return;
-                final updatedSettings =
-                    settings.copyWith(defaultCurrency: value);
+              onSelected: (currency) async {
+                if (currency == null) return;
 
                 final controller =
                     ref.read(settingsControllerProvider.notifier);
 
-                final result = await controller.updateSettings(updatedSettings);
+                final result = await controller.changeDefaultCurrency(currency);
 
                 if (!context.mounted) return;
 
-                if (result is SuccessState<void>) {
+                if (result is SuccessState<bool> && result.data) {
                   context.showSnakbar(
-                    'تم تحديث الإعدادات',
+                    'تم تحديث الإعدادات وتغيير العملة الافتراضية',
                     type: SnackBarType.success,
                   );
-                } else if (result is ErrorState<void>) {
+                } else if (result is ErrorState<bool>) {
                   context.showSnakbar(result.message, type: SnackBarType.error);
                 }
               },

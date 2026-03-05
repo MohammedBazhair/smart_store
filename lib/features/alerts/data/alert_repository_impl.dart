@@ -1,3 +1,4 @@
+import '../../../core/constants/log.dart';
 import '../../../core/database/local/database_helper.dart';
 import '../../../errors/result.dart';
 import '../domain/alert.dart';
@@ -9,7 +10,7 @@ class AlertRepositoryImpl implements AlertRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   @override
-  Future<Result<List<Alert>>> getAllAlerts() async {
+  Future<List<Alert>> getAllAlerts() async {
     try {
       final db = await _dbHelper.database;
       final maps = await db.query(
@@ -17,14 +18,15 @@ class AlertRepositoryImpl implements AlertRepository {
         orderBy: 'created_at DESC',
       );
       final alerts = maps.map(AlertModel.fromMap).toList();
-      return SuccessState(alerts);
+      return alerts;
     } catch (e) {
-      return ErrorState('فشل في جلب التنبيهات: ${e.toString()}');
+      Logger.debugLog(error: e);
+      return [];
     }
   }
 
   @override
-  Future<Result<List<Alert>>> getUnreadAlerts() async {
+  Future<List<Alert>> getUnreadAlerts() async {
     try {
       final db = await _dbHelper.database;
       final maps = await db.query(
@@ -34,11 +36,28 @@ class AlertRepositoryImpl implements AlertRepository {
         orderBy: 'created_at DESC',
       );
       final alerts = maps.map(AlertModel.fromMap).toList();
-      return SuccessState(alerts);
+      return alerts;
     } catch (e) {
-      return ErrorState(
-        'فشل في جلب التنبيهات غير المقروءة: ${e.toString()}',
+        Logger.debugLog(error: e);
+      return [];
+    }
+  }
+
+  
+  @override
+  Future<List<Alert>> getNewAlerts() async {
+    try {
+      final db = await _dbHelper.database;
+      final maps = await db.query(
+        'alerts',
+        orderBy: 'created_at DESC',
+        limit: 3,
       );
+      final alerts = maps.map(AlertModel.fromMap).toList();
+      return alerts;
+    } catch (e) {
+      Logger.debugLog(error: e);
+      return [];
     }
   }
 
@@ -114,21 +133,4 @@ class AlertRepositoryImpl implements AlertRepository {
     }
   }
 
-  @override
-  Future<Result<List<Alert>>> getNewAlerts() async {
-    try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'alerts',
-        orderBy: 'created_at DESC',
-        limit: 3,
-      );
-      final alerts = maps.map(AlertModel.fromMap).toList();
-      return SuccessState(alerts);
-    } catch (e) {
-      return const ErrorState(
-        'فشل في جلب التنبيهات الجديدة',
-      );
-    }
-  }
 }

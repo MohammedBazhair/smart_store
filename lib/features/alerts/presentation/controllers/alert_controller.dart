@@ -7,9 +7,24 @@ import '../../../products/domain/entities/store_product.dart';
 import '../../domain/alert.dart';
 import 'alert_provider.dart';
 
-class AlertController extends Notifier<void> {
+class AlertController extends Notifier<AlertsState> {
   @override
-  void build() {}
+  AlertsState build() {
+    return AlertsState.empty();
+  }
+
+  Future<void> loadAlerts() async {
+    final repository = ref.read(alertRepositoryProvider);
+    final allAlerts = await repository.getAllAlerts();
+  final newAlerts=   await repository.getNewAlerts();
+   final unreadAlerts = await repository.getUnreadAlerts();
+
+    state = AlertsState(
+      allAlerts: allAlerts,
+      newAlerts: newAlerts,
+      unreadAlerts: unreadAlerts,
+    );
+  }
 
   /// إضافة تنبيه
   Future<Result<int>> addAlert({
@@ -79,7 +94,31 @@ class AlertController extends Notifier<void> {
   }
 }
 
-/// Provider للـ AlertController
-final alertControllerProvider = NotifierProvider<AlertController, void>(() {
-  return AlertController();
-});
+class AlertsState {
+  AlertsState({
+    required this.allAlerts,
+    required this.newAlerts,
+    required this.unreadAlerts,
+  });
+
+  factory AlertsState.empty() => AlertsState(
+        allAlerts: [],
+        newAlerts: [],
+        unreadAlerts: [],
+      );
+  final List<Alert> allAlerts;
+  final List<Alert> newAlerts;
+  final List<Alert> unreadAlerts;
+
+  AlertsState copyWith({
+    List<Alert>? allAlerts,
+    List<Alert>? newAlerts,
+    List<Alert>? unreadAlerts,
+  }) {
+    return AlertsState(
+      allAlerts: allAlerts ?? this.allAlerts,
+      newAlerts: newAlerts ?? this.newAlerts,
+      unreadAlerts: unreadAlerts ?? this.unreadAlerts,
+    );
+  }
+}

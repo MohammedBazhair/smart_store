@@ -1,3 +1,4 @@
+
 import '../../../settings/domain/entities/currence_code.dart';
 import 'product.dart';
 import 'sub_entities/global_product.dart';

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../core/extensions/extensions.dart';
+import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
 import '../controllers/product_provider.dart';
 import '../widgets/products_widgets/product_filter_dialog.dart';
@@ -16,11 +17,11 @@ import 'upsert_product_screen.dart';
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({
     super.key,
-    required this.productsProvider,
+    required this.products,
     this.title,
   });
 
-  final FutureProvider<List<StoreProduct>> productsProvider;
+  final List<StoreProduct> products;
   final String? title;
 
   @override
@@ -42,16 +43,16 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   Widget build(BuildContext context) {
     final query = ref.watch(productQueryProvider);
 
-    final productsAsync = query.hasQuery
-        ? ref.watch(searchFilterProductsProvider)
-        : ref.watch(widget.productsProvider);
+    final productsAsync =
+         ref.watch(searchFilterProductsProvider)
+        ;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? 'المنتجات'),
       ),
-      body: Skeletonizer(
-        enabled: productsAsync.isLoading,
+      body:Skeletonizer(
+        enabled: query.hasQuery&& productsAsync.isLoading,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: GestureDetector(
@@ -95,29 +96,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 const SizedBox(height: 16),
 
                 Expanded(
-                  child: productsAsync.when(
-                                        data: (products) {
-                      if (products.isEmpty) {
-                        return ProductsEmptyState(text: query.uiNotFoundText);
-                      }
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          ref.invalidate(productsProvider);
-                          ref.invalidate(searchFilterProductsProvider);
-                        },
-                        child: ProductsList(
-                          products: products,
-                        ),
-                      );
-                    },
-
+                  child:! query.hasQuery? _buildProductsBody(widget.products,query)  : productsAsync.when(
+                    data:(filteredProducts)=> _buildProductsBody(filteredProducts,query),
                     loading: () {
                       final fakeProducts = StoreProduct.fakeProducts;
 
                       return Skeletonizer(
                         child: ProductsList(
                           products: fakeProducts,
-                          
                         ),
                       );
                     },
@@ -130,6 +116,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       );
                     },
                   ),
+             
                 ),
               ],
             ),
@@ -143,6 +130,22 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       ),
     );
   }
+
+Widget _buildProductsBody(List<StoreProduct> products, ProductQuery query){
+                        if (products.isEmpty) {
+      return ProductsEmptyState(text:query.uiNotFoundText);
+    }
+    return RefreshIndicator(
+      onRefresh: () async {
+        await ref.read(productControllerProvider.notifier).loadStoreProducts();
+        ref.invalidate(searchFilterProductsProvider);
+      },
+      child: ProductsList(
+        products: products,
+      ),
+    );
+
+}
 
   void _showFilterDialog(BuildContext context) {
     showDialog(

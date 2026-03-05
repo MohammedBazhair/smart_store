@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/providers/repositories_provider.dart';
-import '../../../../errors/result.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
 import '../../domain/alert.dart';
 import 'alert_controller.dart';
@@ -12,19 +11,14 @@ import 'notification_service.dart';
 final alertsProvider = FutureProvider<List<Alert>>((ref) async {
   final repository = ref.watch(alertRepositoryProvider);
   final result = await repository.getAllAlerts();
-  if (result is SuccessState<List<Alert>>) {
-    return result.data;
-  }
-  return [];
+
+  return result;
 });
 
 final newAlertsProvider = FutureProvider<List<Alert>>((ref) async {
   final repository = ref.watch(alertRepositoryProvider);
   final result = await repository.getNewAlerts();
-  if (result is SuccessState<List<Alert>>) {
-    return result.data;
-  }
-  return [];
+  return result;
 });
 
 final alertServiceProvider = Provider<AlertService>((ref) {
@@ -37,4 +31,10 @@ final alertServiceProvider = Provider<AlertService>((ref) {
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService.instance;
+});
+
+/// Provider للـ AlertController
+final alertControllerProvider =
+    NotifierProvider<AlertController, AlertsState>(() {
+  return AlertController();
 });

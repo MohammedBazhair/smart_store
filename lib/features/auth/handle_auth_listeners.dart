@@ -24,9 +24,9 @@ Future<void> handlgeAuthListener({
       final profile =
           await ref.read(userControllerProvider.notifier).loadProfile();
       if (profile?.isDataComplete ?? false) {
-        await context.pushReplacementTo( AccountStatusScreen(profile: profile!,));
+        await context.pushAndRemoveUntilTo( AccountStatusScreen(profile: profile!,));
       } else {
-        await context.pushTo(const MoreInfoScreen());
+        await context.pushReplacementTo(const MoreInfoScreen());
       }
 
     case AuthFailedState(:final message):
@@ -52,7 +52,7 @@ Future<void> handlgeAuthListener({
         'تم تسجيل خروجك',
         type: SnackBarType.success,
       );
-      await context.pushReplacementTo(const SignInScreen());
+      await context.pushAndRemoveUntilTo(const SignInScreen());
 
   }
 }

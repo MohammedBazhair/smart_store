@@ -62,8 +62,14 @@ class ProductRepositoryImpl implements ProductRepository {
       final hasConnection = await _connectivity.hasConnection();
 
       final result = hasConnection
-          ? await _remoteDatabase.getProductById(productId: productId, storeId: storeId)
-          : await _localDatabase.getProductById(productId: productId, storeId: storeId);
+          ? await _remoteDatabase.getProductById(
+              productId: productId,
+              storeId: storeId,
+            )
+          : await _localDatabase.getProductById(
+              productId: productId,
+              storeId: storeId,
+            );
 
       if (result is ErrorState) throw Exception();
       return result;
@@ -109,7 +115,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Result<List<StoreProduct>>> getExpiredProducts(
+  Future<List<StoreProduct>> getExpiredProducts(
     String storeId,
   ) async {
     try {
@@ -120,18 +126,17 @@ class ProductRepositoryImpl implements ProductRepository {
           : await _localDatabase.getExpiredProducts(storeId);
 
       if (result is SuccessState<List<StoreProduct>>) {
-        return SuccessState(result.data);
+        return result.data;
       }
-      throw Exception();
+      return [];
     } catch (e) {
-      return ErrorState(
-        'فشل في جلب المنتجات المنتهية: ${e.toString()}',
-      );
+      Logger.debugLog(error: e);
+      return [];
     }
   }
 
   @override
-  Future<Result<List<StoreProduct>>> getNearExpiryProducts(
+  Future<List<StoreProduct>> getNearExpiryProducts(
     String storeId,
     int days,
   ) async {
@@ -143,13 +148,12 @@ class ProductRepositoryImpl implements ProductRepository {
           : await _localDatabase.getNearExpiryProducts(storeId, days);
 
       if (result is SuccessState<List<StoreProduct>>) {
-        return SuccessState(result.data);
+        return result.data;
       }
-      throw Exception();
+      return [];
     } catch (e) {
-      return ErrorState(
-        'فشل في جلب المنتجات القريبة من الانتهاء: ${e.toString()}',
-      );
+      Logger.debugLog(error: e);
+      return [];
     }
   }
 
@@ -207,21 +211,26 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<void> initDataFromNetwork() async {
-    final isDownloaded = _localCache.getBool(key: 'isDownloadedInit') ?? false;
-    if (isDownloaded) return;
+    try {
+      final isDownloaded =
+          _localCache.getBool(key: 'isDownloadedInit') ?? false;
+      if (isDownloaded) return;
 
-    if (!await _connectivity.hasConnection()) {
-      throw Exception('No internet connection');
+      if (!await _connectivity.hasConnection()) {
+        throw Exception('No internet connection');
+      }
+
+      final categoriesResult = await getAllCategories();
+
+      if (categoriesResult.isEmpty) {
+        throw Exception('Categories not loaded');
+      }
+
+      await getProductsGlobal();
+
+      await _localCache.setBool(key: 'isDownloadedInit', value: true);
+    } catch (e) {
+      Logger.debugLog(error: e);
     }
-
-    final categoriesResult = await getAllCategories();
-
-    if (categoriesResult.isEmpty) {
-      throw Exception('Categories not loaded');
-    }
-
-    await getProductsGlobal();
-
-    await _localCache.setBool(key: 'isDownloadedInit', value: true);
   }
 }

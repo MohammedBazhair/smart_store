@@ -35,13 +35,6 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
   return ProductRepositoryImpl(_local, _remote, _network, cache);
 });
 
-/// Provider للحصول على جميع المنتجات
-final productsProvider = FutureProvider<List<StoreProduct>>((ref) async {
-  final controller = ref.read(productControllerProvider.notifier);
-  final products = await controller.getStoreProducts();
-
-  return products.values.toList();
-});
 
 final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
   (ref) => ProductQuery(),
@@ -63,23 +56,6 @@ final searchFilterProductsProvider =
   return products
       .where((p) => p.globalProduct.category.id == query.category?.id)
       .toList();
-});
-
-/// Provider للمنتجات المنتهية
-final expiredProductsProvider = FutureProvider<List<StoreProduct>>((ref) async {
-  final controller = ref.read(productControllerProvider.notifier);
-
-  final products = await controller.getExpiredProducts();
-  return products;
-});
-
-/// Provider للمنتجات القريبة من الانتهاء
-final nearExpiryProductsProvider =
-    FutureProvider<List<StoreProduct>>((ref) async {
-  final controller = ref.read(productControllerProvider.notifier);
-
-  final products = await controller.getNearExpiryProducts();
-  return products;
 });
 
 final focusNodesProvider =

@@ -19,6 +19,8 @@ abstract class StoreLocalDataSource {
 
   /// حذف عضو
   Future<void> deleteMember(String id);
+  
+
 }
 
 class StoreLocalDataSourceImpl implements StoreLocalDataSource {

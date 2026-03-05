@@ -22,9 +22,9 @@ abstract class ProductRepository {
     required String storeId,
   });
 
-  Future<Result<List<StoreProduct>>> getExpiredProducts(String storeId);
+  Future<List<StoreProduct>> getExpiredProducts(String storeId);
 
-  Future<Result<List<StoreProduct>>> getNearExpiryProducts(
+  Future<List<StoreProduct>> getNearExpiryProducts(
     String storeId,
     int days,
   );

@@ -41,7 +41,7 @@ class Settings extends Equatable {
   }
 
   @override
-  List<Object?> get props => [defaultCurrency, enableNotifications];
+  List<Object?> get props => [defaultCurrency, enableNotifications, exchageRates];
 
   Settings copyWith({
     CurrencyCode? defaultCurrency,
@@ -54,4 +54,6 @@ class Settings extends Equatable {
       exchageRates: exchageRates ?? this.exchageRates,
     );
   }
+
+  
 }

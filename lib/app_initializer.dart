@@ -80,7 +80,7 @@ Future<void> _initializePushNotification() async {
     final notification = event.notification;
 
     if (notification.title?.contains('تم تفعيل حسابك') ?? false) {
-      navigatorKey.currentContext?.pushReplacementTo(const InitScreen());
+      navigatorKey.currentContext?.pushAndRemoveUntilTo(const InitScreen());
     }
   });
 }

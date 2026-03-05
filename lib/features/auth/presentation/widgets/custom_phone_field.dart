@@ -18,7 +18,7 @@ class CustomPhoneField extends StatelessWidget {
         FilteringTextInputFormatter.digitsOnly,
       ],
       decoration: const InputDecoration(
-        hintText: 'أدخل رقك هاتفك',
+        hintText: 'أدخل رقم الهاتف',
         prefixIcon: Padding(
           padding: EdgeInsetsDirectional.only(start: 15.0),
           child: Icon(Icons.phone),

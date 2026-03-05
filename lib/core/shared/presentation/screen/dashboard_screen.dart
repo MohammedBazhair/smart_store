@@ -67,7 +67,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        context.pushReplacementTo(const PermissionDeniedScreen());
+        context.pushAndRemoveUntilTo(const PermissionDeniedScreen());
       },
     );
   }
@@ -92,9 +92,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           builder: (_, ref, __) {
             return RefreshIndicator(
               onRefresh: () async {
-                ref.invalidate(productsProvider);
-                ref.invalidate(expiredProductsProvider);
-                ref.invalidate(nearExpiryProductsProvider);
+                await ref.read(productControllerProvider.notifier).initialize();
                 ref.invalidate(newAlertsProvider);
               },
               child: const SingleChildScrollView(

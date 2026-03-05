@@ -14,16 +14,26 @@ import 'product_state.dart';
 class ProductManagementController extends Notifier<ProductManagementState> {
   @override
   ProductManagementState build() {
-    return ProductManagementState();
+    return const ProductManagementState();
   }
 
   Future<void> initialize() async {
-    state = ProductManagementState(isInitilizating: true);
+    state = const ProductManagementState(isInitilizating: true);
     final categories = await getCategories();
     final products = await getStoreProducts();
+    
+    final repo= ref.read(productRepositoryProvider);
+        final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
+
+
+    final expiredProducts = await repo.getExpiredProducts(storeId!);
+    final nearbyExpiredProducts = await repo.getNearExpiryProducts(storeId, 30);
+
 
     state = state.copyWith(
       products: products,
+      expiredProducts: expiredProducts,
+      nearbyExpiredProducts: nearbyExpiredProducts,
       categories: categories,
       isInitilizating: false,
     );
@@ -57,28 +67,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
         await ref.read(productRepositoryProvider).getStoreProducts(storeId);
 
     return products;
-  }
-
-  Future<List<StoreProduct>> getExpiredProducts() async {
-    final repository = ref.read(productRepositoryProvider);
-    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
-
-    final result = await repository.getExpiredProducts(storeId);
-    if (result is SuccessState<List<StoreProduct>>) {
-      return result.data;
-    }
-    return [];
-  }
-
-  Future<List<StoreProduct>> getNearExpiryProducts() async {
-    final repository = ref.read(productRepositoryProvider);
-    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
-
-    final result = await repository.getNearExpiryProducts(storeId, 30);
-    if (result is SuccessState<List<StoreProduct>>) {
-      return result.data;
-    }
-    return [];
   }
 
   bool isBarcodeExistsInStore(String? barcode) {

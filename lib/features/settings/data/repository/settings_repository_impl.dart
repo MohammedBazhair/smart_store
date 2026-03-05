@@ -2,6 +2,7 @@ import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../errors/result.dart';
+import '../../domain/entities/currence_code.dart';
 import '../../domain/entities/exchange_rate.dart';
 import '../../domain/entities/settings.dart';
 import '../../domain/repository/settings_repository.dart';
@@ -29,11 +30,16 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
     final exchangeRates = await getExchangeRates();
 
+    Logger.debugLog(message: exchangeRates.toString());
+
     if (raw == null) {
       return Settings.theDefault(exchangeRates);
     }
 
-    return SettingsModel.fromJson(raw, exchangeRates);
+    final model = SettingsModel.fromJson(raw, exchangeRates);
+
+    Logger.debugLog(message: model.toString());
+    return model;
   }
 
   @override
@@ -42,7 +48,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       await setSettings(settings);
       return const SuccessState(null);
     } catch (e) {
-      return const ErrorState('فشل في تحديث الإعدادات: ');
+      return const ErrorState('فشل في تحديث الإعدادات');
     }
   }
 
@@ -66,10 +72,23 @@ class SettingsRepositoryImpl implements SettingsRepository {
   Future<void> setSettings(Settings settings) async {
     try {
       final model = SettingsModel.fromEntity(settings);
-
+      Logger.debugLog(message: model.toJson());
       await _cache.setString(key: 'settings', value: model.toJson());
     } catch (e) {
       Logger.debugLog(error: e);
     }
+  }
+
+  @override
+  Future<void> changeDefaultCurrency(
+    CurrencyCode currency,
+    String storeId,
+  ) async {
+    if (await _connectivityService.hasConnection()) {
+      await _remoteSettings.changeDefaultCurrency(currency, storeId);
+    }
+
+    await _localSettings.changeDefaultCurrency(currency, storeId);
+
   }
 }

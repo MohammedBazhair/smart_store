@@ -28,7 +28,7 @@ class InitScreen extends ConsumerWidget {
                       await ref.read(storeControllerProvider.notifier).loadMyStores();
                       
                       await context
-                          .pushReplacementTo(const DashboardScreen());
+                          .pushAndRemoveUntilTo(const DashboardScreen());
                     });
                     return const _LoadingContent();
                   },

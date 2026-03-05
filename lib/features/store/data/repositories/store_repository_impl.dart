@@ -45,11 +45,9 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<List<Store>> getUserStores(String userPhone) async {
     final hasConnection = await connectivityService.hasConnection();
 
-    final userStores = hasConnection
+    return hasConnection
         ? await remote.getUserStores(userPhone)
         : await local.getUserStores(userPhone);
-
-    return userStores;
   }
 
   @override

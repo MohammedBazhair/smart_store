@@ -46,4 +46,9 @@ class SettingsModel extends Settings {
   }
 
   String toJson() => jsonEncode(toMap());
+
+  @override
+  String toString() {
+    return 'SettingsModel(defaultCurrency: $defaultCurrency, enableNotifications: $enableNotifications, exchageRates: $exchageRates)';
+  }
 }

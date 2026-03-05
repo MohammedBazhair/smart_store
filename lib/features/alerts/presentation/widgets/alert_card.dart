@@ -9,7 +9,6 @@ import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../domain/alert.dart';
-import '../controllers/alert_controller.dart';
 import '../controllers/alert_provider.dart';
 
 class AlertCard extends ConsumerWidget {

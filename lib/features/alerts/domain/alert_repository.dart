@@ -4,12 +4,12 @@ import 'alert.dart';
 /// واجهة مستودع التنبيهات
 abstract class AlertRepository {
   /// الحصول على جميع التنبيهات
-  Future<Result<List<Alert>>> getAllAlerts();
+  Future<List<Alert>> getAllAlerts();
 
   /// الحصول على التنبيهات غير المقروءة
-  Future<Result<List<Alert>>> getUnreadAlerts();
+  Future<List<Alert>> getUnreadAlerts();
 
-  Future<Result<List<Alert>>> getNewAlerts();
+  Future<List<Alert>> getNewAlerts();
 
   /// إضافة تنبيه
   Future<Result<int>> addAlert(Alert alert);

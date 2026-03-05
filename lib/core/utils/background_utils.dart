@@ -5,7 +5,6 @@ import '../../errors/result.dart';
 import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/domain/alert.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
-import '../../features/products/domain/entities/store_product.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
 import '../shared/providers/core_providers.dart';
 import '../shared/providers/repositories_provider.dart';
@@ -40,14 +39,12 @@ class BackgroundUtils {
     final cache = container.read(localCacheServiceProvider);
     final storeId = cache.getString(key: 'selected_store_id');
     if (storeId == null) return;
-    
-    final result = await repository.getNearExpiryProducts(storeId, 30);
 
-    if (result is! SuccessState<List<StoreProduct>>) return;
+    final products = await repository.getNearExpiryProducts(storeId, 30);
+
+    if (products.isEmpty) return;
 
     final alertService = container.read(alertServiceProvider);
-
-    final products = result.data;
 
     final futures = products.map((p) {
       if (p.expiryDate == null) return Future.value();

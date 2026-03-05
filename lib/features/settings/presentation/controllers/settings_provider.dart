@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../data/datasources/local_settings_data_source.dart';
 import '../../data/datasources/remote_settings_data_source.dart';
@@ -34,6 +33,5 @@ final settingsRepositoryProvider = Provider((ref) {
 
 final settingsControllerProvider =
     AsyncNotifierProvider<SettingsController, Settings>(() {
-  Logger.debugLog(message: 'تم بناء المزود الاعدادات بنجاح');
   return SettingsController();
 });

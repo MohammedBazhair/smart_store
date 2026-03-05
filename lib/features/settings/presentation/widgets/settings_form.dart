@@ -53,35 +53,41 @@ class _SettingsFormState extends ConsumerState<SettingsForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          CurrencySettingsCard(settings: widget.settings),
-          const SizedBox(height: 16),
-          NotificationsSettingsCard(
-            settings: widget.settings,
-            onChanged: _updateSettings,
-          ),
-          const SizedBox(height: 16),
-          const ChangeStoreSelectionCard(),
-          const SizedBox(height: 16),
-          const BackupSettingsCard(),
-          const SizedBox(height: 16),
-          ChangePhoneCard(
-            phoneController: widget.isShimmerLoading ? null : _phoneController,
-          ),
-          const SizedBox(height: 16),
-          Consumer(
-            builder: (_, ref, __) {
-              return TextButton.icon(
-                icon: const Icon(Icons.exit_to_app),
-                onPressed: () =>
-                    ref.read(authControllerProvider.notifier).signOut(),
-                label: const Text('تسجل الخروج'),
-              );
-            },
-          ),
-        ],
+      child: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(settingsControllerProvider.notifier).refreshSettings();
+        },
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            CurrencySettingsCard(settings: widget.settings),
+            const SizedBox(height: 16),
+            NotificationsSettingsCard(
+              settings: widget.settings,
+              onChanged: _updateSettings,
+            ),
+            const SizedBox(height: 16),
+            const ChangeStoreSelectionCard(),
+            const SizedBox(height: 16),
+            const BackupSettingsCard(),
+            const SizedBox(height: 16),
+            ChangePhoneCard(
+              phoneController:
+                  widget.isShimmerLoading ? null : _phoneController,
+            ),
+            const SizedBox(height: 16),
+            Consumer(
+              builder: (_, ref, __) {
+                return TextButton.icon(
+                  icon: const Icon(Icons.exit_to_app),
+                  onPressed: () =>
+                      ref.read(authControllerProvider.notifier).signOut(),
+                  label: const Text('تسجل الخروج'),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

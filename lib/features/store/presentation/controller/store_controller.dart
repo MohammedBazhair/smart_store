@@ -27,13 +27,15 @@ class StoreController extends Notifier<StoreEventState> {
     final profile = ref.read(userControllerProvider).profile;
     final stores = await repo.getUserStores(profile.phone ?? '');
 
-    final Map<String, StoreWithMembers> myStores = {};
-
-    for (final s in stores) {
+    final futures = stores.map((s) async {
       final members = await repo.getStoreMembers(s.id!);
-      final storeTest = StoreWithMembers(store: s, members: members);
-      myStores[s.id!] = storeTest;
-    }
+      final storeWithMembers = StoreWithMembers(store: s, members: members);
+      return MapEntry(s.id!, storeWithMembers);
+    });
+
+    final entries = await Future.wait(futures);
+
+    final myStores = Map.fromEntries(entries);
 
     final newState = state.state.copyWith(
       myStores: myStores,
@@ -50,7 +52,8 @@ class StoreController extends Notifier<StoreEventState> {
       }
 
       final repo = ref.read(storeRepositoryProvider);
-      final now = DateTime.now();
+      final now = DateTime.now().toUtc();
+      
       final member = StoreMember(
         memberPhone: phoneNumber,
         storeId: selectedStoreId,

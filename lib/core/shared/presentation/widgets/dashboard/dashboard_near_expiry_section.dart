@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../../features/products/domain/entities/store_product.dart';
 import '../../../../../features/products/presentation/controllers/product_provider.dart';
@@ -8,14 +7,15 @@ import '../../../../../features/products/presentation/screens/product_details_sc
 import '../../../../../features/products/presentation/screens/products_screen.dart';
 import '../../../../extensions/extensions.dart';
 import '../../theme/app_theme.dart';
-import '../common/error_widget.dart';
 
 class DashboardNearExpirySection extends ConsumerWidget {
   const DashboardNearExpirySection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final nearExpiryAsync = ref.watch(nearExpiryProductsProvider);
+    final nearExpiryProducts = ref.watch(
+      productControllerProvider.select((s) => s.nearbyExpiredProducts),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,7 +31,7 @@ class DashboardNearExpirySection extends ConsumerWidget {
               onPressed: () {
                 context.pushTo(
                   ProductsScreen(
-                    productsProvider: nearExpiryProductsProvider,
+                    products: nearExpiryProducts,
                     title: 'المنتجات قريبة الانتهاء',
                   ),
                 );
@@ -41,15 +41,7 @@ class DashboardNearExpirySection extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
-        nearExpiryAsync.when(
-          data: (products) => _NearbySectionBody(products: products),
-          loading: () => Skeletonizer(
-            child: _NearbySectionBody(
-              products: [StoreProduct.fake()],
-            ),
-          ),
-          error: (e, _) => ErrorDisplayWidget(message: e.toString()),
-        ),
+        _NearbySectionBody(products: nearExpiryProducts),
       ],
     );
   }

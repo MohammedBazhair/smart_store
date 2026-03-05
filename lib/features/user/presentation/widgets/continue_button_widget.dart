@@ -35,7 +35,7 @@ class ContinueButtonWidget extends ConsumerWidget {
         onPressed: () async {
           if (canContinue) {
             await ref.read(storeControllerProvider.notifier).loadMyStores();
-            await context.pushReplacementTo(const StoreSelectionScreen());
+            await context.pushAndRemoveUntilTo(const StoreSelectionScreen());
             return;
           }
 

@@ -29,5 +29,7 @@ class Alert extends Equatable {
         importance,
         isRead,
         createdAt,
+        productName,
+        expiryDate,
       ];
 }

@@ -212,7 +212,6 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
     if (result is SuccessState<void>) {
       context.showSnakbar('تم تعديل المنتج بنجاح', type: SnackBarType.success);
       Navigator.pop(context);
-      ref.invalidate(productsProvider);
     } else if (result is ErrorState<void>) {
       context.showSnakbar(result.message, type: SnackBarType.error);
     }
