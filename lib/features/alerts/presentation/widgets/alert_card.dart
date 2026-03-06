@@ -93,7 +93,6 @@ class AlertCard extends ConsumerWidget {
           onPressed: () async {
             final controller = ref.read(alertControllerProvider.notifier);
             await controller.markAsRead(alert.id!);
-            ref.invalidate(alertsProvider);
           },
         ),
         onTap: () async {

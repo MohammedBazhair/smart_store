@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/shared/presentation/widgets/common/error_widget.dart';
-import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../domain/alert.dart';
+import '../controllers/alert_provider.dart';
 import '../widgets/alert_card.dart';
 import '../widgets/alerts_empty_state.dart';
 
 class AlertsScreen extends ConsumerWidget {
-  const AlertsScreen({super.key, this.title, required this.alertsProvider});
+  const AlertsScreen({super.key, this.title, required this.alerts});
   final String? title;
-  final FutureProvider<List<Alert>> alertsProvider;
+  final List<Alert> alerts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final alertsAsync = ref.watch(alertsProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: title != null ? Text(title!) : const Text('التنبيهات'),
@@ -23,36 +19,31 @@ class AlertsScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              ref.invalidate(alertsProvider);
+              ref.read(alertControllerProvider.notifier).loadAlerts();
             },
           ),
         ],
       ),
-      body: alertsAsync.when(
-        data: (alerts) {
-          if (alerts.isEmpty) return const AlertsEmptyState();
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(alertsProvider);
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: alerts.length,
-              itemBuilder: (context, index) {
-                return AlertCard(
-                  alert: alerts[index],
-                );
-              },
-            ),
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(alertControllerProvider.notifier).loadAlerts();
         },
-        loading: () => const LoadingWidget(),
-        error: (error, _) => ErrorDisplayWidget(
-          message: error.toString(),
-          onRetry: () {
-            ref.invalidate(alertsProvider);
-          },
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              child: alerts.isEmpty
+                  ? const AlertsEmptyState()
+                  : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: alerts.length,
+                    itemBuilder: (context, index) {
+                      return AlertCard(
+                        alert: alerts[index],
+                      );
+                    },
+                  ),
+            ),
+          ],
         ),
       ),
     );

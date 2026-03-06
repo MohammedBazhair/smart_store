@@ -11,14 +11,12 @@ class ProductManagementState extends Equatable {
     this.expiredProducts = const [],
     this.nearbyExpiredProducts = const [],
     this.categories = const [],
-    this.isInitilizating = false,
   });
 
   final ProductsByIdentifier products;
   final List<StoreProduct> expiredProducts;
   final List<StoreProduct> nearbyExpiredProducts;
   final List<Category> categories;
-  final bool isInitilizating;
 
  
   
@@ -33,14 +31,12 @@ class ProductManagementState extends Equatable {
     List<StoreProduct>? expiredProducts,
     List<StoreProduct>? nearbyExpiredProducts,
     List<Category>? categories,
-    bool? isInitilizating,
   }) {
     return ProductManagementState(
       products: products ?? this.products,
       expiredProducts: expiredProducts ?? this.expiredProducts,
       nearbyExpiredProducts: nearbyExpiredProducts ?? this.nearbyExpiredProducts,
       categories: categories ?? this.categories,
-      isInitilizating: isInitilizating ?? this.isInitilizating,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../auth/presentation/widgets/custom_phone_field.dart';
 import '../controller/store_provider.dart';
 
@@ -24,6 +25,8 @@ class AddMemberDialog extends ConsumerStatefulWidget {
 class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
   final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String? _serverError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -61,7 +64,10 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
             Form(
               key: _formKey,
               autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: CustomPhoneField(_phoneController),
+              child: CustomPhoneField(
+                _phoneController,
+                validator: (_) => _serverError,
+              ),
             ),
             const SizedBox(height: 25),
 
@@ -71,27 +77,41 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () async {
-                      final isValid =
-                          _formKey.currentState?.validate() ?? false;
-                      if (!isValid) return;
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            final isValid =
+                                _formKey.currentState?.validate() ?? false;
+                            if (!isValid) return;
 
-                      final phone = _phoneController.text;
-                      await ref
-                          .read(storeControllerProvider.notifier)
-                          .addStoreMember(phone);
+                            setState(() {
+                              _serverError = null;
+                              _isLoading = true;
+                            });
 
-                      Navigator.pop(context);
-                    },
+                            final phone = _phoneController.text;
+                            final error = await ref
+                                .read(storeControllerProvider.notifier)
+                                .addStoreMember(phone);
+
+                            if (error == null) return Navigator.pop(context);
+
+                            setState(() {
+                              _serverError = error;
+                              _isLoading = false;
+                            });
+                          },
                     style: ElevatedButton.styleFrom(
                       elevation: 5,
                     ),
-                    child: const Text(
-                      'إضافة',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const LoadingWidget()
+                        : const Text(
+                            'إضافة',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 Expanded(

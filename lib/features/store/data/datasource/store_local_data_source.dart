@@ -5,22 +5,18 @@ import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
 abstract class StoreLocalDataSource {
-  /// إنشاء متجر
   Future<void> createStore(StoreModel store, String ownerPhone);
 
-  /// جلب متاجر المستخدم
   Future<List<StoreModel>> getUserStores(String userPhone);
 
-  /// جلب أعضاء متجر
   Future<List<StoreMemberModel>> getMembers(String storeId);
 
-  /// إضافة عضو
   Future<void> insertMember(StoreMemberModel member);
 
-  /// حذف عضو
-  Future<void> deleteMember(String id);
-  
-
+  Future<void> deleteMember({
+    required String memberPhone,
+    required String storeId,
+  });
 }
 
 class StoreLocalDataSourceImpl implements StoreLocalDataSource {
@@ -92,11 +88,13 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   }
 
   @override
-  Future<void> deleteMember(String id) async {
-    await _db.delete(
+  Future<void> deleteMember({
+    required String memberPhone,
+    required String storeId,
+  }) async {
+    await _db.deleteWhere(
       table: 'store_members',
-      id: id,
-      column: 'member_id',
+      filters: {'member_phone': memberPhone, 'store_id': storeId},
     );
   }
 }

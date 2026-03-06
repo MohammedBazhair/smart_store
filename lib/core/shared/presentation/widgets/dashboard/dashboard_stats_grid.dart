@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-
 import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
 import '../../../../../features/products/presentation/controllers/product_provider.dart';
@@ -80,29 +78,23 @@ class DashboardStatsGrid extends StatelessWidget {
             Expanded(
               child: Consumer(
                 builder: (_, ref, __) {
-                  final newAlertsAsync = ref.watch(newAlertsProvider);
+                  final newAlerts = ref.watch(
+                    alertControllerProvider.select((s) => s.newAlerts),
+                  );
 
-                  Widget _child(int length) {
-                    return StatCard(
-                      title: 'تنبيهات جديدة',
-                      value: '$length',
-                      icon: Icons.notifications,
-                      color: AppTheme.primaryColor,
-                      onTap: () {
-                        context.pushTo(
-                          AlertsScreen(
-                            title: 'التنبيهات الجديدة',
-                            alertsProvider: newAlertsProvider,
-                          ),
-                        );
-                      },
-                    );
-                  }
-
-                  return newAlertsAsync.when(
-                    data: (data) => _child(data.length),
-                    loading: () => Skeletonizer(child: _child(0)),
-                    error: (error, stackTrace) => _child(0),
+                  return StatCard(
+                    title: 'تنبيهات جديدة',
+                    value: newAlerts.length.toString(),
+                    icon: Icons.notifications,
+                    color: AppTheme.primaryColor,
+                    onTap: () {
+                      context.pushTo(
+                        AlertsScreen(
+                          title: 'التنبيهات الجديدة',
+                          alerts: newAlerts.values.toList(),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

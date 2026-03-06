@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../core/shared/providers/core_providers.dart';
+import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/datasource/product_local_data_source.dart';
 import '../../data/datasource/product_remote_data_source.dart';
@@ -34,7 +35,6 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final _network = ref.read(networkProvider);
   return ProductRepositoryImpl(_local, _remote, _network, cache);
 });
-
 
 final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
   (ref) => ProductQuery(),
@@ -89,4 +89,11 @@ final productByIdProvider = FutureProvider.family<StoreProduct?, String>(
 final productControllerProvider =
     NotifierProvider<ProductManagementController, ProductManagementState>(() {
   return ProductManagementController();
+});
+
+final initializeDashboardProvider = FutureProvider((ref) async {
+  final controller = ref.read(productControllerProvider.notifier);
+  await controller.initialize();
+  await ref.read(alertControllerProvider.notifier).loadAlerts();
+  
 });

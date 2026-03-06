@@ -2,7 +2,7 @@ import '../entities/store.dart';
 import '../entities/store_member.dart';
 
 abstract class StoreRepository {
-  Future<void> createStore(Store store, String ownerPhone);
+  Future<Store> createStore(Store store, String ownerPhone);
 
   Future<List<Store>> getUserStores(String userPhone);
 
@@ -10,5 +10,8 @@ abstract class StoreRepository {
 
   Future<void> addStoreMember(StoreMember member);
 
-  Future<void> removeStoreMember(String memberId);
+  Future<void> removeStoreMember({
+    required String memberPhone,
+    required String storeId,
+  });
 }

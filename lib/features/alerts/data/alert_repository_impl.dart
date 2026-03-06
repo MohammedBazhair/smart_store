@@ -10,23 +10,27 @@ class AlertRepositoryImpl implements AlertRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   @override
-  Future<List<Alert>> getAllAlerts() async {
+  Future<Map<int, Alert>> getAllAlerts() async {
     try {
       final db = await _dbHelper.database;
       final maps = await db.query(
         'alerts',
         orderBy: 'created_at DESC',
       );
-      final alerts = maps.map(AlertModel.fromMap).toList();
-      return alerts;
+      final entries = maps.map((m) {
+        final alert = AlertModel.fromMap(m);
+        return MapEntry(alert.id!, alert);
+      });
+
+      return Map.fromEntries(entries);
     } catch (e) {
       Logger.debugLog(error: e);
-      return [];
+      return {};
     }
   }
 
   @override
-  Future<List<Alert>> getUnreadAlerts() async {
+  Future<Map<int, Alert>> getUnreadAlerts() async {
     try {
       final db = await _dbHelper.database;
       final maps = await db.query(
@@ -35,17 +39,20 @@ class AlertRepositoryImpl implements AlertRepository {
         whereArgs: [0],
         orderBy: 'created_at DESC',
       );
-      final alerts = maps.map(AlertModel.fromMap).toList();
-      return alerts;
+      final entries = maps.map((m) {
+        final alert = AlertModel.fromMap(m);
+        return MapEntry(alert.id!, alert);
+      });
+
+      return Map.fromEntries(entries);
     } catch (e) {
-        Logger.debugLog(error: e);
-      return [];
+      Logger.debugLog(error: e);
+      return {};
     }
   }
 
-  
   @override
-  Future<List<Alert>> getNewAlerts() async {
+  Future<Map<int, Alert>> getNewAlerts() async {
     try {
       final db = await _dbHelper.database;
       final maps = await db.query(
@@ -53,11 +60,15 @@ class AlertRepositoryImpl implements AlertRepository {
         orderBy: 'created_at DESC',
         limit: 3,
       );
-      final alerts = maps.map(AlertModel.fromMap).toList();
-      return alerts;
+      final entries = maps.map((m) {
+        final alert = AlertModel.fromMap(m);
+        return MapEntry(alert.id!, alert);
+      });
+
+      return Map.fromEntries(entries);
     } catch (e) {
       Logger.debugLog(error: e);
-      return [];
+      return {};
     }
   }
 
@@ -85,6 +96,7 @@ class AlertRepositoryImpl implements AlertRepository {
       );
       return const SuccessState(null);
     } catch (e) {
+      Logger.debugLog(error: e);
       return ErrorState('فشل في تحديث التنبيه: ${e.toString()}');
     }
   }
@@ -106,7 +118,7 @@ class AlertRepositoryImpl implements AlertRepository {
   }
 
   @override
-  Future<Result<void>> deleteAlert(String id) async {
+  Future<Result<void>> deleteAlert(int id) async {
     try {
       final db = await _dbHelper.database;
       await db.delete(
@@ -132,5 +144,4 @@ class AlertRepositoryImpl implements AlertRepository {
       );
     }
   }
-
 }

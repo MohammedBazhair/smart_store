@@ -44,7 +44,7 @@ class StoreController extends Notifier<StoreEventState> {
     state = LoadMyStoresEvent(state: newState);
   }
 
-  Future<void> addStoreMember(String phoneNumber) async {
+  Future<String?> addStoreMember(String phoneNumber) async {
     try {
       final selectedStoreId = state.state.selectedStoreId;
       if (selectedStoreId == null) {
@@ -53,7 +53,7 @@ class StoreController extends Notifier<StoreEventState> {
 
       final repo = ref.read(storeRepositoryProvider);
       final now = DateTime.now().toUtc();
-      
+
       final member = StoreMember(
         memberPhone: phoneNumber,
         storeId: selectedStoreId,
@@ -65,17 +65,33 @@ class StoreController extends Notifier<StoreEventState> {
       await repo.addStoreMember(member);
 
       state = AddStoreMemberEvent(state: state.state, member: member);
+      return null;
+    } on AppException catch (e) {
+      return e.message;
+    } catch (e) {
+      Logger.debugLog(error: e);
+      return 'حدث خطأ أثناء إضافة العضو صاحب الرقم $phoneNumber';
+    }
+  }
+
+  Future<void> removeStoreMember(String phoneNumber) async {
+    try {
+      final repo = ref.read(storeRepositoryProvider);
+      await repo.removeStoreMember(
+        memberPhone: phoneNumber,
+        storeId: state.state.selectedStoreId!,
+      );
     } on AppException catch (e) {
       state = ErrorStoreEvent(state: state.state, error: e.message);
     } catch (e) {
       state = ErrorStoreEvent(
         state: state.state,
-        error: 'حدث خطأ أثناء إضافة العضو صاحب الرقم $phoneNumber',
+        error: 'حدث خطأ أثناء إزالة العضو صاحب الرقم $phoneNumber',
       );
     }
   }
 
-  Future<void> createStore(String storeName) async {
+  Future<String?> createStore(String storeName) async {
     try {
       final repo = ref.read(storeRepositoryProvider);
       final profile = ref.read(userControllerProvider).profile;
@@ -89,23 +105,36 @@ class StoreController extends Notifier<StoreEventState> {
         updatedAt: now,
       );
 
-      await repo.createStore(store, profile.phone!);
-
-      state = CreateStoreEvent(state: state.state, storeName: storeName);
-
-      await loadMyStores();
-    } on AppException catch (e) {
-      state = ErrorStoreEvent(
-        state: state.state,
-        error: e.message,
+      final newStore = await repo.createStore(store, profile.phone!);
+      final ownerMember = StoreMember(
+        memberPhone: profile.phone!,
+        storeId: newStore.id!,
+        role: Role.storeOwner,
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
       );
+
+      final storeWithMembers =
+          StoreWithMembers(store: newStore, members: {ownerMember});
+
+      final copiedStores = {
+        ...state.state.myStores,
+        newStore.id!: storeWithMembers,
+      };
+
+      Future.delayed(const Duration(seconds: 1), () {
+        state = CreateStoreEvent(
+          state: state.state.copyWith(myStores: copiedStores),
+          storeName: storeName,
+        );
+      });
+
+      return null;
+    } on AppException catch (e) {
+      return e.message;
     } catch (e) {
       Logger.debugLog(error: e);
-      state = ErrorStoreEvent(
-        state: state.state,
-        error:
-            'فشلت عملية إنشاء متجر تأكد من الاتصال بالانترنت او راجع الدعم الفني',
-      );
+      return 'فشلت عملية إنشاء متجر تأكد من الاتصال بالانترنت او راجع الدعم الفني';
     }
   }
 

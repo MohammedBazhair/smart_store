@@ -5,7 +5,6 @@ import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
 import '../../../products/domain/entities/store_product.dart';
 import '../../domain/alert.dart';
-import 'alert_provider.dart';
 
 class AlertController extends Notifier<AlertsState> {
   @override
@@ -16,8 +15,8 @@ class AlertController extends Notifier<AlertsState> {
   Future<void> loadAlerts() async {
     final repository = ref.read(alertRepositoryProvider);
     final allAlerts = await repository.getAllAlerts();
-  final newAlerts=   await repository.getNewAlerts();
-   final unreadAlerts = await repository.getUnreadAlerts();
+    final newAlerts = await repository.getNewAlerts();
+    final unreadAlerts = await repository.getUnreadAlerts();
 
     state = AlertsState(
       allAlerts: allAlerts,
@@ -26,8 +25,7 @@ class AlertController extends Notifier<AlertsState> {
     );
   }
 
-  /// إضافة تنبيه
-  Future<Result<int>> addAlert({
+  Future<void> addAlert({
     required StoreProduct product,
     required int daysBeforeExpiry,
     required Priority importance,
@@ -38,7 +36,7 @@ class AlertController extends Notifier<AlertsState> {
       daysBeforeExpiry: daysBeforeExpiry,
       importance: importance,
       isRead: false,
-      createdAt: DateTime.now(),
+      createdAt: DateTime.now().toUtc(),
       expiryDate: product.expiryDate,
       productName: product.globalProduct.name,
     );
@@ -46,30 +44,59 @@ class AlertController extends Notifier<AlertsState> {
     final result = await repository.addAlert(alert);
 
     if (result is SuccessState<int>) {
-      _invalidate();
-      return result;
+      final id = result.data;
+      final alertWithId = alert.copyWith(id: id);
+      final copiedAlerts = {...state.allAlerts, id: alertWithId};
+      final copiedNewAlerts = {...state.newAlerts, id: alertWithId};
+      state =
+          state.copyWith(allAlerts: copiedAlerts, newAlerts: copiedNewAlerts);
+      return;
     }
-
-    return result as ErrorState<int>;
   }
 
-  /// تحديد التنبيه كمقروء
-  Future<Result<void>> markAsRead(int id) async {
+  Future<void> markAsRead(int id) async {
     final repository = ref.read(alertRepositoryProvider);
     final result = await repository.markAlertAsRead(id);
 
-    if (result is SuccessState<void>) _invalidate();
+    if (result is! SuccessState<void>) return;
 
-    return result;
+    final alert = state.allAlerts[id];
+    if (alert == null) return;
+
+    final copiedNewAlerts = {...state.newAlerts}..remove(id);
+    final copiedUnreadAlerts = {...state.unreadAlerts, id: alert};
+
+    state = state.copyWith(
+      newAlerts: copiedNewAlerts,
+      unreadAlerts: copiedUnreadAlerts,
+    );
   }
 
-  /// حذف تنبيه
-  Future<Result<void>> deleteAlert(String id) async {
+  Future<Result<void>> deleteAlert(int id) async {
     final repository = ref.read(alertRepositoryProvider);
     final result = await repository.deleteAlert(id);
 
-    if (result is SuccessState<void>) _invalidate();
+    if (result is! SuccessState<void>) return result;
 
+    final isAlertInAll = state.allAlerts.containsKey(id);
+    final isAlertNew = state.newAlerts.containsKey(id);
+    final isAlertUnread = state.unreadAlerts.containsKey(id);
+
+    final copiedAllAlerts =
+        isAlertInAll ? {...state.allAlerts} : state.allAlerts;
+    final copiedNewAlerts = isAlertNew ? {...state.newAlerts} : state.newAlerts;
+    final copiedUnreadAlerts =
+        isAlertUnread ? {...state.unreadAlerts} : state.unreadAlerts;
+
+    copiedAllAlerts.remove(id);
+    copiedNewAlerts.remove(id);
+    copiedUnreadAlerts.remove(id);
+
+    state = state.copyWith(
+      allAlerts: copiedAllAlerts,
+      newAlerts: copiedNewAlerts,
+      unreadAlerts: copiedUnreadAlerts,
+    );
     return result;
   }
 
@@ -86,12 +113,6 @@ class AlertController extends Notifier<AlertsState> {
     );
     return isDuplicated;
   }
-
-  /// تحديث قائمة التنبيهات
-  void _invalidate() {
-    ref.invalidate(alertsProvider);
-    ref.invalidate(newAlertsProvider);
-  }
 }
 
 class AlertsState {
@@ -102,18 +123,18 @@ class AlertsState {
   });
 
   factory AlertsState.empty() => AlertsState(
-        allAlerts: [],
-        newAlerts: [],
-        unreadAlerts: [],
+        allAlerts: {},
+        newAlerts: {},
+        unreadAlerts: {},
       );
-  final List<Alert> allAlerts;
-  final List<Alert> newAlerts;
-  final List<Alert> unreadAlerts;
+  final Map<int, Alert> allAlerts;
+  final Map<int, Alert> newAlerts;
+  final Map<int, Alert> unreadAlerts;
 
   AlertsState copyWith({
-    List<Alert>? allAlerts,
-    List<Alert>? newAlerts,
-    List<Alert>? unreadAlerts,
+    Map<int, Alert>? allAlerts,
+    Map<int, Alert>? newAlerts,
+    Map<int, Alert>? unreadAlerts,
   }) {
     return AlertsState(
       allAlerts: allAlerts ?? this.allAlerts,

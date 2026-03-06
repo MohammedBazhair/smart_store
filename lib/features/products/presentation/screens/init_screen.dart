@@ -18,26 +18,24 @@ class InitScreen extends ConsumerWidget {
       body: Stack(
         children: [
           const _AnimatedBackground(),
-          SafeArea(
-            child: ref.watch(initDataFromNetProvider).when(
-                  data: (data) {
-                    Future.microtask(() async {
-                      await ref
-                          .read(productControllerProvider.notifier)
-                          .initialize();
-                      await ref.read(storeControllerProvider.notifier).loadMyStores();
-                      
-                      await context
-                          .pushAndRemoveUntilTo(const DashboardScreen());
-                    });
-                    return const _LoadingContent();
-                  },
-                  error: (_, __) => _ErrorContent(
-                    onRetry: () => ref.refresh(initDataFromNetProvider),
-                  ),
-                  loading: () => const _LoadingContent(),
+          ref.watch(initDataFromNetProvider).when(
+                data: (data) {
+                  Future.microtask(() async {
+                    await ref
+                        .read(productControllerProvider.notifier)
+                        .initialize();
+                    await ref.read(storeControllerProvider.notifier).loadMyStores();
+                    
+                    await context
+                        .pushAndRemoveUntilTo(const DashboardScreen());
+                  });
+                  return const _LoadingContent();
+                },
+                error: (_, __) => _ErrorContent(
+                  onRetry: () => ref.refresh(initDataFromNetProvider),
                 ),
-          ),
+                loading: () => const _LoadingContent(),
+              ),
         ],
       ),
     );

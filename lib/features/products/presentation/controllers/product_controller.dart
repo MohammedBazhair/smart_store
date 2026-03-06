@@ -12,22 +12,20 @@ import 'product_provider.dart';
 import 'product_state.dart';
 
 class ProductManagementController extends Notifier<ProductManagementState> {
+  
   @override
   ProductManagementState build() {
     return const ProductManagementState();
   }
 
   Future<void> initialize() async {
-    state = const ProductManagementState(isInitilizating: true);
+    final repo = ref.read(productRepositoryProvider);
+    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
     final categories = await getCategories();
     final products = await getStoreProducts();
-    
-    final repo= ref.read(productRepositoryProvider);
-        final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
-
-
     final expiredProducts = await repo.getExpiredProducts(storeId!);
     final nearbyExpiredProducts = await repo.getNearExpiryProducts(storeId, 30);
+
 
 
     state = state.copyWith(
@@ -35,7 +33,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       expiredProducts: expiredProducts,
       nearbyExpiredProducts: nearbyExpiredProducts,
       categories: categories,
-      isInitilizating: false,
     );
   }
 

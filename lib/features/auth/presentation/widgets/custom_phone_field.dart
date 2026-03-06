@@ -1,9 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CustomPhoneField extends StatelessWidget {
-  const CustomPhoneField(this.controller, {super.key});
+  const CustomPhoneField(this.controller, {super.key, this.validator});
   final TextEditingController controller;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,7 @@ class CustomPhoneField extends StatelessWidget {
           return 'أدخل رقم هاتف صحيح';
         }
 
-        return null;
+       return validator?.call(value);
       },
     );
   }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../controller/store_provider.dart';
 
 Future<void> showCreateStoreDialog(BuildContext context) async {
@@ -23,6 +22,10 @@ class CreateStoreDialog extends ConsumerStatefulWidget {
 
 class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
   final _storeNameController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  String? _error;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -30,22 +33,27 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    setState(() {
+      _error = null;
+      _isLoading = true;
+    });
+
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) return;
+
     final name = _storeNameController.text.trim();
-    if (name.isEmpty) {
-      return context.showSnakbar(
-        'يجب إدخال اسم متجرك',
-        type: SnackBarType.error,
-      );
-    }
 
-    final cntroller = ref.read(
-      storeControllerProvider.notifier,
-    );
+    final cntroller = ref.read(storeControllerProvider.notifier);
 
-    cntroller.createStore(name);
+    final serverError = await cntroller.createStore(name);
 
-    Navigator.pop(context);
+    if (serverError == null) return context.pop();
+
+    setState(() {
+      _error = serverError;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -75,37 +83,49 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
             const SizedBox(height: 20),
 
             // حقل النص
-            TextFormField(
-              controller: _storeNameController,
-              textInputAction: TextInputAction.done,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(
-                  RegExp(r'[a-zA-Z\u0621-\u063A\u0641-\u064A\s]'),
-                ),
-              ],
-              decoration: InputDecoration(
-                hintText: 'اسم المتجر',
-                prefixIcon:
-                    const Icon(Icons.store, color: AppTheme.primaryColor),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 15,
-                  horizontal: 20,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(
-                    color: Colors.grey.shade300,
+            Form(
+              key: _formKey,
+              child: TextFormField(
+                controller: _storeNameController,
+                textInputAction: TextInputAction.done,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'[a-zA-Z\u0621-\u063A\u0641-\u064A\s]'),
+                  ),
+                ],
+                decoration: InputDecoration(
+                  hintText: 'اسم المتجر',
+                  prefixIcon:
+                      const Icon(Icons.store, color: AppTheme.primaryColor),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 15,
+                    horizontal: 20,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(
+                      color: Colors.grey.shade300,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(
+                      color: AppTheme.primaryColor,
+                      width: 2,
+                    ),
                   ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: const BorderSide(
-                    color: AppTheme.primaryColor,
-                    width: 2,
-                  ),
-                ),
+                onFieldSubmitted: (value) => _submit(),
+                validator: (value) {
+                  final name = value?.trim() ?? '';
+
+                  if (name.isEmpty) {
+                    return 'يجب إدخال اسم متجرك';
+                  }
+
+                  return _error;
+                },
               ),
-              onFieldSubmitted: (value) => _submit(),
             ),
             const SizedBox(height: 25),
 
@@ -115,16 +135,18 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _submit,
+                    onPressed: _isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
                       elevation: 5,
                     ),
-                    child: const Text(
-                      'إنشاء',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const LoadingWidget()
+                        : const Text(
+                            'إنشاء',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 Expanded(

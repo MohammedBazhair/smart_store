@@ -9,8 +9,8 @@ import '../../domain/entities/store.dart';
 import '../../domain/entities/store_member.dart';
 import '../controller/store_provider.dart';
 import '../handle_store_states.dart';
-import '../widgets/add_member_dialog.dart';
 import '../widgets/create_store_dialog.dart';
+import '../widgets/members_sheet.dart';
 
 class StoreSelectionScreen extends ConsumerWidget {
   const StoreSelectionScreen({super.key});
@@ -39,6 +39,7 @@ class StoreSelectionScreen extends ConsumerWidget {
             const SliverAppBar(
               toolbarHeight: 60,
               pinned: true,
+              floating: true,
               backgroundColor: AppTheme.primaryColor,
               title: Text(
                 'المتاجر',
@@ -49,31 +50,61 @@ class StoreSelectionScreen extends ConsumerWidget {
               ),
             ),
 
+            const SliverPadding(
+              padding: EdgeInsetsGeometry.only(
+                top: 24,
+                left: 24,
+                right: 24,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.touch_app_outlined,
+                      size: 18,
+                      color: AppTheme.textSecondary,
+                    ),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'اضغط مطولاً على المتجر لإدارة الأعضاء',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             /// STORES GRID
             SliverPadding(
               padding: const EdgeInsetsGeometry.all(24),
-              sliver: SliverFillRemaining(
-                child: Consumer(
-                  builder: (_, ref, __) {
-                    final state = ref.watch(storeControllerProvider).state;
-                    final stores = state.myStores.values.toList();
+              sliver: Consumer(
+                builder: (_, ref, __) {
+                  final state = ref.watch(storeControllerProvider).state;
+                  final stores = state.myStores.values.toList();
 
-                    return stores.isEmpty
-                        ? const _EmptyStoresView()
-                        : ListView.separated(
-                            itemCount: stores.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 20),
-                            itemBuilder: (context, index) {
-                              return _StoreCard(
-                                store: stores[index].store,
-                                owner: stores[index].owner,
-                                members: stores[index].members,
-                              );
-                            },
-                          );
-                  },
-                ),
+                  return stores.isEmpty
+                      ? const SliverFillRemaining(child: _EmptyStoresView())
+                      : SliverList.separated(
+                          itemCount: stores.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 20),
+                          itemBuilder: (context, index) {
+                            return _StoreCard(
+                              store: stores[index].store,
+                              owner: stores[index].owner,
+                              members: stores[index].members,
+                            );
+                          },
+                        );
+                },
               ),
             ),
           ],
@@ -103,147 +134,125 @@ class _StoreCard extends ConsumerWidget {
           .select((s) => s.state.selectedStoreId == store.id),
     );
 
-    final membersList = members.toList();
-
-    return GestureDetector(
-      onTap: () {
-        ref.read(storeControllerProvider.notifier).selectStore(store.id!);
-        context.pushAndRemoveUntilTo(const InitScreen());
-      },
-      child: Container(
-        padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFBFEFF) : Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isSelected ? color.withOpacity(.25) : Colors.transparent,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(24),
+      shadowColor: const Color.fromARGB(66, 218, 218, 218),
+      elevation: 7,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        splashColor: color.withOpacity(0.15),
+        highlightColor: color.withOpacity(0.06),
+        onTap: () {
+          ref.read(storeControllerProvider.notifier).selectStore(store.id!);
+          context.pushAndRemoveUntilTo(const InitScreen());
+        },
+        onLongPress: () {
+          showMembersSheet(context, store.id!, members);
+        },
+        child: Ink(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isSelected ? color.withOpacity(.3) : Colors.grey.shade200,
+            ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(.05),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            /// HEADER
-            Row(
-              children: [
-                Container(
-                  width: 55,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(Icons.store, color: color),
-                ),
-
-                const SizedBox(width: 16),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        store.name,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: color,
-                        ),
+          child: Column(
+            children: [
+              /// HEADER
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          color.withOpacity(.25),
+                          color.withOpacity(.08),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${owner.role.label}: ${owner.memberPhone}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                /// ADD MEMBER BUTTON
-                IconButton(
-                  tooltip: 'إضافة عضو',
-                  onPressed: () {
-                    showAddMemberDialog(context);
-                  },
-                  icon: const Icon(
-                    Icons.person_add_alt_1,
-                    color: color,
-                  ),
-                ),
-
-                Icon(
-                  isSelected ? Icons.check_circle : Icons.arrow_forward_ios,
-                  size: isSelected ? 28 : 18,
-                  color: color,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 18),
-
-            /// MEMBERS
-            Row(
-              children: [
-                const Icon(
-                  Icons.groups,
-                  size: 18,
-                  color: AppTheme.textSecondary,
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  'الأعضاء',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '${members.length}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            /// MEMBERS AVATARS
-            SizedBox(
-              height: 38,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: membersList.length > 6 ? 6 : membersList.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final member = membersList[index];
-
-                  return CircleAvatar(
-                    radius: 18,
-                    backgroundColor: color.withOpacity(.12),
-                    child: Text(
-                      member.memberPhone.substring(0, 2),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  );
-                },
+                    child: const Icon(Icons.store_rounded, color: color),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          store.name,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: color,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.workspace_premium,
+                              size: 16,
+                              color: color,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              owner.memberPhone,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Icon(
+                      isSelected
+                          ? Icons.check_circle
+                          : Icons.arrow_forward_ios_rounded,
+                      color: color,
+                      size: isSelected ? 28 : 18,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+
+              const SizedBox(height: 18),
+
+              /// MEMBERS INFO
+              Row(
+                children: [
+                  const Icon(Icons.groups, size: 18, color: color),
+                  const SizedBox(width: 16),
+                  Text(
+                    '${members.length}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    members.length == 1 ? 'عضو' : 'أعضاء',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

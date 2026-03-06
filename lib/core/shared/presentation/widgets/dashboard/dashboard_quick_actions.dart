@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
@@ -34,16 +35,22 @@ class DashboardQuickActions extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: DashboardQuickActionCard(
-                title: 'التنبيهات',
-                icon: Icons.notifications_outlined,
-                color: AppTheme.warningColor,
-                onTap: () {
-                  context.pushTo(
-                    AlertsScreen(
-                      title: 'التنبيهات',
-                      alertsProvider: alertsProvider,
-                    ),
+              child: Consumer(
+                builder: (_, ref, __) {
+                  final allAlerts =
+                      ref.watch(alertControllerProvider).allAlerts.values;
+                  return DashboardQuickActionCard(
+                    title: 'التنبيهات',
+                    icon: Icons.notifications_outlined,
+                    color: AppTheme.warningColor,
+                    onTap: () {
+                      context.pushTo(
+                        AlertsScreen(
+                          title: 'التنبيهات',
+                          alerts: allAlerts.toList(),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

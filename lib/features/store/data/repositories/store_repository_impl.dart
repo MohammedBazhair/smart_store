@@ -24,13 +24,14 @@ class StoreRepositoryImpl implements StoreRepository {
   final ConnectivityService connectivityService;
 
   @override
-  Future<void> createStore(Store store, String ownerPhone) async {
+  Future<Store> createStore(Store store, String ownerPhone) async {
     try {
       final newStore = store.copyWith(id: const Uuid().v4());
       final model = StoreModel.fromEntity(newStore);
       await remote.createStore(model);
 
       await local.createStore(model, ownerPhone);
+      return newStore;
     } catch (e) {
       if (e.toString().contains('enough credits')) {
         throw const CreditsZeroException(
@@ -80,12 +81,15 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
-  Future<void> removeStoreMember(String memberId) async {
+  Future<void> removeStoreMember({
+    required String memberPhone,
+    required String storeId,
+  }) async {
     if (!await connectivityService.hasConnection()) {
       throw const InternetException();
     }
 
-    await remote.deleteMember(memberId);
-    await local.deleteMember(memberId);
+    await remote.deleteMember(memberPhone: memberPhone, storeId: storeId);
+    await local.deleteMember(memberPhone: memberPhone, storeId: storeId);
   }
 }

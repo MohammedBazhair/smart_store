@@ -2,23 +2,19 @@ import '../../../../core/database/remote/remote_database_service.dart';
 import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
-
-
 abstract class StoreRemoteDataSource {
-  /// إنشاء متجر
   Future<void> createStore(StoreModel store);
 
-  /// جلب جميع المتاجر الخاصة بالمستخدم
   Future<List<StoreModel>> getUserStores(String userPhone);
 
-  /// جلب أعضاء متجر معين
   Future<List<StoreMemberModel>> getMembers(String storeId);
 
-  /// إضافة عضو لمتجر
   Future<void> insertMember(StoreMemberModel member);
 
-  /// حذف عضو من المتجر
-  Future<void> deleteMember(String id);
+  Future<void> deleteMember({
+    required String memberPhone,
+    required String storeId,
+  });
 }
 
 class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
@@ -31,7 +27,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     await _client.insertRow(map: store.toMap(), table: 'stores');
   }
 
- @override
+  @override
   Future<List<StoreModel>> getUserStores(String userPhone) async {
     final result = await _client.client
         .from('stores')
@@ -55,7 +51,13 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   }
 
   @override
-  Future<void> deleteMember(String id) async {
-    await _client.delete(table: 'store_members', id: id, column: 'member_id');
+  Future<void> deleteMember({
+    required String memberPhone,
+    required String storeId,
+  }) async {
+    await _client.deleteWhere(
+      table: 'store_members',
+      filters: {'member_phone': memberPhone, 'store_id': storeId},
+    );
   }
 }

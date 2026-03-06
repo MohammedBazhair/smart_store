@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../errors/result.dart';
-import '../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../features/alerts/presentation/controllers/notification_cache.dart';
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
@@ -25,21 +24,18 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-
   @override
   void initState() {
     super.initState();
 
-     WidgetsBinding.instance.addPostFrameCallback((_)async{
-     await  ref.read(productControllerProvider.notifier).initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
 
-    ref.read(settingsControllerProvider.notifier);
-     });
-
+      ref.read(settingsControllerProvider.notifier);
+    });
 
     _handleInitialNotification();
     checkPermission();
-
   }
 
   Future<void> _handleInitialNotification() async {
@@ -74,6 +70,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final initializeAsync = ref.watch(initializeDashboardProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('لوحة التحكم'),
@@ -86,31 +84,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ],
       ),
-      body: Skeletonizer(
-        enabled: ref.watch(productControllerProvider.select((s)=>s.isInitilizating)),
-        child: Consumer(
-          builder: (_, ref, __) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                await ref.read(productControllerProvider.notifier).initialize();
-                ref.invalidate(newAlertsProvider);
-              },
-              child: const SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  spacing: 24,
-                  children: [
-                    DashboardStatsGrid(),
-                    DashboardQuickActions(),
-                    DashboardNearExpirySection(),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
+      body: initializeAsync.when(
+        data: (data) {
+          return const DashboardBody();
+        },
+        loading: () {
+          return const Skeletonizer(child: DashboardBody());
+        },
+        error: (_, __) {
+          return const DashboardBody();
+        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: FloatingActionButton.extended(
@@ -120,6 +103,34 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         },
         icon: const Icon(Icons.qr_code_scanner),
         label: const Text('مسح الباركود'),
+      ),
+    );
+  }
+}
+
+class DashboardBody extends ConsumerWidget {
+  const DashboardBody({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, ref) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(initializeDashboardProvider);
+      },
+      child: const SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 24,
+          children: [
+            DashboardStatsGrid(),
+            DashboardQuickActions(),
+            DashboardNearExpirySection(),
+          ],
+        ),
       ),
     );
   }
