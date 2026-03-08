@@ -16,7 +16,7 @@ class GlobalProduct extends Product {
       category: Category.undefined(),
       name: 'Fake Product',
       barcode: 'fake_barcode',
-      createdAt: DateTime.now(),
+      createdAt: DateTime.now().toUtc(),
     );
   }
 

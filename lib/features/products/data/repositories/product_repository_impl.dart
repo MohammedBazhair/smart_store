@@ -187,7 +187,7 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<Result<void>> updateProduct(StoreProduct product) async {
     try {
-      final updatedProduct = product.copyWith(updatedAt: DateTime.now());
+      final updatedProduct = product.copyWith(updatedAt: DateTime.now().toUtc());
       if (await _connectivity.hasConnection()) {
         await _remoteDatabase.updateProduct(updatedProduct);
       }

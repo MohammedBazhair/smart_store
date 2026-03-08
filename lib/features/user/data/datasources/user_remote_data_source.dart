@@ -46,7 +46,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   Future<void> updateProfile(ProfileEntity profile) async {
     if (profile.userId.isEmpty) throw ArgumentError.value(profile.userId);
 
-    final updated = profile.copyWith(updatedAt: DateTime.now());
+    final updated = profile.copyWith(updatedAt: DateTime.now().toUtc());
 
     await _remoteDatabase.update(
       updated: updated.toMap(),

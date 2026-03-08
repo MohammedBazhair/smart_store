@@ -102,14 +102,14 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     await _client.update(
       updated: {
         'is_deleted': true,
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
       table: 'store_members',
       whereFilter: {'member_phone': memberPhone, 'store_id': storeId},
     );
 
     await _client.update(
-      updated: {'updated_at': DateTime.now().toIso8601String()},
+      updated: {'updated_at': DateTime.now().toUtc().toIso8601String()},
       table: 'stores',
       whereFilter: {'store_id': storeId},
     );
@@ -142,7 +142,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
 
   Future<void> _updateStore(String storeId) async {
     await _client.update(
-      updated: {'updated_at': DateTime.now().toIso8601String()},
+      updated: {'updated_at': DateTime.now().toUtc().toIso8601String()},
       table: 'stores',
       whereFilter: {'id': storeId},
     );
@@ -153,7 +153,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     return _client.update(
       updated: {
         'is_deleted': true,
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
       whereFilter: {'id': storeId},
       table: 'stores',

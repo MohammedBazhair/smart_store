@@ -111,7 +111,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     String storeId,
   ) async {
     try {
-      final today = DateTime.now().toIso8601String();
+      final today = DateTime.now().toUtc().toIso8601String();
       final response = await _client.client
           .from('store_products')
           .select(
@@ -133,7 +133,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     int days,
   ) async {
     try {
-      final now = DateTime.now();
+      final now = DateTime.now().toUtc();
       final near = now.add(Duration(days: days));
       final response = await _client.client
           .from('store_products')

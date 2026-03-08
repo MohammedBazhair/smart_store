@@ -117,7 +117,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
   StoreProduct _buildProductFromFields({StoreProduct? oldProduct}) {
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
 
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
     final globalProduct = GlobalProduct(
       category: _selectedCategory,
       name: _nameController.text.trim(),

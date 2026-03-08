@@ -48,7 +48,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
 
   Future<void> _updateStore(String storeId) async {
     await _db.update(
-      updated: {'updated_at': DateTime.now().toIso8601String()},
+      updated: {'updated_at': DateTime.now().toUtc().toIso8601String()},
       table: 'stores',
       filterWhere: {'id': storeId},
     );
@@ -77,7 +77,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         tableName: 'stores',
         recordId: store.id!,
         operation: SyncOperation.insert,
-        updatedAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
       );
       await _sync.addChange(storeChange);
 
@@ -85,7 +85,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         tableName: 'store_members',
         recordId: '${store.id!}|${member.memberPhone}',
         operation: SyncOperation.insert,
-        updatedAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
       );
       await _sync.addChange(memberChange);
     } catch (e) {
@@ -139,7 +139,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       tableName: 'store_members',
       recordId: '${member.storeId}|${member.memberPhone}',
       operation: SyncOperation.insert,
-      updatedAt: DateTime.now(),
+      updatedAt: DateTime.now().toUtc(),
     );
 
     await _sync.addChange(change);
@@ -156,7 +156,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       filterWhere: {'member_phone': memberPhone, 'store_id': storeId},
       updated: {
         'is_deleted': true,
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
     );
 
@@ -166,7 +166,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       tableName: 'store_members',
       recordId: '$storeId|$memberPhone',
       operation: SyncOperation.delete,
-      updatedAt: DateTime.now(),
+      updatedAt: DateTime.now().toUtc(),
     );
 
     await _sync.addChange(syncChange);
@@ -224,7 +224,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       tableName: 'stores',
       recordId: store.id!,
       operation: SyncOperation.update,
-      updatedAt: DateTime.now(),
+      updatedAt: DateTime.now().toUtc(),
     );
 
     await _sync.addChange(change);
@@ -284,7 +284,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       tableName: 'store_members',
       recordId: '${member.storeId}|${member.memberPhone}',
       operation: SyncOperation.update,
-      updatedAt: DateTime.now(),
+      updatedAt: DateTime.now().toUtc(),
     );
 
     await _sync.addChange(change);
@@ -297,7 +297,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       filterWhere: {'id': storeId},
       updated: {
         'is_deleted': true,
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
     );
     if (isSync) return;
@@ -306,7 +306,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       tableName: 'stores',
       recordId: storeId,
       operation: SyncOperation.delete,
-      updatedAt: DateTime.now(),
+      updatedAt: DateTime.now().toUtc(),
     );
 
     await _sync.addChange(change);

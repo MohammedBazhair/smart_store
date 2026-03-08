@@ -96,7 +96,7 @@ class StoreController extends Notifier<StoreEventState> {
     try {
       final repo = ref.read(storeRepositoryProvider);
       final profile = ref.read(userControllerProvider).profile;
-      final now = DateTime.now();
+      final now = DateTime.now().toUtc();
 
       final store = Store(
         name: storeName,

@@ -173,7 +173,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     String storeId,
   ) async {
     try {
-      final today = DateTime.now().toIso8601String();
+      final today = DateTime.now().toUtc().toIso8601String();
       final maps = await db.rawQuery(
         query: '''
           SELECT ${_storeProductColumnsAndJoins()}
@@ -196,7 +196,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     int days,
   ) async {
     try {
-      final now = DateTime.now();
+      final now = DateTime.now().toUtc();
       final near = now.add(Duration(days: days)).toIso8601String();
       final maps = await db.rawQuery(
         query: '''

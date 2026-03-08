@@ -111,7 +111,7 @@ class StoreRepositoryImpl implements StoreRepository {
 
   @override
   Future<void> updateStore(Store store) async {
-    final updatedStore = store.copyWith(updatedAt: DateTime.now());
+    final updatedStore = store.copyWith(updatedAt: DateTime.now().toUtc());
     final storeModel = StoreModel.fromEntity(updatedStore);
 
     final hasConnection = await connectivityService.hasConnection();
@@ -219,9 +219,9 @@ class StoreRepositoryImpl implements StoreRepository {
     await local.setMembers(members);
 
     final storesSyncState =
-        SyncStateModel(tableName: 'stores', lastSync: DateTime.now());
+        SyncStateModel(tableName: 'stores', lastSync: DateTime.now().toUtc());
     final membersSyncState =
-        SyncStateModel(tableName: 'store_members', lastSync: DateTime.now());
+        SyncStateModel(tableName: 'store_members', lastSync: DateTime.now().toUtc());
 
     await syncLocal.saveLastSync(storesSyncState);
     await syncLocal.saveLastSync(membersSyncState);

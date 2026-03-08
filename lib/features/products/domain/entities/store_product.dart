@@ -16,7 +16,7 @@ class StoreProduct extends Product {
   });
 
   factory StoreProduct.fake() {
-    final date = DateTime.now();
+    final date = DateTime.now().toUtc();
     return StoreProduct(
       storeId: '',
       globalProduct: GlobalProduct.fake(),
