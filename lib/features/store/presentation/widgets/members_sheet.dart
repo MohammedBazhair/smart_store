@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store_member.dart';
 import '../controller/store_provider.dart';
 import 'add_member_dialog.dart';
@@ -20,7 +21,6 @@ void showMembersSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    
     builder: (_) {
       return DraggableScrollableSheet(
         expand: false,
@@ -62,7 +62,8 @@ void showMembersSheet(
                       builder: (_, ref, __) {
                         return Dismissible(
                           key: ValueKey(member.memberPhone),
-                          direction: member.role.label == 'مالك'
+                          confirmDismiss: (direction) async=> member.role != Role.storeOwner,
+                          direction: member.role == Role.storeOwner
                               ? DismissDirection.none
                               : DismissDirection.endToStart,
                           onDismissed: (_) {

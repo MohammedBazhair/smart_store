@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../shared/presentation/theme/app_theme.dart';
 
-
-
-
 enum SnackBarType {
   error(
     backgroundColor: AppTheme.errorColor,
@@ -31,3 +28,13 @@ enum SnackBarType {
 enum IsLoading { settings, saveProduct, processBarcode, backup }
 
 enum BackgroundTask { dailyExpiryCheck, addAlertForProduct }
+
+enum SyncOperation {
+  insert,
+  update,
+  delete;
+
+  static SyncOperation fromString(String value) {
+    return SyncOperation.values.byName(value);
+  }
+}

@@ -19,6 +19,7 @@ import '../../database/local/local_database_service.dart';
 import '../../database/remote/remote_database_service.dart';
 import '../../network/connectivity_service.dart';
 import '../../network/network_clinet.dart';
+import '../datasources/sync_local_data_source.dart';
 import 'repositories_provider.dart';
 
 final databaseProvider =
@@ -76,6 +77,12 @@ final localDatabaseServiceProvider = Provider((ref) {
   final supabaseClinet = ref.read(databaseProvider);
   return LocalDatabaseServiceImpl(supabaseClinet);
 });
+
+final syncLocalDataSourceProvider = Provider((ref) {
+  final _db = ref.read(localDatabaseServiceProvider);
+  return SyncLocalDataSourceImpl(_db);
+});
+
 
 final localCacheServiceProvider = Provider((ref) {
   final prefs = ref.read(sharedPreferencesProvider);

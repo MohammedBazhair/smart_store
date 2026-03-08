@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/local_database_service.dart';
@@ -13,13 +15,13 @@ abstract class ProductLocalDataSource {
   Future<List<Map<String, dynamic>>> getGlobalProducts();
   Future<void> saveAllCategories(List<Category> categories);
   Future<void> saveGlobalProducts(List<GlobalProductModel> products);
-  Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId);
+  Future<Result<ModelsProductsByIdentifier>> getStoreProducts(String storeId);
   Future<Result<StoreProduct>> getProductById({
     required String productId,
     required String storeId,
   });
   Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
-  Future<Result<List<StoreProduct>>> searchProducts({
+  Future<List<StoreProduct>> searchProducts({
     required String query,
     required String storeId,
   });
@@ -33,6 +35,7 @@ abstract class ProductLocalDataSource {
   );
   Future<Result<StoreProduct>> addProduct(StoreProduct product);
   Future<Result<void>> updateProduct(StoreProduct product);
+  Future<void> setStoreProducts(List<StoreProductModel> products);
 }
 
 class ProductLocalDataSourceImpl implements ProductLocalDataSource {
@@ -74,7 +77,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId) async {
+  Future<Result<ModelsProductsByIdentifier>> getStoreProducts(String storeId) async {
     try {
       final response = await db.rawQuery(
         query: '''
@@ -83,13 +86,14 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
        ''',
         arguments: [storeId],
       );
-      final products = <String, StoreProduct>{};
+      final products = <String, StoreProductModel>{};
 
       for (final m in response) {
         final product = StoreProductModel.fromRemote(m);
         final key = product.globalProduct.barcode ?? product.globalProduct.id!;
         products[key] = product;
       }
+      
       return SuccessState(products);
     } catch (e) {
       return ErrorState(e.toString());
@@ -147,25 +151,21 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<Result<List<StoreProduct>>> searchProducts({
+  Future<List<StoreProduct>> searchProducts({
     required String query,
     required String storeId,
   }) async {
-    try {
-      final maps = await db.rawQuery(
-        query: '''
+    final maps = await db.rawQuery(
+      query: '''
           SELECT ${_storeProductColumnsAndJoins()}
           WHERE sp.store_id = ? 
-          AND LOWER(sp.name) LIKE LOWER(?)
+          AND LOWER(gp.name) LIKE LOWER(?)
         ''',
-        arguments: [storeId, '%$query%'],
-      );
+      arguments: [storeId, '%$query%'],
+    );
 
-      final products = maps.map(StoreProductModel.fromLocal).toList();
-      return SuccessState(products);
-    } catch (e) {
-      return ErrorState(e.toString());
-    }
+    final products = maps.map(StoreProductModel.fromLocal).toList();
+    return products;
   }
 
   @override
@@ -214,28 +214,35 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     }
   }
 
+  Future<void> debugForeignKeys() async {
+    final store = await db.readRows(table: 'stores');
+
+    Logger.debugLog(
+      message: 'STORE RESULT: $store',
+    );
+  }
+
   @override
   Future<Result<StoreProduct>> addProduct(StoreProduct product) async {
     try {
-      final barcode = product.globalProduct.barcode ?? '';
-      final globalProduct = await getGlobalProductByBarcode(barcode);
-
-      if (globalProduct == null) {
+      await debugForeignKeys();
+      await db.transaction((txn) async {
         final globalProductModel =
             GlobalProductModel.fromEntity(product.globalProduct);
+        final storeProductModel = StoreProductModel.fromEntity(product);
 
-        await db.insertRow(
-          table: 'global_products',
-          map: globalProductModel.toMap(),
+        await txn.insert(
+          'global_products',
+          globalProductModel.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
         );
-      }
 
-      final storeProductModel = StoreProductModel.fromEntity(product);
-
-      await db.insertRow(
-        table: 'store_products',
-        map: storeProductModel.toMap(),
-      );
+        await txn.insert(
+          'store_products',
+          storeProductModel.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      });
 
       Logger.debugLog(message: 'تمت اضافة المنتج');
       return SuccessState(product);
@@ -298,5 +305,12 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       Logger.debugLog(error: e);
       return [];
     }
+  }
+
+  @override
+  Future<void> setStoreProducts(List<StoreProductModel> products) async{
+    final rows = products.map((p) => p.toMap()).toList();
+
+    await db.insertRows(rows: rows, table: 'store_products');
   }
 }

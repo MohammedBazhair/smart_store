@@ -67,148 +67,150 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onTap: FocusScope.of(context).unfocus,
-        child: Center(
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(24),
-            children: [
-              const SizedBox(
-                height: 20,
-              ),
-              const Text(
-                'المتجر الذكي',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryColor,
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: FocusScope.of(context).unfocus,
+          child: Center(
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(24),
+              children: [
+                const SizedBox(
+                  height: 20,
                 ),
-              ),
-              const SizedBox(
-                height: 35,
-              ),
-              const Text(
-                'أهلا بعودتك!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'سجل دخولك إلى حسابك',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 50),
-              Form(
-                key: _formKey,
-                child: AutofillGroup(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const FieldLabel(text: 'البريد الإلكتروني'),
-        
-                      const SizedBox(height: 8),
-        
-                      CustomEmailField(_emailController),
-        
-                      const SizedBox(height: 25),
-        
-                      const FieldLabel(text: 'كلمة المرور'),
-        
-                      const SizedBox(height: 8),
-        
-                      CustomPasswordField(
-                        controller: _passwordController,
-                        hintText: 'أدخل كلمة المرور',
-                        onSubmit: onSubmit,
-                        textInputAction: TextInputAction.done,
-                      ),
-        
-                      const SizedBox(height: 25),
-        
-                      // نسيت كلمة المرور
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          text: 'هل نسيت كلمة المرور؟',
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              context.pushTo(const ResetPasswordScreen());
-                            },
-                          style: const TextStyle(
-                            color: AppTheme.primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 25),
-        
-                      // زر تسجيل الدخول
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final isLoading = ref.watch(authControllerProvider)
-                              is AuthLoadingState;
-                          return AbsorbPointer(
-                            absorbing: isLoading,
-                            child: ElevatedButton(
-                              onPressed: onSubmit,
-                              child: isLoading
-                                  ? const LoadingWidget()
-                                  : const Text('تسجيل الدخول'),
-                            ),
-                          );
-                        },
-                      ),
-        
-                      const SizedBox(height: 15),
-        
-                      AbsorbPointer(
-                        absorbing: ref.watch(authControllerProvider)
-                            is AuthLoadingState,
-                        child: const SignGoogleButton(),
-                      ),
-        
-                      const SizedBox(height: 25),
-        
-                      // الانتقال إلى التسجيل
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          text: 'ليس لديك حساب؟ ',
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          children: [
-                            const TextSpan(text: '  '),
-                            TextSpan(
-                              text: 'سجل الآن',
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  context.pushReplacementTo(
-                                    const SignUpScreen(),
-                                  );
-                                },
-                              style: const TextStyle(
-                                color: AppTheme.primaryColor,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                const Text(
+                  'المتجر الذكي',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(
+                  height: 35,
+                ),
+                const Text(
+                  'أهلا بعودتك!',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'سجل دخولك إلى حسابك',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 50),
+                Form(
+                  key: _formKey,
+                  child: AutofillGroup(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const FieldLabel(text: 'البريد الإلكتروني'),
+
+                        const SizedBox(height: 8),
+
+                        CustomEmailField(_emailController),
+
+                        const SizedBox(height: 25),
+
+                        const FieldLabel(text: 'كلمة المرور'),
+
+                        const SizedBox(height: 8),
+
+                        CustomPasswordField(
+                          controller: _passwordController,
+                          hintText: 'أدخل كلمة المرور',
+                          onSubmit: onSubmit,
+                          textInputAction: TextInputAction.done,
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        // نسيت كلمة المرور
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            text: 'هل نسيت كلمة المرور؟',
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                context.pushTo(const ResetPasswordScreen());
+                              },
+                            style: const TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 25),
+
+                        // زر تسجيل الدخول
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final isLoading = ref.watch(authControllerProvider)
+                                is AuthLoadingState;
+                            return AbsorbPointer(
+                              absorbing: isLoading,
+                              child: ElevatedButton(
+                                onPressed: onSubmit,
+                                child: isLoading
+                                    ? const LoadingWidget()
+                                    : const Text('تسجيل الدخول'),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        AbsorbPointer(
+                          absorbing: ref.watch(authControllerProvider)
+                              is AuthLoadingState,
+                          child: const SignGoogleButton(),
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        // الانتقال إلى التسجيل
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            text: 'ليس لديك حساب؟ ',
+                            style: const TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            children: [
+                              const TextSpan(text: '  '),
+                              TextSpan(
+                                text: 'سجل الآن',
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    context.pushReplacementTo(
+                                      const SignUpScreen(),
+                                    );
+                                  },
+                                style: const TextStyle(
+                                  color: AppTheme.primaryColor,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

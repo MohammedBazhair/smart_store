@@ -21,6 +21,10 @@ class UserLoadedProfileState extends UserState {
   UserLoadedProfileState(super.profile);
 }
 
+class UserMoreInfoProfileState extends UserState {
+  UserMoreInfoProfileState(super.profile);
+}
+
 class UserErrorState extends UserState {
   UserErrorState(super.profile, this.message);
   final String message;

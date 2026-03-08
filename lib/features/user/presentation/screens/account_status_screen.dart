@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../auth/handle_auth_listeners.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../domain/entities/account_status.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/entities/status_config.dart';
@@ -73,6 +75,14 @@ class _AccountStatusScreenState extends ConsumerState<AccountStatusScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authControllerProvider, (previous, next) {
+      handlgeAuthListener(
+        context: context,
+        previous: previous,
+        next: next,
+        ref: ref,
+      );
+    });
     final statusConfig =
         StatusConfig.getStatusConfig(widget.profile.accountStatus);
 
@@ -89,96 +99,127 @@ class _AccountStatusScreenState extends ConsumerState<AccountStatusScreen>
             ],
           ),
         ),
-        child: SafeArea(
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 40),
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 40),
 
-                            // Status Icon with Animation
-                            ScaleTransition(
-                              scale: _scaleAnimation,
-                              child: StatusIconWidget(config: statusConfig),
+                          // Status Icon with Animation
+                          ScaleTransition(
+                            scale: _scaleAnimation,
+                            child: StatusIconWidget(config: statusConfig),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Welcome Text
+                          SlideTransition(
+                            position: _slideAnimation,
+                            child: Column(
+                              children: [
+                                Text(
+                                  'مرحباً بك',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium
+                                      ?.copyWith(
+                                        color: AppTheme.textSecondary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  widget.profile.username,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .displayMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.textPrimary,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
+                          ),
 
-                            const SizedBox(height: 32),
+                          const SizedBox(height: 48),
 
-                            // Welcome Text
-                            SlideTransition(
-                              position: _slideAnimation,
-                              child: Column(
-                                children: [
-                                  Text(
-                                    'مرحباً بك',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium
-                                        ?.copyWith(
-                                          color: AppTheme.textSecondary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    widget.profile.username,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .displayMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.textPrimary,
-                                        ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
+                          // Status Card
+                          SlideTransition(
+                            position: _slideAnimation,
+                            child: StatusCardWidget(config: statusConfig),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // Account Details
+                          SlideTransition(
+                            position: _slideAnimation,
+                            child: AccountDetailsWidget(
+                              profile: widget.profile,
                             ),
-
-                            const SizedBox(height: 48),
-
-                            // Status Card
-                            SlideTransition(
-                              position: _slideAnimation,
-                              child: StatusCardWidget(config: statusConfig),
-                            ),
-
-                            const SizedBox(height: 32),
-
-                            // Account Details
-                            SlideTransition(
-                              position: _slideAnimation,
-                              child: AccountDetailsWidget(
-                                profile: widget.profile,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
 
-                    // Continue Button
-                    SlideTransition(
-                      position: _slideAnimation,
-                      child: ContinueButtonWidget(
-                        config: statusConfig,
-                        canContinue: widget.profile.accountStatus == AccountStatus.active,
+                  // Continue Button
+                  SlideTransition(
+                    position: _slideAnimation,
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, -5),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        spacing: 5,
+                        children: [
+                          Expanded(
+                            child: ContinueButtonWidget(
+                              config: statusConfig,
+                              canContinue: widget.profile.accountStatus ==
+                                  AccountStatus.active,
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'تسجيل الخروج',
+                            onPressed: () {
+                              ref
+                                  .read(authControllerProvider.notifier)
+                                  .signOut();
+                            },
+                            icon: Icon(
+                              Icons.logout,
+                              color: statusConfig.primaryColor,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

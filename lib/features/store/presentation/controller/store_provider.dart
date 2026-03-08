@@ -15,7 +15,8 @@ final storeRemoteDataSourceProvider = Provider((ref) {
 
 final storeLocalDataSourceProvider = Provider((ref) {
   final _clint = ref.read(localDatabaseServiceProvider);
-  return StoreLocalDataSourceImpl(_clint);
+  final syncLocal = ref.read(syncLocalDataSourceProvider);
+  return StoreLocalDataSourceImpl(_clint, syncLocal);
 });
 
 final storeRepositoryProvider = Provider<StoreRepository>((ref) {
@@ -23,11 +24,14 @@ final storeRepositoryProvider = Provider<StoreRepository>((ref) {
   final localDataSource = ref.read(storeLocalDataSourceProvider);
   final userRepository = ref.read(userRepositoryProvider);
   final connectivityService = ref.read(networkProvider);
+  final syncLocal = ref.read(syncLocalDataSourceProvider);
+
   return StoreRepositoryImpl(
     localDataSource,
     remoteDataSource,
     userRepository,
     connectivityService,
+    syncLocal,
   );
 });
 

@@ -1,4 +1,5 @@
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../constants/app_constants.dart';
@@ -18,8 +19,8 @@ class DatabaseHelper {
 
   /// تهيئة قاعدة البيانات
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+    final dbPath = await getExternalStorageDirectory();
+    final path = join(dbPath!.path, filePath);
 
     return openDatabase(
       path,
@@ -46,7 +47,7 @@ class DatabaseHelper {
 
     await db.execute('''
     CREATE TABLE categories (
-      category_id int PRIMARY KEY,
+      category_id INTEGER PRIMARY KEY,
       category_name TEXT NOT NULL
     );
     ''');
@@ -62,12 +63,12 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE stores (
         id TEXT PRIMARY KEY,
-        owner_id TEXT NOT NULL,
+        owner_phone TEXT NOT NULL,
         store_name TEXT NOT NULL,
         currency TEXT NOT NULL,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
-        FOREIGN KEY (owner_id) REFERENCES profiles(id),
+        FOREIGN KEY (owner_phone) REFERENCES profiles(phone) ON UPDATE CASCADE
         FOREIGN KEY (currency) REFERENCES exchange_rates(currency) ON UPDATE CASCADE
       );
     ''');
@@ -95,7 +96,7 @@ class DatabaseHelper {
         PRIMARY KEY (store_id, member_phone)
       );
     ''');
-
+    
     await db.execute('''
       CREATE TABLE store_products (
         store_id TEXT NOT NULL,
@@ -110,6 +111,23 @@ class DatabaseHelper {
         FOREIGN KEY (store_id) REFERENCES stores(id),
         FOREIGN KEY (currency) REFERENCES exchange_rates(currency) ON UPDATE CASCADE,
         PRIMARY KEY (store_id, product_id)
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE sync_changes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        table_name TEXT NOT NULL,
+        record_id TEXT NOT NULL,
+        operation TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE sync_state (
+        table_name TEXT PRIMARY KEY,
+        last_sync TEXT NOT NULL
       );
     ''');
 

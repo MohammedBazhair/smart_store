@@ -11,16 +11,12 @@ import '../models/store_product_model.dart';
 abstract class ProductRemoteDataSource {
   Future<List<Map<String, dynamic>>> getGlobalProducts();
   Future<Result<List<Category>>> getAllCategories();
-  Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId);
+  Future<Result<ModelsProductsByIdentifier>> getStoreProducts(String storeId);
   Future<Result<StoreProduct>> getProductById({
     required String productId,
     required String storeId,
   });
   Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
-  Future<Result<List<StoreProduct>>> searchProducts({
-    required String query,
-    required String storeId,
-  });
   Future<Result<List<StoreProduct>>> getExpiredProducts(
     String storeId,
   );
@@ -48,7 +44,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<Result<ProductsByIdentifier>> getStoreProducts(String storeId) async {
+  Future<Result<ModelsProductsByIdentifier>> getStoreProducts(String storeId) async {
     try {
       final response = await _client.client
           .from('store_products')
@@ -57,7 +53,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           )
           .eq('store_id', storeId);
 
-      final products = <String, StoreProduct>{};
+      final products = <String, StoreProductModel>{};
 
       for (final m in response) {
         final product = StoreProductModel.fromRemote(m);
@@ -108,26 +104,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     }
   }
 
-  @override
-  Future<Result<List<StoreProduct>>> searchProducts({
-    required String query,
-    required String storeId,
-  }) async {
-    try {
-      final response = await _client.client
-          .from('store_products')
-          .select(
-            '*, global_products(*, categories(*))',
-          )
-          .eq('store_id', storeId)
-          .ilike('name', '%$query%');
 
-      final products = response.map(StoreProductModel.fromRemote).toList();
-      return SuccessState(products);
-    } catch (e) {
-      return ErrorState(e.toString());
-    }
-  }
 
   @override
   Future<Result<List<StoreProduct>>> getExpiredProducts(

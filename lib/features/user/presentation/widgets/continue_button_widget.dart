@@ -19,56 +19,43 @@ class ContinueButtonWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
+    return ElevatedButton(
+      onPressed: () async {
+        if (canContinue) {
+          await ref.read(storeControllerProvider.notifier).loadMyStores();
+          await context.pushAndRemoveUntilTo(const StoreSelectionScreen());
+          return;
+        }
+    
+        try {
+          await UrlUtils.sendWhatsApp(
+            phone: '967776793111',
+            message:
+                'مرحباً، أود الاستفسار عن حالة حسابي في تطبيق Smart Store.',
+          );
+        } catch (e) {
+          context.showSnakbar(
+            'حدثت مشكلة اثناء ارسال رسالة للدعم الفني',
+            type: SnackBarType.error,
+          );
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: config.primaryColor,
+        foregroundColor: Colors.white,
+        minimumSize: const Size(double.infinity, 56),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 0,
       ),
-      child: ElevatedButton(
-        onPressed: () async {
-          if (canContinue) {
-            await ref.read(storeControllerProvider.notifier).loadMyStores();
-            await context.pushAndRemoveUntilTo(const StoreSelectionScreen());
-            return;
-          }
-
-          try {
-            await UrlUtils.sendWhatsApp(
-              phone: '967776793111',
-              message:
-                  'مرحباً، أود الاستفسار عن حالة حسابي في تطبيق Smart Store.',
-            );
-          } catch (e) {
-            context.showSnakbar(
-              'حدثت مشكلة اثناء ارسال رسالة للدعم الفني',
-              type: SnackBarType.error,
-            );
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: config.primaryColor,
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 56),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0,
-        ),
-        child: Text(
-          canContinue ? 'متابعة إلى التطبيق' : 'تواصل مع الادمن',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-        ),
+      child: Text(
+        canContinue ? 'متابعة إلى التطبيق' : 'تواصل مع الادمن',
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
       ),
     );
   }

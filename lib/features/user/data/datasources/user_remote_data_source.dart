@@ -50,18 +50,17 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
     await _remoteDatabase.update(
       updated: updated.toMap(),
-      id: profile.userId,
-      column: 'id',
+      whereFilter: {'id': profile.userId},
       table: AppConstants.profilesTable,
     );
   }
 
   @override
-  Future<bool> isPhoneSignUp(String phoneNumber)async {
-  final response= await _remoteDatabase.client
+  Future<bool> isPhoneSignUp(String phoneNumber) async {
+    final response = await _remoteDatabase.client
         .from('profiles')
         .select('phone')
         .eq('phone', phoneNumber);
-  return response.isNotEmpty;
+    return response.isNotEmpty;
   }
 }

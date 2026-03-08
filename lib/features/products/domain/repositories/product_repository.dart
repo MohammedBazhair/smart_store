@@ -34,4 +34,5 @@ abstract class ProductRepository {
   Future<Result<void>> updateProduct(StoreProduct product);
 
   Future<void> initDataFromNetwork();
+
 }

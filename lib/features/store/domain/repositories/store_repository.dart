@@ -2,7 +2,7 @@ import '../entities/store.dart';
 import '../entities/store_member.dart';
 
 abstract class StoreRepository {
-  Future<Store> createStore(Store store, String ownerPhone);
+  Future<Store> createStore(Store store);
 
   Future<List<Store>> getUserStores(String userPhone);
 
@@ -14,4 +14,14 @@ abstract class StoreRepository {
     required String memberPhone,
     required String storeId,
   });
+
+  Future<void> updateStore(Store store);
+
+  Future<void> syncStores(String userPhone);
+
+  Future<void> pushStoresChanges();
+  Future<void> pushMembersChanges();
+  Future<void> syncAll(String userPhone);
+
+
 }

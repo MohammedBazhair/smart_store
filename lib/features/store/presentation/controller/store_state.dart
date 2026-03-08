@@ -20,6 +20,8 @@ class StoreState {
   final Map<String, StoreWithMembers> myStores;
   final String? selectedStoreId;
 
+  List<StoreWithMembers> get myStoresList => myStores.values.toList();
+
   StoreState copyWith({
     Map<String, StoreWithMembers>? myStores,
     String? selectedStoreId,

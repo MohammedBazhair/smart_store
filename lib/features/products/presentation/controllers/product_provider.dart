@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
-import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/datasource/product_local_data_source.dart';
 import '../../data/datasource/product_remote_data_source.dart';
 import '../../data/repositories/product_repository_impl.dart';
@@ -37,25 +37,21 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 });
 
 final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
-  (ref) => ProductQuery(),
+  (ref) => const ProductQuery(),
 );
 
 final searchFilterProductsProvider =
     FutureProvider.autoDispose<List<StoreProduct>>((ref) async {
-  final query = ref.read(productQueryProvider);
+  final query = ref.watch(productQueryProvider);
   if (!query.hasQuery) return [];
 
-  final repository = ref.read(productRepositoryProvider);
-  final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+  Logger.debugLog(message: query.isSearching.toString());
+  final controller = ref.read(productControllerProvider.notifier);
   final products = query.isSearching
-      ? await repository.searchProducts(storeId: storeId, query: query.search)
-      : (await repository.getStoreProducts(storeId)).values.toList();
+      ? await controller.searchProducts(query)
+      : <StoreProduct>[];
 
-  if (!query.hasCategory) return products;
-
-  return products
-      .where((p) => p.globalProduct.category.id == query.category?.id)
-      .toList();
+  return products;
 });
 
 final focusNodesProvider =
@@ -95,5 +91,4 @@ final initializeDashboardProvider = FutureProvider((ref) async {
   final controller = ref.read(productControllerProvider.notifier);
   await controller.initialize();
   await ref.read(alertControllerProvider.notifier).loadAlerts();
-  
 });

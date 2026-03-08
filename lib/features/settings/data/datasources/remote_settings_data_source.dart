@@ -32,8 +32,7 @@ class RemoteSettingsDataSourceImpl implements RemoteSettingsDataSource {
         'currency': currency.name,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
-      id: storeId,
-      column: 'id',
+      whereFilter: { 'id':storeId},
       table: 'stores',
     );
   }

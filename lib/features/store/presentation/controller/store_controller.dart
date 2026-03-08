@@ -37,9 +37,7 @@ class StoreController extends Notifier<StoreEventState> {
 
     final myStores = Map.fromEntries(entries);
 
-    final newState = state.state.copyWith(
-      myStores: myStores,
-    );
+    final newState = state.state.copyWith(myStores: myStores);
 
     state = LoadMyStoresEvent(state: newState);
   }
@@ -99,13 +97,13 @@ class StoreController extends Notifier<StoreEventState> {
 
       final store = Store(
         name: storeName,
-        ownerId: profile.userId,
+        ownerPhone: profile.phone!,
         currency: CurrencyCode.theDefault,
         createdAt: now,
         updatedAt: now,
       );
 
-      final newStore = await repo.createStore(store, profile.phone!);
+      final newStore = await repo.createStore(store);
       final ownerMember = StoreMember(
         memberPhone: profile.phone!,
         storeId: newStore.id!,

@@ -7,12 +7,12 @@ import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
+import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
 import 'product_provider.dart';
 import 'product_state.dart';
 
 class ProductManagementController extends Notifier<ProductManagementState> {
-  
   @override
   ProductManagementState build() {
     return const ProductManagementState();
@@ -25,8 +25,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final products = await getStoreProducts();
     final expiredProducts = await repo.getExpiredProducts(storeId!);
     final nearbyExpiredProducts = await repo.getNearExpiryProducts(storeId, 30);
-
-
 
     state = state.copyWith(
       products: products,
@@ -56,14 +54,19 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   }
 
   Future<ProductsByIdentifier> getStoreProducts() async {
-    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
+    try {
+      final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
 
-    if (storeId == null) return {};
+      if (storeId == null) return {};
 
-    final products =
-        await ref.read(productRepositoryProvider).getStoreProducts(storeId);
+      final products =
+          await ref.read(productRepositoryProvider).getStoreProducts(storeId);
 
-    return products;
+      return products;
+    } catch (e) {
+      Logger.debugLog(error: e);
+      return {};
+    }
   }
 
   bool isBarcodeExistsInStore(String? barcode) {
@@ -149,6 +152,28 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     } on Exception catch (e) {
       Logger.debugLog(error: e);
       return null;
+    }
+  }
+
+  Future<List<StoreProduct>> searchProducts(ProductQuery query) async {
+    try {
+      final productRepo = ref.read(productRepositoryProvider);
+      final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+
+      final products = await productRepo.searchProducts(
+        query: query.search,
+        storeId: storeId,
+      );
+
+      Logger.debugLog(message: products.toString());
+      if (!query.hasCategory) return products;
+
+      return products
+          .where((p) => p.globalProduct.category.id == query.category?.id)
+          .toList();
+    } catch (e) {
+      Logger.debugLog(error: e);
+      return [];
     }
   }
 }

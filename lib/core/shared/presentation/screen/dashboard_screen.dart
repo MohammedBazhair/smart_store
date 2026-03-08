@@ -96,13 +96,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: FloatingActionButton.extended(
-        elevation: 2.5,
-        onPressed: () {
-          context.pushTo(const BarcodeScannerScreen());
-        },
-        icon: const Icon(Icons.qr_code_scanner),
-        label: const Text('مسح الباركود'),
+      floatingActionButton: Skeletonizer(
+        enabled: initializeAsync.isLoading,
+        child: FloatingActionButton.extended(
+          elevation: 2.5,
+          onPressed: () {
+            context.pushTo(const BarcodeScannerScreen());
+          },
+          icon: const Icon(Icons.qr_code_scanner),
+          label: const Text('مسح الباركود'),
+        ),
       ),
     );
   }

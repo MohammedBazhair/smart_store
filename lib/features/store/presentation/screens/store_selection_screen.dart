@@ -87,11 +87,13 @@ class StoreSelectionScreen extends ConsumerWidget {
               padding: const EdgeInsetsGeometry.all(24),
               sliver: Consumer(
                 builder: (_, ref, __) {
-                  final state = ref.watch(storeControllerProvider).state;
-                  final stores = state.myStores.values.toList();
+                  final stores =
+                      ref.watch(storeControllerProvider).state.myStoresList;
 
                   return stores.isEmpty
-                      ? const SliverFillRemaining(child: _EmptyStoresView())
+                      ? const SliverFillRemaining(
+                          child: _EmptyStoresView(),
+                        )
                       : SliverList.separated(
                           itemCount: stores.length,
                           separatorBuilder: (context, index) =>
@@ -133,14 +135,14 @@ class _StoreCard extends ConsumerWidget {
       storeControllerProvider
           .select((s) => s.state.selectedStoreId == store.id),
     );
-
+    final borderRadius = BorderRadius.circular(25);
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(24),
-      shadowColor: const Color.fromARGB(66, 218, 218, 218),
+      borderRadius: borderRadius,
+      shadowColor: const Color(0x42DADADA),
       elevation: 7,
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: borderRadius,
         splashColor: color.withOpacity(0.15),
         highlightColor: color.withOpacity(0.06),
         onTap: () {
@@ -154,104 +156,114 @@ class _StoreCard extends ConsumerWidget {
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: borderRadius,
             border: Border.all(
-              color: isSelected ? color.withOpacity(.3) : Colors.grey.shade200,
+              color: isSelected ? color.withAlpha(150) : Colors.grey.shade200,
+              width: .8,
             ),
           ),
-          child: Column(
-            children: [
-              /// HEADER
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          color.withOpacity(.25),
-                          color.withOpacity(.08),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        color.withOpacity(.25),
+                        color.withOpacity(.08),
+                      ],
                     ),
-                    child: const Icon(Icons.store_rounded, color: color),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          store.name,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
+                  child: const Icon(Icons.store_rounded, color: color),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        store.name,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: color,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.workspace_premium,
+                            size: 16,
                             color: color,
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.workspace_premium,
-                              size: 16,
-                              color: color,
+                          const SizedBox(width: 4),
+                          Text(
+                            owner.memberPhone,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppTheme.textSecondary,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              owner.memberPhone,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.textSecondary,
-                              ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.date_range,
+                            size: 16,
+                            color: color,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            store.createdAt.formattedDate,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppTheme.textSecondary,
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  verticalDirection: VerticalDirection.up,
+                  children: [
+                    /// MEMBERS INFO
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.groups, size: 18, color: color),
+                        const SizedBox(width: 10),
+                        Text(
+                          '${members.length}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                            fontSize: 18,
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: Icon(
+
+                    Icon(
                       isSelected
                           ? Icons.check_circle
                           : Icons.arrow_forward_ios_rounded,
                       color: color,
                       size: isSelected ? 28 : 18,
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
-
-              /// MEMBERS INFO
-              Row(
-                children: [
-                  const Icon(Icons.groups, size: 18, color: color),
-                  const SizedBox(width: 16),
-                  Text(
-                    '${members.length}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    members.length == 1 ? 'عضو' : 'أعضاء',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -270,8 +282,9 @@ class _EmptyStoresView extends StatelessWidget {
       secondaryColor: AppTheme.primaryColor.withOpacity(0.6),
     );
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
         children: [
           // أيقونة احترافية
           StatusIconWidget(

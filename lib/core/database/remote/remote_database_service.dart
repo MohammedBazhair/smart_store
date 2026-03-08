@@ -12,7 +12,6 @@ abstract interface class RemoteDatabaseService {
   Future<void> insertRows({
     required RowList rows,
     required String table,
-    required String primaryKey,
   });
 
   Future<Map<String, dynamic>> readRow({
@@ -38,11 +37,15 @@ abstract interface class RemoteDatabaseService {
 
   Future<dynamic> update({
     required Map<String, dynamic> updated,
-    required String id,
-    required String column,
     required String table,
+    required Map<String, Object> whereFilter,
   });
 
+  Future<void> updateRows({
+    required RowList rows,
+    required String table,
+    required String onConflict,
+  });
 
   Future<void> delete({
     required String id,
@@ -101,12 +104,13 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
   @override
   Future<dynamic> update({
     required Map<String, dynamic> updated,
-    required String id,
-    required String column,
     required String table,
-  }) {
+    required Map<String, Object> whereFilter,
+  }) async {
     try {
-      return _client.from(table).update(updated).eq(column, id);
+      final lastResponse =
+          _client.from(table).update(updated).match(whereFilter);
+      return await lastResponse;
     } catch (e) {
       debugPrint(e.toString());
       return Future.value();
@@ -182,14 +186,22 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
   Future<void> insertRows({
     required RowList rows,
     required String table,
-    required String primaryKey,
   }) async {
     try {
-      return await _client.from(table).upsert(rows, onConflict: primaryKey);
+      return await _client.from(table).insert(rows);
     } catch (e) {
       debugPrint(e.toString());
     }
   }
 
+  @override
+  Future<void> updateRows({
+    required RowList rows,
+    required String table,
+    required String onConflict,
+  }) async {
+    await _client.from(table).upsert(rows, onConflict: onConflict);
+  }
 
+  
 }

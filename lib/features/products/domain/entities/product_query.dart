@@ -1,7 +1,9 @@
+import 'package:equatable/equatable.dart';
+
 import 'category.dart';
 
-class ProductQuery {
-  ProductQuery({this.search = '', this.category});
+class ProductQuery extends Equatable {
+  const ProductQuery({this.search = '', this.category});
 
   final String search;
   final Category? category;
@@ -34,4 +36,10 @@ class ProductQuery {
       category: category ?? this.category,
     );
   }
+
+  @override
+  String toString() => 'ProductQuery(search: $search, category: $category)';
+
+  @override
+  List<Object?> get props => [search, category];
 }

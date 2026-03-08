@@ -27,10 +27,8 @@ class AuthController extends StateNotifier<AuthState> {
 
       state = const AuthSuccessfullState();
     } on AuthAppException catch (e) {
-      Logger.debugLog(error: e.message);
-      state = AuthFailedState('فشل تسجيل الدخول');
+      state = AuthFailedState(e.message);
     } catch (e) {
-      Logger.debugLog(error: e);
       state = AuthFailedState('فشل تسجيل الدخول');
     }
   }
@@ -70,7 +68,7 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signOut() async {
     try {
       await _auth.signOut();
-     state=  const AuthSignOutState();
+      state = const AuthSignOutState();
     } catch (e) {
       _handleState('حدث خطأ في الخروج حاول مرة أخرى');
     }

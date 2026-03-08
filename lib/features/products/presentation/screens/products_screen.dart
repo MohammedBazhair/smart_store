@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
 import '../../../../core/extensions/extensions.dart';
 import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
@@ -42,17 +41,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   @override
   Widget build(BuildContext context) {
     final query = ref.watch(productQueryProvider);
-
-    final productsAsync =
-         ref.watch(searchFilterProductsProvider)
-        ;
+    final productsAsync = ref.watch(searchFilterProductsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? 'المنتجات'),
       ),
-      body:Skeletonizer(
-        enabled: query.hasQuery&& productsAsync.isLoading,
+      body: Skeletonizer(
+        enabled: query.hasQuery && productsAsync.isLoading,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: GestureDetector(
@@ -96,27 +92,30 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 const SizedBox(height: 16),
 
                 Expanded(
-                  child:! query.hasQuery? _buildProductsBody(widget.products,query)  : productsAsync.when(
-                    data:(filteredProducts)=> _buildProductsBody(filteredProducts,query),
-                    loading: () {
-                      final fakeProducts = StoreProduct.fakeProducts;
+                  child: !query.hasQuery
+                      ? _buildProductsBody(widget.products, query)
+                      : productsAsync.when(
+                          data: (filteredProducts) {
+                            return _buildProductsBody(filteredProducts, query);
+                          },
+                          loading: () {
+                            final fakeProducts = StoreProduct.fakeProducts;
 
-                      return Skeletonizer(
-                        child: ProductsList(
-                          products: fakeProducts,
+                            return Skeletonizer(
+                              child: ProductsList(
+                                products: fakeProducts,
+                              ),
+                            );
+                          },
+                          error: (error, stack) {
+                            return Center(
+                              child: Text(
+                                'حدث خطأ أثناء تحميل المنتجات',
+                                style: Theme.of(context).textTheme.bodyLarge,
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                    error: (error, stack) {
-                      return Center(
-                        child: Text(
-                          'حدث خطأ أثناء تحميل المنتجات',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      );
-                    },
-                  ),
-             
                 ),
               ],
             ),
@@ -131,9 +130,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     );
   }
 
-Widget _buildProductsBody(List<StoreProduct> products, ProductQuery query){
-                        if (products.isEmpty) {
-      return ProductsEmptyState(text:query.uiNotFoundText);
+  Widget _buildProductsBody(List<StoreProduct> products, ProductQuery query) {
+    if (products.isEmpty) {
+      return ProductsEmptyState(text: query.uiNotFoundText);
     }
     return RefreshIndicator(
       onRefresh: () async {
@@ -144,8 +143,7 @@ Widget _buildProductsBody(List<StoreProduct> products, ProductQuery query){
         products: products,
       ),
     );
-
-}
+  }
 
   void _showFilterDialog(BuildContext context) {
     showDialog(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
@@ -8,8 +9,11 @@ import '../../../../core/shared/presentation/widgets/common/field_label.dart';
 import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../user/presentation/controllers/user_state.dart';
+import '../../../user/presentation/screens/account_status_screen.dart';
 import '../widgets/custom_fullname_field.dart';
 import '../widgets/custom_phone_field.dart';
+
+final _isLoadingProvider = StateProvider((_) => false);
 
 class MoreInfoScreen extends ConsumerStatefulWidget {
   const MoreInfoScreen({super.key});
@@ -27,12 +31,16 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
     final isValid = _formKey.currentState?.validate() ?? false;
 
     if (!isValid) return;
+    ref.read(_isLoadingProvider.notifier).state = true;
+
     TextInput.finishAutofillContext();
 
     final controller = ref.read(userControllerProvider.notifier);
     final profile = await controller.loadProfile();
 
     if (profile == null) {
+      ref.read(_isLoadingProvider.notifier).state = false;
+
       return context.showSnakbar(
         'لم يتم اعداد الحساب بنجاح الرجاء التواصل معنا',
         type: SnackBarType.error,
@@ -44,6 +52,8 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
 
     final newProfile = profile.copyWith(username: name, phone: phone);
     await controller.updateProfile(newProfile);
+
+    ref.read(_isLoadingProvider.notifier).state = false;
   }
 
   @override
@@ -55,6 +65,20 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(userControllerProvider, (_, state) {
+      switch (state) {
+        case UserInitialState():
+        case UserLoadingProfileState():
+        case UserLoadedProfileState():
+        case UserUpdatedProfileState():
+          break;
+
+        case UserErrorState(:final message):
+          context.showSnakbar(message, type: SnackBarType.error);
+        case UserMoreInfoProfileState(:final profile):
+          context.pushReplacementTo(AccountStatusScreen(profile: profile,));
+      }
+    });
     return Scaffold(
       body: GestureDetector(
         onTap: FocusScope.of(context).unfocus,
@@ -110,8 +134,8 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                         const SizedBox(height: 25),
                         Consumer(
                           builder: (context, ref, child) {
-                            final isLoading = ref.watch(userControllerProvider)
-                                is UserLoadingProfileState;
+                            final isLoading =
+                                ref.watch(_isLoadingProvider.notifier).state;
                             return AbsorbPointer(
                               absorbing: isLoading,
                               child: ElevatedButton(

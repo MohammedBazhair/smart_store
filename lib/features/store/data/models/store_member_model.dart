@@ -39,4 +39,11 @@ class StoreMemberModel extends StoreMember {
       'updated_at': updatedAt.toIso8601String(),
     };
   }
+  Map<String, dynamic> toUpdateMap() {
+    return {
+      'role': role.name,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
 }

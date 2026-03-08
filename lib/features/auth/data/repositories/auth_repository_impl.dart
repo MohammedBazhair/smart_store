@@ -78,7 +78,6 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       return userId;
     } catch (e) {
-      Logger.debugLog(error: e);
       return null;
     }
   }

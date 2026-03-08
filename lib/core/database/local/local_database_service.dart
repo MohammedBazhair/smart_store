@@ -42,9 +42,9 @@ abstract interface class LocalDatabaseService {
   });
 
   Future<int> delete({
-    required String id,
-    required String column,
     required String table,
+    List<Object?>? whereArgs,
+    String? where,
   });
 
   Future<T> transaction<T>(
@@ -94,11 +94,11 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
 
   @override
   Future<int> delete({
-    required String id,
-    required String column,
     required String table,
+    List<Object?>? whereArgs,
+    String? where,
   }) {
-    return _database.delete(table, where: '$column = ?', whereArgs: [id]);
+    return _database.delete(table, where: where, whereArgs: whereArgs);
   }
 
   @override
@@ -187,7 +187,7 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     return _database.update(
       table,
       updated,
-      where:filterWhere.isEmpty? null: where,
+      where: filterWhere.isEmpty ? null : where,
       whereArgs: filterWhere.isEmpty ? null : whereArgs,
     );
   }

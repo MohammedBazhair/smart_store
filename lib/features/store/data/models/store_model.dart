@@ -4,28 +4,28 @@ import '../../domain/entities/store.dart';
 class StoreModel extends Store {
   StoreModel({
     super.id,
-    required super.ownerId,
     required super.name,
     required super.currency,
     required super.createdAt,
     required super.updatedAt,
+    required super.ownerPhone,
   });
 
   factory StoreModel.fromEntity(Store store) {
     return StoreModel(
       id: store.id,
-      ownerId: store.ownerId,
       name: store.name,
       currency: store.currency,
       createdAt: store.createdAt,
       updatedAt: store.updatedAt,
+      ownerPhone: store.ownerPhone,
     );
   }
 
   factory StoreModel.fromMap(Map<String, dynamic> map) {
     return StoreModel(
       id: map['id'],
-      ownerId: map['owner_id'],
+      ownerPhone: map['owner_phone'],
       name: map['store_name'],
       currency: CurrencyCode.values.byName(map['currency']),
       createdAt: DateTime.parse(map['created_at']),
@@ -36,7 +36,7 @@ class StoreModel extends Store {
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
-      'owner_id': ownerId,
+      'owner_phone': ownerPhone,
       'store_name': name,
       'currency': currency.name,
       'created_at': createdAt.toIso8601String(),

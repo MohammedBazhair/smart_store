@@ -49,8 +49,15 @@ class ProductRepositoryImpl implements ProductRepository {
         ? await _remoteDatabase.getStoreProducts(storeId)
         : await _localDatabase.getStoreProducts(storeId);
 
-    if (result is SuccessState<ProductsByIdentifier>) return result.data;
-    return {};
+    if (result is! SuccessState<ModelsProductsByIdentifier>) {
+      return {};
+    }
+    final products = result.data;
+
+    if (hasConnection) {
+      await _localDatabase.setStoreProducts(products.values.toList());
+    }
+    return products;
   }
 
   @override
@@ -96,21 +103,17 @@ class ProductRepositoryImpl implements ProductRepository {
     required String query,
     required String storeId,
   }) async {
-    final hasConnection = await _connectivity.hasConnection();
+    Logger.debugLog(message: 'start searching');
+    // return _localDatabase.searchProducts(
+    //   query: query,
+    //   storeId: storeId,
+    // );
 
-    final result = hasConnection
-        ? await _remoteDatabase.searchProducts(
-            query: query,
-            storeId: storeId,
-          )
-        : await _localDatabase.searchProducts(
-            query: query,
-            storeId: storeId,
-          );
-
-    if (result is SuccessState<List<StoreProduct>>) {
-      return result.data;
+    final result = await _localDatabase.getStoreProducts(storeId);
+    if (result is SuccessState<ModelsProductsByIdentifier>) {
+      return result.data.values.toList();
     }
+    Logger.debugLog(message: result.toString());
     return [];
   }
 

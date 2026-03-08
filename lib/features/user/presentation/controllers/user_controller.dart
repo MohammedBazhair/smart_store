@@ -32,7 +32,10 @@ class UserController extends StateNotifier<UserState> {
       return newProfile;
     } catch (e, _) {
       Logger.debugLog(error: e);
-      state = UserErrorState(state.profile, 'Can\'t get profile error');
+      state = UserErrorState(
+        state.profile,
+        'حدث لم نتمكن من الحصول على بيانات بروفايلك',
+      );
       return null;
     }
   }
