@@ -39,7 +39,7 @@ class StoreRepositoryImpl implements StoreRepository {
       final model = StoreModel.fromEntity(newStore);
       await remote.createStore(model);
 
-      await local.createStore(model);
+      await local.createStore(model,true);
       return newStore;
     } catch (e) {
       if (e.toString().contains('enough credits')) {
@@ -100,27 +100,24 @@ class StoreRepositoryImpl implements StoreRepository {
     required String memberPhone,
     required String storeId,
   }) async {
-    if (!await connectivityService.hasConnection()) {
-      throw const InternetException();
+    final hasConnection = await connectivityService.hasConnection();
+
+    if (hasConnection) {
+      await remote.deleteMember(memberPhone: memberPhone, storeId: storeId);
     }
 
-    await remote.deleteMember(memberPhone: memberPhone, storeId: storeId);
-    await local.deleteStoreMember(memberPhone: memberPhone, storeId: storeId);
+    await local.deleteStoreMember(memberPhone: memberPhone, storeId: storeId,isSync: hasConnection);
   }
-
-  @override
-  Future<void> syncStores(String userPhone) async {}
 
   @override
   Future<void> updateStore(Store store) async {
     final updatedStore = store.copyWith(updatedAt: DateTime.now());
     final storeModel = StoreModel.fromEntity(updatedStore);
 
-    if (await connectivityService.hasConnection()) {
-      await remote.updateStore(storeModel);
-    }
+    final hasConnection = await connectivityService.hasConnection();
+    if (hasConnection) await remote.updateStore(storeModel);
 
-    await local.updateStore(storeModel);
+    await local.updateStore(storeModel, hasConnection);
   }
 
   @override
@@ -218,7 +215,7 @@ class StoreRepositoryImpl implements StoreRepository {
     final stores = await remote.getUserStores(userPhone, lastSyncStores);
     await local.setUserStores(stores);
 
-    final members =await remote.getMembersForUser(userPhone, lastSyncMembers );
+    final members = await remote.getMembersForUser(userPhone, lastSyncMembers);
     await local.setMembers(members);
 
     final storesSyncState =
@@ -232,10 +229,9 @@ class StoreRepositoryImpl implements StoreRepository {
 
   @override
   Future<void> deleteStore(String storeId) async {
-    if (await connectivityService.hasConnection()) {
-      await remote.deleteStore(storeId);
-    }
+    final hasConnection = await connectivityService.hasConnection();
+    if (hasConnection) await remote.deleteStore(storeId);
 
-    await local.deleteStore(storeId);
+    await local.deleteStore(storeId, hasConnection);
   }
 }

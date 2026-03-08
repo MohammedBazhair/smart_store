@@ -17,8 +17,6 @@ abstract class StoreRepository {
 
   Future<void> updateStore(Store store);
 
-  Future<void> syncStores(String userPhone);
-
   Future<void> pushStoresChanges();
   Future<void> pushMembersChanges();
   Future<void> syncAll(String userPhone);

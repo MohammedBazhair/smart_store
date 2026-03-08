@@ -98,7 +98,7 @@ class DatabaseHelper {
         PRIMARY KEY (store_id, member_phone)
       );
     ''');
-    
+
     await db.execute('''
       CREATE TABLE store_products (
         store_id TEXT NOT NULL,
@@ -147,6 +147,13 @@ class DatabaseHelper {
         FOREIGN KEY (product_id) REFERENCES global_products(id)
       )
     ''');
+
+    await db.execute('''
+      CREATE INDEX idx_store_member
+      ON store_members(store_id, member_phone);
+      CREATE INDEX idx_store
+      ON stores(id);
+''');
   }
 
   Future<void> close() async {
