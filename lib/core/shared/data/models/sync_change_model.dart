@@ -1,6 +1,8 @@
+import 'package:equatable/equatable.dart';
+
 import '../../../constants/enums.dart';
 
-class SyncChangeModel {
+class SyncChangeModel extends Equatable {
   const SyncChangeModel({
     this.id,
     required this.tableName,
@@ -49,4 +51,7 @@ class SyncChangeModel {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+  
+  @override
+  List<Object?> get props => [tableName, recordId, operation];
 }

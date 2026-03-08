@@ -1,12 +1,9 @@
+import '../../constants/enums.dart';
 import '../../database/local/local_database_service.dart';
 import '../data/models/sync_change_model.dart';
 import '../data/models/sync_state_model.dart';
 
 abstract class SyncLocalDataSource {
-  /// =====================
-  /// sync_changes
-  /// =====================
-
   Future<void> addChange(SyncChangeModel change);
 
   Future<List<SyncChangeModel>> getTableChanges(String table);
@@ -14,10 +11,6 @@ abstract class SyncLocalDataSource {
   Future<void> deleteChange(int id);
 
   Future<void> clearTablesChanges(String table);
-
-  /// =====================
-  /// sync_state
-  /// =====================
 
   Future<void> saveLastSync(SyncStateModel state);
 
@@ -28,12 +21,49 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
   SyncLocalDataSourceImpl(this._db);
   final LocalDatabaseService _db;
 
-  // ===================== sync_changes =====================
   @override
   Future<void> addChange(SyncChangeModel change) async {
-    await _db.insertRow(
+    final existing = await _db.readRowsWhere(
       table: 'sync_changes',
-      map: change.toMap(),
+      filters: {
+        'table_name': change.tableName,
+        'record_id': change.recordId,
+      },
+    );
+
+    if (existing.isEmpty) {
+      await _db.insertRow(
+        table: 'sync_changes',
+        map: change.toMap(),
+      );
+
+      return;
+    }
+
+    final oldChange = SyncChangeModel.fromMap(existing.first);
+
+    SyncOperation newOperation = change.operation;
+
+    if (oldChange.operation == SyncOperation.insert &&
+        change.operation == SyncOperation.delete) {
+      await deleteChange(oldChange.id!);
+      return;
+    }
+
+    if (oldChange.operation == SyncOperation.insert &&
+        change.operation == SyncOperation.update) {
+      newOperation = SyncOperation.insert;
+    }
+
+    if (oldChange.operation == SyncOperation.update &&
+        change.operation == SyncOperation.update) {
+      newOperation = SyncOperation.update;
+    }
+
+    await _db.update(
+      updated: {'operation': newOperation.name},
+      filterWhere: {'id': oldChange.id},
+      table: 'sync_changes',
     );
   }
 
@@ -41,9 +71,9 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
   Future<List<SyncChangeModel>> getTableChanges(String table) async {
     final maps = await _db.readRowsWhere(
       table: 'sync_changes',
-      filters: {'table_name': getTableChanges},
+      filters: {'table_name': table},
     );
-    return maps.map(SyncChangeModel.fromMap).toList();
+    return maps.map(SyncChangeModel.fromMap).toSet().toList();
   }
 
   @override
@@ -61,13 +91,22 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
         .deleteWhere(table: 'sync_changes', filters: {'table_name': table});
   }
 
-  // ===================== sync_state =====================
   @override
   Future<void> saveLastSync(SyncStateModel state) async {
-    await _db.insertRow(
-      table: 'sync_state',
-      map: state.toMap(),
-    );
+    final existing = await getLastSync(state.tableName);
+
+    if (existing != null) {
+      await _db.update(
+        table: 'sync_state',
+        updated: state.toMap(),
+        filterWhere: {'table_name': state.tableName},
+      );
+    } else {
+      await _db.insertRow(
+        table: 'sync_state',
+        map: state.toMap(),
+      );
+    }
   }
 
   @override

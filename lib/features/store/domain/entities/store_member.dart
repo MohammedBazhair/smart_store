@@ -9,7 +9,10 @@ class StoreMember extends Equatable {
     required this.role,
     required this.createdAt,
     required this.updatedAt,
+    required this.isDeleted,
   });
+
+  final bool isDeleted;
   final String memberPhone;
   final String storeId;
   final Role role;
@@ -17,7 +20,7 @@ class StoreMember extends Equatable {
   final DateTime updatedAt;
 
   @override
-  List<Object?> get props => [memberPhone, storeId, role, createdAt, updatedAt];
+  List<Object?> get props => [memberPhone, storeId, role, createdAt, updatedAt,isDeleted];
 
   @override
   bool get stringify => true;

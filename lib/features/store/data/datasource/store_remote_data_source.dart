@@ -35,6 +35,11 @@ abstract class StoreRemoteDataSource {
   Future<void> updateStoreMember(StoreMemberModel member);
   Future<void> updateStoreMembers(List<StoreMemberModel> members);
   Future<void> updateStores(List<StoreModel> stores);
+
+  Future<List<StoreMemberModel>> getMembersForUser(
+    String userPhone, [
+    SyncStateModel? lastSync,
+  ]);
 }
 
 class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
@@ -86,21 +91,21 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   Future<void> insertMember(StoreMemberModel member) async {
     await _client.insertRow(table: 'store_members', map: member.toMap());
 
-    await _client.update(
-      updated: {'updated_at': DateTime.now().toIso8601String()},
-      table: 'stores',
-      whereFilter: {'store_id': member.storeId},
-    );
-  }
+    await _updateStore(member.storeId);
+     }
 
   @override
   Future<void> deleteMember({
     required String memberPhone,
     required String storeId,
   }) async {
-    await _client.deleteWhere(
+    await _client.update(
+      updated: {
+        'is_deleted': true,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
       table: 'store_members',
-      filters: {'member_phone': memberPhone, 'store_id': storeId},
+      whereFilter: {'member_phone': memberPhone, 'store_id': storeId},
     );
 
     await _client.update(
@@ -139,13 +144,20 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     await _client.update(
       updated: {'updated_at': DateTime.now().toIso8601String()},
       table: 'stores',
-      whereFilter: {'store_id': storeId},
+      whereFilter: {'id': storeId},
     );
   }
 
   @override
   Future<void> deleteStore(String storeId) {
-    return _client.delete(id: storeId, column: 'id', table: 'stores');
+    return _client.update(
+      updated: {
+        'is_deleted': true,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      whereFilter: {'id': storeId},
+      table: 'stores',
+    );
   }
 
   @override
@@ -165,22 +177,21 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   }
 
   @override
-  Future<void> deleteMembers(List<DeleteMembersParams> params)async {
+  Future<void> deleteMembers(List<DeleteMembersParams> params) async {
     final futures = params.map(
       (m) => deleteMember(memberPhone: m.memberPhone, storeId: m.storeId),
     );
     await Future.wait(futures);
   }
-  
+
   @override
-  Future<void> insertStores(List<StoreModel> stores) async{
+  Future<void> insertStores(List<StoreModel> stores) async {
     final rows = stores.map((m) => m.toMap()).toList();
     await _client.insertRows(rows: rows, table: 'stores');
-
   }
-  
+
   @override
-  Future<void> updateStores(List<StoreModel> stores) async{
+  Future<void> updateStores(List<StoreModel> stores) async {
     final rows = stores.map((m) => m.toMap()).toList();
     await _client.updateRows(
       rows: rows,
@@ -188,12 +199,30 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
       onConflict: 'id',
     );
   }
-  
+
   @override
-  Future<void> deleteStores(List<String> storesIds)async {
+  Future<void> deleteStores(List<String> storesIds) async {
     final futures = storesIds.map(deleteStore);
 
     await Future.wait(futures);
+  }
+  
+ @override
+  Future<List<StoreMemberModel>> getMembersForUser(
+    String userPhone, [
+    SyncStateModel? lastSync,
+  ]) async {
+    final response = _client.client
+        .from('store_members')
+        .select('*, stores!inner(id)')
+        .eq('member_phone', userPhone);
 
+    final lastSyncDate = lastSync?.lastSync.toIso8601String();
+
+    final result = await (lastSyncDate != null
+        ? response.gt('updated_at', lastSyncDate)
+        : response);
+
+    return result.map(StoreMemberModel.fromMap).toList();
   }
 }

@@ -2,27 +2,31 @@ import '../../../settings/domain/entities/currence_code.dart';
 
 class Store {
   Store({
-     this.id,
+    this.id,
     required this.name,
     required this.currency,
     required this.createdAt,
-    required this.updatedAt, required this.ownerPhone,
+    required this.updatedAt,
+    required this.ownerPhone,
+    required this.isDeleted,
   });
-  
+
   final String? id;
   final String ownerPhone;
   final String name;
   final CurrencyCode currency;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isDeleted;
 
   Store copyWith({
     String? id,
     String? name,
-  String? ownerPhone,
+    String? ownerPhone,
     CurrencyCode? currency,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? isDeleted,
   }) {
     return Store(
       id: id ?? this.id,
@@ -30,7 +34,8 @@ class Store {
       currency: currency ?? this.currency,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-       ownerPhone:ownerPhone?? this.ownerPhone,
+      ownerPhone: ownerPhone ?? this.ownerPhone,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 

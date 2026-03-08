@@ -26,10 +26,12 @@ class StoreController extends Notifier<StoreEventState> {
     final repo = ref.read(storeRepositoryProvider);
     final profile = ref.read(userControllerProvider).profile;
     final stores = await repo.getUserStores(profile.phone ?? '');
+    final nonDeletedStores = stores.where((s) => !s.isDeleted);
 
-    final futures = stores.map((s) async {
+    final futures = nonDeletedStores.map((s) async {
       final members = await repo.getStoreMembers(s.id!);
-      final storeWithMembers = StoreWithMembers(store: s, members: members);
+      final nonDeletedMembers = members.where((m) => !m.isDeleted).toSet();
+      final storeWithMembers = StoreWithMembers(store: s, members: nonDeletedMembers);
       return MapEntry(s.id!, storeWithMembers);
     });
 
@@ -58,6 +60,7 @@ class StoreController extends Notifier<StoreEventState> {
         role: Role.worker,
         createdAt: now,
         updatedAt: now,
+        isDeleted: false,
       );
 
       await repo.addStoreMember(member);
@@ -101,6 +104,7 @@ class StoreController extends Notifier<StoreEventState> {
         currency: CurrencyCode.theDefault,
         createdAt: now,
         updatedAt: now,
+        isDeleted: false,
       );
 
       final newStore = await repo.createStore(store);
@@ -110,6 +114,7 @@ class StoreController extends Notifier<StoreEventState> {
         role: Role.storeOwner,
         createdAt: DateTime.now().toUtc(),
         updatedAt: DateTime.now().toUtc(),
+        isDeleted: false,
       );
 
       final storeWithMembers =

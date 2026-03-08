@@ -9,6 +9,7 @@ class StoreModel extends Store {
     required super.createdAt,
     required super.updatedAt,
     required super.ownerPhone,
+    required super.isDeleted,
   });
 
   factory StoreModel.fromEntity(Store store) {
@@ -19,6 +20,7 @@ class StoreModel extends Store {
       createdAt: store.createdAt,
       updatedAt: store.updatedAt,
       ownerPhone: store.ownerPhone,
+      isDeleted: false,
     );
   }
 
@@ -30,6 +32,7 @@ class StoreModel extends Store {
       currency: CurrencyCode.values.byName(map['currency']),
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
+      isDeleted: map['is_deleted']==1,
     );
   }
 
@@ -41,6 +44,7 @@ class StoreModel extends Store {
       'currency': currency.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'is_deleted': isDeleted? 1:0,
     };
   }
 }

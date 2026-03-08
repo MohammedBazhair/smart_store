@@ -1,5 +1,4 @@
 import 'package:uuid/uuid.dart';
-
 import '../../../../core/constants/enums.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/shared/data/models/sync_state_model.dart';
@@ -149,7 +148,7 @@ class StoreRepositoryImpl implements StoreRepository {
     if (inserts.isNotEmpty) {
       await remote.insertStores(inserts);
     }
-    
+
     if (updates.isNotEmpty) {
       await remote.updateStores(updates);
     }
@@ -157,7 +156,6 @@ class StoreRepositoryImpl implements StoreRepository {
     if (deletes.isNotEmpty) {
       await remote.deleteStores(deletes);
     }
-
 
     await syncLocal.clearTablesChanges('stores');
   }
@@ -182,31 +180,31 @@ class StoreRepositoryImpl implements StoreRepository {
           );
 
         case SyncOperation.update:
-          final member = await local.readStoreMember(
+          final member = await local.getStoreMember(
             storeId: storeId,
             memberPhone: memberPhone,
           );
           if (member != null) updates.add(member);
         case SyncOperation.insert:
-          final member = await local.readStoreMember(
+          final member = await local.getStoreMember(
             storeId: storeId,
             memberPhone: memberPhone,
           );
           if (member != null) inserts.add(member);
       }
-
-      if (inserts.isNotEmpty) {
-        await remote.insertMembers(inserts);
-      }
-      if (updates.isNotEmpty) {
-        await remote.updateStoreMembers(updates);
-      }
-      if (deletes.isNotEmpty) {
-        await remote.deleteMembers(deletes);
-      }
-
-      await syncLocal.clearTablesChanges('store_members');
     }
+
+    if (inserts.isNotEmpty) {
+      await remote.insertMembers(inserts);
+    }
+    if (updates.isNotEmpty) {
+      await remote.updateStoreMembers(updates);
+    }
+    if (deletes.isNotEmpty) {
+      await remote.deleteMembers(deletes);
+    }
+
+    await syncLocal.clearTablesChanges('store_members');
   }
 
   @override
@@ -220,11 +218,7 @@ class StoreRepositoryImpl implements StoreRepository {
     final stores = await remote.getUserStores(userPhone, lastSyncStores);
     await local.setUserStores(stores);
 
-    final storesIds = stores.map((s) => s.id!);
-    final futures =
-        storesIds.map((id) => remote.getMembers(id, lastSyncMembers));
-    final result = await Future.wait(futures);
-    final members = result.expand((list) => list).toList();
+    final members =await remote.getMembersForUser(userPhone, lastSyncMembers );
     await local.setMembers(members);
 
     final storesSyncState =
@@ -234,5 +228,14 @@ class StoreRepositoryImpl implements StoreRepository {
 
     await syncLocal.saveLastSync(storesSyncState);
     await syncLocal.saveLastSync(membersSyncState);
+  }
+
+  @override
+  Future<void> deleteStore(String storeId) async {
+    if (await connectivityService.hasConnection()) {
+      await remote.deleteStore(storeId);
+    }
+
+    await local.deleteStore(storeId);
   }
 }

@@ -8,6 +8,7 @@ class StoreMemberModel extends StoreMember {
     required super.role,
     required super.createdAt,
     required super.updatedAt,
+    required super.isDeleted,
   });
 
   factory StoreMemberModel.fromEntity(StoreMember member) {
@@ -17,6 +18,7 @@ class StoreMemberModel extends StoreMember {
       role: member.role,
       createdAt: member.createdAt,
       updatedAt: member.updatedAt,
+      isDeleted: member.isDeleted,
     );
   }
 
@@ -24,9 +26,10 @@ class StoreMemberModel extends StoreMember {
     return StoreMemberModel(
       memberPhone: map['member_phone'],
       storeId: map['store_id'],
-      role:Role.fromString( map['role']),
+      role: Role.fromString(map['role']),
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
+      isDeleted: map['is_deleted']==1,
     );
   }
 
@@ -37,13 +40,13 @@ class StoreMemberModel extends StoreMember {
       'role': role.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'is_deleted': isDeleted?1:0,
     };
   }
+
   Map<String, dynamic> toUpdateMap() {
-    return {
-      'role': role.name,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
+    return toMap()
+      ..remove('store_id')
+      ..remove('member_phone');
   }
 }

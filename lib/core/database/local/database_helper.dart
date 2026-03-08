@@ -68,6 +68,7 @@ class DatabaseHelper {
         currency TEXT NOT NULL,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
+        is_deleted INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (owner_phone) REFERENCES profiles(phone) ON UPDATE CASCADE
         FOREIGN KEY (currency) REFERENCES exchange_rates(currency) ON UPDATE CASCADE
       );
@@ -77,7 +78,7 @@ class DatabaseHelper {
       CREATE TABLE global_products (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        category_id int,
+        category_id INTEGER,
         barcode TEXT UNIQUE,
         created_at TEXT,
         FOREIGN KEY (category_id) REFERENCES categories(category_id)
@@ -91,6 +92,7 @@ class DatabaseHelper {
         role TEXT NOT NULL,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
+        is_deleted INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (store_id) REFERENCES stores(id),
         FOREIGN KEY (member_phone) REFERENCES profiles(phone) ON UPDATE CASCADE,
         PRIMARY KEY (store_id, member_phone)

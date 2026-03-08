@@ -23,5 +23,5 @@ abstract class StoreRepository {
   Future<void> pushMembersChanges();
   Future<void> syncAll(String userPhone);
 
-
+  Future<void> deleteStore(String storeId);
 }
