@@ -1,6 +1,7 @@
 import '../../../../core/database/remote/remote_database_service.dart';
+import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/data/models/sync_state_model.dart';
-import '../models/delete_members_params.dart';
+import '../models/store_member_key.dart';
 import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
@@ -8,26 +9,25 @@ abstract class StoreRemoteDataSource {
   Future<void> createStore(StoreModel store);
   Future<void> updateStore(StoreModel store);
 
-  Future<List<StoreModel>> getUserStores(
-    String userPhone, [
+  Future<List<StoreModel>> getUserStores({
+    required String userPhone,
+    bool isDeleted = true,
     SyncStateModel? lastSync,
-  ]);
+  });
 
-  Future<List<StoreMemberModel>> getMembers(
-    String storeId, [
+  Future<List<StoreMemberModel>> getMembers({
+    required String storeId,
+    bool isDeleted = true,
     SyncStateModel? lastSync,
-  ]);
+  });
 
   Future<void> insertMember(StoreMemberModel member);
 
   Future<void> insertMembers(List<StoreMemberModel> members);
   Future<void> insertStores(List<StoreModel> stores);
 
-  Future<void> deleteMember({
-    required String memberPhone,
-    required String storeId,
-  });
-  Future<void> deleteMembers(List<DeleteMembersParams> params);
+  Future<void> deleteMember(StoreMemberKey key);
+  Future<void> deleteMembers(List<StoreMemberKey> params);
 
   Future<void> deleteStore(String storeId);
   Future<void> deleteStores(List<String> storesIds);
@@ -53,14 +53,16 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   }
 
   @override
-  Future<List<StoreModel>> getUserStores(
-    String userPhone, [
+  Future<List<StoreModel>> getUserStores({
+    required String userPhone,
+    bool isDeleted = true,
     SyncStateModel? lastSync,
-  ]) async {
+  }) async {
     final response = _client.client
         .from('stores')
         .select('*, store_members!inner(*)')
-        .eq('store_members.member_phone', userPhone);
+        .eq('store_members.member_phone', userPhone)
+        .eq('is_deleted', isDeleted.toInt);
 
     final lastSyncDate = lastSync?.lastSync.toIso8601String();
     final result = await (lastSyncDate != null
@@ -71,12 +73,19 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   }
 
   @override
-  Future<List<StoreMemberModel>> getMembers(
-    String storeId, [
+  Future<List<StoreMemberModel>> getMembers({
+    required String storeId,
+    bool isDeleted = true,
     SyncStateModel? lastSync,
-  ]) async {
-    final response =
-        _client.client.from('store_members').select().eq('store_id', storeId);
+  }) async {
+    final response = _client.client
+        .from('store_members')
+        .select()
+        .eq('store_id', storeId)
+        .eq(
+          'is_deleted',
+          isDeleted.toInt,
+        );
 
     final lastSyncDate = lastSync?.lastSync.toIso8601String();
 
@@ -92,26 +101,23 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     await _client.insertRow(table: 'store_members', map: member.toMap());
 
     await _updateStore(member.storeId);
-     }
+  }
 
   @override
-  Future<void> deleteMember({
-    required String memberPhone,
-    required String storeId,
-  }) async {
+  Future<void> deleteMember(StoreMemberKey key) async {
     await _client.update(
       updated: {
         'is_deleted': true,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
       table: 'store_members',
-      whereFilter: {'member_phone': memberPhone, 'store_id': storeId},
+      whereFilter: key.toMap(),
     );
 
     await _client.update(
       updated: {'updated_at': DateTime.now().toUtc().toIso8601String()},
       table: 'stores',
-      whereFilter: {'store_id': storeId},
+      whereFilter: {'store_id': key.storeId},
     );
   }
 
@@ -177,10 +183,8 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   }
 
   @override
-  Future<void> deleteMembers(List<DeleteMembersParams> params) async {
-    final futures = params.map(
-      (m) => deleteMember(memberPhone: m.memberPhone, storeId: m.storeId),
-    );
+  Future<void> deleteMembers(List<StoreMemberKey> params) async {
+    final futures = params.map(deleteMember);
     await Future.wait(futures);
   }
 
@@ -206,8 +210,8 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
 
     await Future.wait(futures);
   }
-  
- @override
+
+  @override
   Future<List<StoreMemberModel>> getMembersForUser(
     String userPhone, [
     SyncStateModel? lastSync,

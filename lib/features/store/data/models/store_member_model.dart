@@ -1,3 +1,4 @@
+import '../../../../core/extensions/extensions.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store_member.dart';
 
@@ -40,7 +41,7 @@ class StoreMemberModel extends StoreMember {
       'role': role.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
-      'is_deleted': isDeleted?1:0,
+      'is_deleted': isDeleted.toInt,
     };
   }
 

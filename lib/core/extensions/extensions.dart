@@ -42,14 +42,13 @@ extension RoutesNavigators on BuildContext {
     );
   }
 
-    Future<T?> pushAndRemoveUntilTo<T extends Object?>(Widget screen) {
+  Future<T?> pushAndRemoveUntilTo<T extends Object?>(Widget screen) {
     return Navigator.pushAndRemoveUntil(
       this,
       MaterialPageRoute(builder: (context) => screen),
       (route) => false,
     );
   }
-
 
   void pop<T extends Object?>([T? result]) {
     Navigator.pop(this, result);
@@ -83,4 +82,8 @@ extension DateFormating on DateTime {
     ];
     return '$day ${months[month - 1]} $year';
   }
+}
+
+extension BoolToInt on bool {
+  int get toInt => this ? 1 : 0;
 }

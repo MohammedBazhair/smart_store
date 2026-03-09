@@ -8,6 +8,7 @@ class GlobalProductModel extends GlobalProduct {
     required super.name,
     required super.barcode,
     required super.createdAt,
+    required super.updatedAt,
   });
 
   factory GlobalProductModel.fromEntity(GlobalProduct product) {
@@ -17,6 +18,7 @@ class GlobalProductModel extends GlobalProduct {
       name: product.name,
       barcode: product.barcode,
       createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
     );
   }
 
@@ -27,6 +29,7 @@ class GlobalProductModel extends GlobalProduct {
       name: map['name'] as String,
       barcode: map['barcode'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
+      updatedAt: DateTime.parse(map['updated_at'] as String),
     );
   }
 
@@ -37,6 +40,7 @@ class GlobalProductModel extends GlobalProduct {
       name: map['product_name'] as String,
       barcode: map['barcode'] as String?,
       createdAt: DateTime.parse(map['product_created_at'] as String),
+      updatedAt: DateTime.parse(map['product_updated_at'] as String),
     );
   }
 
@@ -47,6 +51,7 @@ class GlobalProductModel extends GlobalProduct {
       'name': name,
       'barcode': barcode,
       'created_at': createdAt.toIso8601String(),
+      'updated_at': createdAt.toIso8601String(),
     };
   }
 }

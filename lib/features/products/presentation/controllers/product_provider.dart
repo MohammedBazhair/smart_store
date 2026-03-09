@@ -19,7 +19,9 @@ import 'product_state.dart';
 
 final _productLocalDataSource = Provider((ref) {
   final db = ref.read(localDatabaseServiceProvider);
-  return ProductLocalDataSourceImpl(db);
+  final _sync = ref.read(syncLocalDataSourceProvider);
+
+  return ProductLocalDataSourceImpl(db, _sync);
 });
 
 final _productRemoteDataSource = Provider((ref) {
@@ -33,7 +35,9 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final _local = ref.read(_productLocalDataSource);
   final cache = ref.read(localCacheServiceProvider);
   final _network = ref.read(networkProvider);
-  return ProductRepositoryImpl(_local, _remote, _network, cache);
+  final _sync = ref.read(syncLocalDataSourceProvider);
+
+  return ProductRepositoryImpl(_local, _remote, _network, cache, _sync);
 });
 
 final productQueryProvider = StateProvider.autoDispose<ProductQuery>(

@@ -1,3 +1,4 @@
+import '../../../../core/extensions/extensions.dart';
 import '../../../settings/domain/entities/currence_code.dart';
 import '../../domain/entities/store.dart';
 
@@ -44,7 +45,7 @@ class StoreModel extends Store {
       'currency': currency.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
-      'is_deleted': isDeleted? 1:0,
+      'is_deleted': isDeleted.toInt,
     };
   }
 }

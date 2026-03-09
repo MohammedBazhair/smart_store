@@ -1,9 +1,11 @@
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/data/models/sync_change_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../../user/domain/entities/role.dart';
+import '../models/store_member_key.dart';
 import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
@@ -13,10 +15,16 @@ abstract class StoreLocalDataSource {
   Future<void> updateStore(StoreModel store, [bool isSync = false]);
 
   Future<List<StoreModel>> getUserStores(String userPhone);
-  Future<void> setUserStores(List<StoreModel> stores);
+  Future<void> setUserStores(List<StoreModel> stores, [bool isSync = false]);
 
-  Future<List<StoreMemberModel>> getMembers(String storeId);
-  Future<void> setMembers(List<StoreMemberModel> members);
+  Future<List<StoreMemberModel>> getMembers({
+    required String storeId,
+    bool isDeleted = true,
+  });
+  Future<void> setMembers(
+    List<StoreMemberModel> members, [
+    bool isSync = false,
+  ]);
 
   Future<void> insertStoreMember(
     StoreMemberModel member, [
@@ -26,14 +34,10 @@ abstract class StoreLocalDataSource {
     StoreMemberModel member, [
     bool isSync = false,
   ]);
-  Future<StoreMemberModel?> getStoreMember({
-    required String storeId,
-    required String memberPhone,
-  });
+  Future<StoreMemberModel?> getStoreMember(StoreMemberKey key);
 
   Future<void> deleteStoreMember({
-    required String memberPhone,
-    required String storeId,
+    required StoreMemberKey key,
     bool isSync = false,
   });
 
@@ -81,9 +85,11 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       );
       await _sync.addChange(storeChange);
 
+      final memberKey =
+          StoreMemberKey(storeId: store.id!, memberPhone: member.memberPhone);
       final memberChange = SyncChangeModel(
         tableName: 'store_members',
-        recordId: '${store.id!}|${member.memberPhone}',
+        recordId: memberKey.toJson(),
         operation: SyncOperation.insert,
         updatedAt: DateTime.now().toUtc(),
       );
@@ -112,10 +118,13 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   }
 
   @override
-  Future<List<StoreMemberModel>> getMembers(String storeId) async {
+  Future<List<StoreMemberModel>> getMembers({
+    required String storeId,
+    bool isDeleted = true,
+  }) async {
     final result = await _db.readRowsWhere(
       table: 'store_members',
-      filters: {'store_id': storeId},
+      filters: {'store_id': storeId, 'is_deleted': isDeleted.toInt},
     );
 
     return result.map(StoreMemberModel.fromMap).toList();
@@ -135,9 +144,14 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
 
     if (isSync) return;
 
+    final memberKey = StoreMemberKey(
+      storeId: member.storeId,
+      memberPhone: member.memberPhone,
+    );
+
     final change = SyncChangeModel(
       tableName: 'store_members',
-      recordId: '${member.storeId}|${member.memberPhone}',
+      recordId: memberKey.toJson(),
       operation: SyncOperation.insert,
       updatedAt: DateTime.now().toUtc(),
     );
@@ -147,13 +161,12 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
 
   @override
   Future<void> deleteStoreMember({
-    required String memberPhone,
-    required String storeId,
+    required StoreMemberKey key,
     bool isSync = false,
   }) async {
     await _db.update(
       table: 'store_members',
-      filterWhere: {'member_phone': memberPhone, 'store_id': storeId},
+      filterWhere: key.toMap(),
       updated: {
         'is_deleted': true,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
@@ -164,45 +177,48 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
 
     final syncChange = SyncChangeModel(
       tableName: 'store_members',
-      recordId: '$storeId|$memberPhone',
+      recordId: key.toJson(),
       operation: SyncOperation.delete,
       updatedAt: DateTime.now().toUtc(),
     );
 
     await _sync.addChange(syncChange);
 
-    await _updateStore(storeId);
+    await _updateStore(key.storeId);
   }
 
   @override
   Future<void> setUserStores(
     List<StoreModel> stores, [
-    bool fromServer = false,
+    bool isSync = false,
   ]) async {
     for (final store in stores) {
       final isFound = (await getStore(store.id!)) != null;
 
       if (isFound) {
-        await updateStore(store);
+        await updateStore(store, isSync);
       } else {
-        await createStore(store);
+        await createStore(store, isSync);
       }
     }
   }
 
   @override
-  Future<void> setMembers(List<StoreMemberModel> members) async {
+  Future<void> setMembers(
+    List<StoreMemberModel> members, [
+    bool isSync = false,
+  ]) async {
     for (final member in members) {
-      final isFound = (await getStoreMember(
-            storeId: member.storeId,
-            memberPhone: member.memberPhone,
-          )) !=
-          null;
+      final memberKey = StoreMemberKey(
+        storeId: member.storeId,
+        memberPhone: member.memberPhone,
+      );
+      final isFound = (await getStoreMember(memberKey)) != null;
 
       if (isFound) {
-        await updateStoreMember(member);
+        await updateStoreMember(member, isSync);
       } else {
-        await insertStoreMember(member);
+        await insertStoreMember(member, isFound);
       }
     }
   }
@@ -245,15 +261,12 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   }
 
   @override
-  Future<StoreMemberModel?> getStoreMember({
-    required String storeId,
-    required String memberPhone,
-  }) async {
+  Future<StoreMemberModel?> getStoreMember(StoreMemberKey key) async {
     try {
       final rows = await _db.readWhereArguments(
         table: 'store_members',
         where: 'store_id = ? AND member_phone = ?',
-        whereArgs: [storeId, memberPhone],
+        whereArgs: [key.storeId, key.memberPhone],
       );
 
       final model = StoreMemberModel.fromMap(rows.first);
@@ -280,9 +293,13 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
 
     if (isSync) return;
 
+    final memberKey = StoreMemberKey(
+      storeId: member.storeId,
+      memberPhone: member.memberPhone,
+    );
     final change = SyncChangeModel(
       tableName: 'store_members',
-      recordId: '${member.storeId}|${member.memberPhone}',
+      recordId: memberKey.toJson(),
       operation: SyncOperation.update,
       updatedAt: DateTime.now().toUtc(),
     );

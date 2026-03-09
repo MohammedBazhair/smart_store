@@ -80,7 +80,8 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         category_id INTEGER,
         barcode TEXT UNIQUE,
-        created_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
         FOREIGN KEY (category_id) REFERENCES categories(category_id)
       );
     ''');
@@ -109,6 +110,7 @@ class DatabaseHelper {
         expiry_date TEXT,
         notes TEXT,
         updated_at TEXT NOT NULL,
+        is_deleted INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (product_id) REFERENCES global_products(id),
         FOREIGN KEY (store_id) REFERENCES stores(id),
         FOREIGN KEY (currency) REFERENCES exchange_rates(currency) ON UPDATE CASCADE,

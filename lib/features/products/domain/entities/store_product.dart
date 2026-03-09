@@ -1,4 +1,3 @@
-
 import '../../../settings/domain/entities/currence_code.dart';
 import 'product.dart';
 import 'sub_entities/global_product.dart';
@@ -13,6 +12,7 @@ class StoreProduct extends Product {
     required this.currency,
     this.notes,
     required this.updatedAt,
+    this.isDeleted = false,
   });
 
   factory StoreProduct.fake() {
@@ -37,6 +37,7 @@ class StoreProduct extends Product {
   final CurrencyCode currency;
   final String? notes;
   final DateTime updatedAt;
+  final bool isDeleted;
 
   String get quantityText => quantity?.toString() ?? 'غير محددة';
 
@@ -51,6 +52,7 @@ class StoreProduct extends Product {
     CurrencyCode? currency,
     String? notes,
     DateTime? updatedAt,
+    bool? isDeleted,
   }) {
     return StoreProduct(
       storeId: storeId ?? this.storeId,
@@ -61,11 +63,12 @@ class StoreProduct extends Product {
       currency: currency ?? this.currency,
       notes: notes ?? this.notes,
       updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
   @override
   String toString() {
-    return 'StoreProduct(storeId: $storeId, globalProduct: $globalProduct, price: $price, expiryDate: $expiryDate, quantity: $quantity, currency: $currency, notes: $notes, updatedAt: $updatedAt)';
+    return 'StoreProduct(storeId: $storeId, globalProduct: $globalProduct, price: $price, expiryDate: $expiryDate, quantity: $quantity, currency: $currency, notes: $notes, updatedAt: $updatedAt, isDeleted: $isDeleted)';
   }
 }

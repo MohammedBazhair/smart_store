@@ -10,7 +10,7 @@ import '../../domain/entities/store_member.dart';
 import '../../domain/repositories/store_repository.dart';
 import '../datasource/store_local_data_source.dart';
 import '../datasource/store_remote_data_source.dart';
-import '../models/delete_members_params.dart';
+import '../models/store_member_key.dart';
 import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
@@ -39,7 +39,7 @@ class StoreRepositoryImpl implements StoreRepository {
       final model = StoreModel.fromEntity(newStore);
       await remote.createStore(model);
 
-      await local.createStore(model,true);
+      await local.createStore(model, true);
       return newStore;
     } catch (e) {
       if (e.toString().contains('enough credits')) {
@@ -56,10 +56,10 @@ class StoreRepositoryImpl implements StoreRepository {
     final hasConnection = await connectivityService.hasConnection();
 
     final stores = hasConnection
-        ? await remote.getUserStores(userPhone)
+        ? await remote.getUserStores(userPhone: userPhone, isDeleted: false)
         : await local.getUserStores(userPhone);
 
-    if (hasConnection) await local.setUserStores(stores);
+    if (hasConnection) await local.setUserStores(stores, hasConnection);
 
     return stores;
   }
@@ -68,10 +68,10 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<Set<StoreMember>> getStoreMembers(String storeId) async {
     final hasConnection = await connectivityService.hasConnection();
     final members = hasConnection
-        ? await remote.getMembers(storeId)
-        : await local.getMembers(storeId);
+        ? await remote.getMembers(storeId: storeId, isDeleted: false)
+        : await local.getMembers(storeId: storeId, isDeleted: false);
 
-    if (hasConnection) await local.setMembers(members);
+    if (hasConnection) await local.setMembers(members, hasConnection);
 
     return members.toSet();
   }
@@ -96,17 +96,14 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
-  Future<void> removeStoreMember({
-    required String memberPhone,
-    required String storeId,
-  }) async {
+  Future<void> removeStoreMember(StoreMemberKey key) async {
     final hasConnection = await connectivityService.hasConnection();
 
     if (hasConnection) {
-      await remote.deleteMember(memberPhone: memberPhone, storeId: storeId);
+      await remote.deleteMember(key);
     }
 
-    await local.deleteStoreMember(memberPhone: memberPhone, storeId: storeId,isSync: hasConnection);
+    await local.deleteStoreMember(key: key, isSync: hasConnection);
   }
 
   @override
@@ -163,30 +160,19 @@ class StoreRepositoryImpl implements StoreRepository {
 
     final inserts = <StoreMemberModel>[];
     final updates = <StoreMemberModel>[];
-    final deletes = <DeleteMembersParams>[];
+    final deletes = <StoreMemberKey>[];
 
     for (final change in membersChanges) {
-      final ids = change.recordId.split('|');
-      final storeId = ids[0];
-      final memberPhone = ids[1];
-
+      final memberKey = StoreMemberKey.fromJson(change.recordId);
       switch (change.operation) {
         case SyncOperation.delete:
-          deletes.add(
-            DeleteMembersParams(storeId: storeId, memberPhone: memberPhone),
-          );
+          deletes.add(memberKey);
 
         case SyncOperation.update:
-          final member = await local.getStoreMember(
-            storeId: storeId,
-            memberPhone: memberPhone,
-          );
+          final member = await local.getStoreMember(memberKey);
           if (member != null) updates.add(member);
         case SyncOperation.insert:
-          final member = await local.getStoreMember(
-            storeId: storeId,
-            memberPhone: memberPhone,
-          );
+          final member = await local.getStoreMember(memberKey);
           if (member != null) inserts.add(member);
       }
     }
@@ -212,16 +198,21 @@ class StoreRepositoryImpl implements StoreRepository {
     final lastSyncStores = await syncLocal.getLastSync('stores');
     final lastSyncMembers = await syncLocal.getLastSync('store_members');
 
-    final stores = await remote.getUserStores(userPhone, lastSyncStores);
-    await local.setUserStores(stores);
+    final stores = await remote.getUserStores(
+      userPhone: userPhone,
+      lastSync: lastSyncStores,
+    );
+    await local.setUserStores(stores, true);
 
     final members = await remote.getMembersForUser(userPhone, lastSyncMembers);
-    await local.setMembers(members);
+    await local.setMembers(members, true);
 
     final storesSyncState =
         SyncStateModel(tableName: 'stores', lastSync: DateTime.now().toUtc());
-    final membersSyncState =
-        SyncStateModel(tableName: 'store_members', lastSync: DateTime.now().toUtc());
+    final membersSyncState = SyncStateModel(
+      tableName: 'store_members',
+      lastSync: DateTime.now().toUtc(),
+    );
 
     await syncLocal.saveLastSync(storesSyncState);
     await syncLocal.saveLastSync(membersSyncState);

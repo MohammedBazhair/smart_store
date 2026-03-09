@@ -4,6 +4,7 @@ import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../settings/domain/entities/currence_code.dart';
 import '../../../user/domain/entities/role.dart';
+import '../../data/models/store_member_key.dart';
 import '../../domain/entities/store.dart';
 import '../../domain/entities/store_member.dart';
 import 'store_provider.dart';
@@ -26,12 +27,11 @@ class StoreController extends Notifier<StoreEventState> {
     final repo = ref.read(storeRepositoryProvider);
     final profile = ref.read(userControllerProvider).profile;
     final stores = await repo.getUserStores(profile.phone ?? '');
-    final nonDeletedStores = stores.where((s) => !s.isDeleted);
 
-    final futures = nonDeletedStores.map((s) async {
+    final futures = stores.map((s) async {
       final members = await repo.getStoreMembers(s.id!);
-      final nonDeletedMembers = members.where((m) => !m.isDeleted).toSet();
-      final storeWithMembers = StoreWithMembers(store: s, members: nonDeletedMembers);
+      final storeWithMembers =
+          StoreWithMembers(store: s, members: members);
       return MapEntry(s.id!, storeWithMembers);
     });
 
@@ -78,10 +78,11 @@ class StoreController extends Notifier<StoreEventState> {
   Future<void> removeStoreMember(String phoneNumber) async {
     try {
       final repo = ref.read(storeRepositoryProvider);
-      await repo.removeStoreMember(
-        memberPhone: phoneNumber,
+      final memberKey = StoreMemberKey(
         storeId: state.state.selectedStoreId!,
+        memberPhone: phoneNumber,
       );
+      await repo.removeStoreMember(memberKey);
     } on AppException catch (e) {
       state = ErrorStoreEvent(state: state.state, error: e.message);
     } catch (e) {

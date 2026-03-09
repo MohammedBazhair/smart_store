@@ -1,3 +1,4 @@
+import '../../../../core/extensions/extensions.dart';
 import '../../../settings/domain/entities/currence_code.dart';
 import '../../domain/entities/store_product.dart';
 import 'global_product_model.dart';
@@ -12,6 +13,7 @@ class StoreProductModel extends StoreProduct {
     required super.currency,
     required super.globalProduct,
     super.notes,
+    super.isDeleted,
   });
 
   factory StoreProductModel.fromEntity(StoreProduct product) {
@@ -24,6 +26,7 @@ class StoreProductModel extends StoreProduct {
       updatedAt: product.updatedAt,
       currency: product.currency,
       price: product.price,
+      isDeleted: product.isDeleted,
     );
   }
 
@@ -37,6 +40,7 @@ class StoreProductModel extends StoreProduct {
       updatedAt: DateTime.parse(map['updated_at'] as String),
       currency: CurrencyCode.values.byName(map['currency']),
       price: map['price'] as num,
+      isDeleted: map['is_deleted'] == 1,
     );
   }
 
@@ -49,7 +53,8 @@ class StoreProductModel extends StoreProduct {
       expiryDate: DateTime.tryParse(map['expiry_date']),
       notes: map['notes'],
       globalProduct: GlobalProductModel.fromLocal(map),
-      updatedAt: DateTime.parse(map['updated_at']),
+      updatedAt: DateTime.parse(map['store_updated_at']),
+      isDeleted: map['store_is_deleted'] == 1,
     );
   }
 
@@ -63,6 +68,7 @@ class StoreProductModel extends StoreProduct {
       'currency': currency.name,
       'notes': notes,
       'updated_at': updatedAt.toIso8601String(),
+      'is_deleted': isDeleted.toInt,
     };
   }
 }

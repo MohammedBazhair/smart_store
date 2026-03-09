@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import '../category.dart';
 import '../product.dart';
 
@@ -9,6 +8,8 @@ class GlobalProduct extends Product {
     required this.name,
     required this.barcode,
     required this.createdAt,
+    required this.updatedAt,
+    this.isDeleted = false,
   });
 
   factory GlobalProduct.fake() {
@@ -17,6 +18,7 @@ class GlobalProduct extends Product {
       name: 'Fake Product',
       barcode: 'fake_barcode',
       createdAt: DateTime.now().toUtc(),
+      updatedAt: DateTime.now().toUtc(),
     );
   }
 
@@ -25,6 +27,8 @@ class GlobalProduct extends Product {
   final String name;
   final String? barcode;
   final DateTime createdAt;
+  final DateTime updatedAt;
+  final bool isDeleted;
 
   GlobalProduct copyWith({
     String? id,
@@ -32,6 +36,8 @@ class GlobalProduct extends Product {
     String? name,
     String? barcode,
     DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isDeleted,
   }) {
     return GlobalProduct(
       id: id ?? this.id,
@@ -39,11 +45,13 @@ class GlobalProduct extends Product {
       name: name ?? this.name,
       barcode: barcode ?? this.barcode,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
   @override
   String toString() {
-    return 'GlobalProduct(id: $id, category: $category, name: $name, barcode: $barcode, createdAt: $createdAt)';
+    return 'GlobalProduct(id: $id, category: $category, name: $name, barcode: $barcode, createdAt: $createdAt, , updatedAt: $updatedAt)';
   }
 }

@@ -1,6 +1,8 @@
 import '../../../../core/constants/typedef.dart';
 import '../../../../errors/result.dart';
+import '../../data/models/store_product_key.dart';
 import '../entities/category.dart';
+import '../entities/product.dart';
 import '../entities/store_product.dart';
 import '../entities/sub_entities/global_product.dart';
 
@@ -8,12 +10,9 @@ abstract class ProductRepository {
   Future<List<Category>> getAllCategories();
   Future<ProductsByIdentifier> getStoreProducts(String storeId);
 
-  Future<List<GlobalProduct>> getProductsGlobal();
+  Future<List<GlobalProduct>> getGlobalProducts();
 
-  Future<Result<StoreProduct>> getProductById({
-    required String productId,
-    required String storeId,
-  });
+  Future<StoreProduct?> getStoreProductById(StoreProductKey key);
 
   Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
 
@@ -31,8 +30,13 @@ abstract class ProductRepository {
 
   Future<Result<StoreProduct>> addProduct(StoreProduct product);
 
-  Future<Result<void>> updateProduct(StoreProduct product);
+  Future<Result<void>> updateProduct(Product product);
 
   Future<void> initDataFromNetwork();
 
+  Future<void> pushGlobalProductsChanges();
+
+  Future<void> pushStoreProductsChanges();
+
+  Future<void> syncAll(String storeId);
 }

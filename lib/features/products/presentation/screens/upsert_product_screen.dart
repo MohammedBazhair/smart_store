@@ -123,6 +123,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
       name: _nameController.text.trim(),
       barcode: _barcodeController.text,
       createdAt: now,
+      updatedAt: now,
     );
     return StoreProduct(
       storeId: storeId,
@@ -301,7 +302,6 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
           ),
         ),
       ),
-     
     );
   }
 }

@@ -5,6 +5,7 @@ import '../../../../core/constants/typedef.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../store/presentation/controller/store_provider.dart';
+import '../../data/models/store_product_key.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/product_query.dart';
@@ -141,15 +142,13 @@ class ProductManagementController extends Notifier<ProductManagementState> {
         storeControllerProvider.select((s) => s.state.selectedStoreId),
       );
 
-      final result = await productRepo.getProductById(
-        productId: productId,
-        storeId: storeId!,
-      );
+      final productKey =
+          StoreProductKey(storeId: storeId!, productId: productId);
+      final result = await productRepo.getStoreProductById(productKey);
 
-      if (result is SuccessState<StoreProduct>) return result.data;
 
-      return null;
-    } on Exception catch (e) {
+      return result;
+    }  catch (e) {
       Logger.debugLog(error: e);
       return null;
     }

@@ -7,7 +7,7 @@ abstract interface class LocalDatabaseService {
     required String table,
   });
 
-  Future<void> insertRows({required RowList rows, required String table});
+  Future<void> insertRows({required RowList rows, required String table, ConflictAlgorithm? conflictAlgorithm});
 
   Future<Map<String, dynamic>> readRow({
     required String id,
@@ -136,11 +136,12 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
   Future<void> insertRows({
     required RowList rows,
     required String table,
+     ConflictAlgorithm? conflictAlgorithm,
   }) async {
     final batch = _database.batch();
 
     for (final map in rows) {
-      batch.insert(table, map, conflictAlgorithm: ConflictAlgorithm.replace);
+      batch.insert(table, map, conflictAlgorithm: conflictAlgorithm);
     }
 
     await batch.commit(noResult: true);
