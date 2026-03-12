@@ -4,7 +4,6 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/network/connectivity_service.dart';
-import '../../../../core/shared/data/models/sync_state_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../domain/entities/get_profile_params.dart';
 import '../../domain/entities/profile.dart';
@@ -24,7 +23,6 @@ class UserRepositoryImpl implements UserRepository {
   final UserLocalDataSource _localDataSource;
   final SyncLocalDataSource _sync;
   final ConnectivityService _connectivityService;
-
   final GoTrueClient _auth;
 
   @override
@@ -92,11 +90,5 @@ class UserRepositoryImpl implements UserRepository {
 
     await _localDataSource.upsertProfile(remoteProfile, true);
 
-    final state = SyncStateModel(
-      tableName: AppConstants.profilesTable,
-      lastSynced: DateTime.now().toUtc(),
-    );
-
-    await _sync.saveLastSynced(state);
   }
 }

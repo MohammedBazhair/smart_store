@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../constants/app_constants.dart';
+import '../../constants/log.dart';
 
 /// مساعد قاعدة البيانات
 class DatabaseHelper {
@@ -19,9 +20,9 @@ class DatabaseHelper {
 
   /// تهيئة قاعدة البيانات
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getExternalStorageDirectory();
-    final path = join(dbPath!.path, filePath);
-
+    final path = await getDatabaseFilePath();
+    Logger.debugLog(message: path);
+    
     return openDatabase(
       path,
       version: AppConstants.databaseVersion,
@@ -165,7 +166,13 @@ class DatabaseHelper {
   }
 
   Future<String> getDatabaseFilePath() async {
-    final dbPath = await getDatabasesPath();
-    return join(dbPath, AppConstants.databaseName);
+    try {
+      final dbPath = await getExternalStorageDirectory();
+      if (dbPath == null) throw Exception();
+      return join(dbPath.path, AppConstants.databaseName);
+    } catch (e) {
+      final dbPath = await getDatabasesPath();
+      return join(dbPath, AppConstants.databaseName);
+    }
   }
 }
