@@ -1,6 +1,6 @@
-import 'package:flutter/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/database/remote/remote_database_service.dart';
 import '../../domain/entities/profile.dart';
@@ -17,11 +17,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   UserRemoteDataSourceImpl(
     this._client,
     this._remoteDatabase,
-    this._locaCache,
+    this._localCache,
   );
   final SupabaseClient _client;
   final RemoteDatabaseService _remoteDatabase;
-  final LocalCacheService _locaCache;
+  final LocalCacheService _localCache;
 
   @override
   Future<ProfileEntity> readProfile(String? userId) async {
@@ -34,9 +34,9 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         table: AppConstants.profilesTable,
       );
 
-      return ProfileEntity.fromMap(map);
+      return  ProfileEntity.fromMap(map);
     } catch (e) {
-      debugPrint(e.toString());
+      Logger.debugLog(error: e);
 
       rethrow;
     }
@@ -49,7 +49,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     final updated = profile.copyWith(updatedAt: DateTime.now().toUtc());
 
     await _remoteDatabase.update(
-      updated: updated.toMap(),
+      updated: updated.toMapUpdate(),
       whereFilter: {'id': profile.userId},
       table: AppConstants.profilesTable,
     );
@@ -60,7 +60,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     final response = await _remoteDatabase.client
         .from('profiles')
         .select('phone')
-        .eq('phone', phoneNumber);
+        .eq('phone', phoneNumber).limit(1);
     return response.isNotEmpty;
   }
 }

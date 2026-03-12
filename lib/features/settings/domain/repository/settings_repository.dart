@@ -13,6 +13,9 @@ abstract class SettingsRepository {
   /// تحديث الإعدادات
   Future<Result<void>> updateSettings(Settings settings);
 
-  Future<void> changeDefaultCurrency(CurrencyCode currence, String storeId);
+  Future<void> changeDefaultCurrency({
+    required CurrencyCode currency,
+    required String storeId,
+  });
 
 }

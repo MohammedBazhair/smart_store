@@ -80,15 +80,23 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<void> changeDefaultCurrency(
-    CurrencyCode currency,
-    String storeId,
-  ) async {
-    if (await _connectivityService.hasConnection()) {
-      await _remoteSettings.changeDefaultCurrency(currency, storeId);
+  Future<void> changeDefaultCurrency({
+    required CurrencyCode currency,
+    required String storeId,
+  }) async {
+    final hasConnection = await _connectivityService.hasConnection();
+
+    if (hasConnection) {
+      await _remoteSettings.changeDefaultCurrency(
+        currency: currency,
+        storeId: storeId,
+      );
     }
 
-    await _localSettings.changeDefaultCurrency(currency, storeId);
-
+    await _localSettings.changeDefaultCurrency(
+      currency: currency,
+      storeId: storeId,
+      skipLocalTracking: hasConnection,
+    );
   }
 }

@@ -14,6 +14,7 @@ class ProfileEntity {
   });
 
   factory ProfileEntity.fromMap(Map<String, dynamic> map) {
+    if (map.isEmpty) return ProfileEntity.guest();
     return ProfileEntity(
       userId: map['id'] as String,
       phone: map['phone'] as String?,
@@ -34,7 +35,6 @@ class ProfileEntity {
     return ProfileEntity(
       userId: '',
       username: '',
-      updatedAt: DateTime.now().toUtc(),
       accountStatus: AccountStatus.pending,
       credits: 0,
     );
@@ -80,6 +80,11 @@ class ProfileEntity {
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
+  }
+
+  Map<String, dynamic> toMapUpdate() {
+    final map = toMap()..remove('id');
+    return map;
   }
 
   String toJson() => jsonEncode(toMap());

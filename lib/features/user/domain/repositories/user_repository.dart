@@ -12,4 +12,9 @@ abstract interface class UserRepository {
   Future<void> updateProfile(ProfileEntity profile);
 
   Future<bool> isPhoneSignUp(String phoneNumber);
+
+
+  Future<void> pushProfileChanges();
+  Future<void> syncProfile();
+
 }

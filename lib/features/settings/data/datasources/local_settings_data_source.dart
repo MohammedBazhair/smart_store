@@ -1,6 +1,9 @@
+import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/shared/data/models/sync_change_model.dart';
+import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../domain/entities/currence_code.dart';
 import '../models/exchange_rate_model.dart';
 import '../models/settings_model.dart';
@@ -12,14 +15,19 @@ abstract class LocalSettingsDataSource {
 
   Future<void> setSettings(SettingsModel settings);
 
-  Future<void> changeDefaultCurrency(CurrencyCode currency, String storeId);
+  Future<void> changeDefaultCurrency({
+    required CurrencyCode currency,
+    required String storeId,
+    bool skipLocalTracking = false,
+  });
 }
 
 class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
-  LocalSettingsDataSourceImpl(this._localDatabase, this._cache);
+  LocalSettingsDataSourceImpl(this._localDatabase, this._cache, this._sync);
 
   final LocalDatabaseService _localDatabase;
   final LocalCacheService _cache;
+  final SyncLocalDataSource _sync;
 
   @override
   Future<List<ExchangeRateModel>> getExchangeRates() async {
@@ -52,10 +60,11 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
   }
 
   @override
-  Future<void> changeDefaultCurrency(
-    CurrencyCode currency,
-    String storeId,
-  ) async {
+  Future<void> changeDefaultCurrency({
+    required CurrencyCode currency,
+    required String storeId,
+    bool skipLocalTracking = false,
+  }) async {
     await _localDatabase.update(
       updated: {
         'currency': currency.name,
@@ -64,5 +73,14 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
       filterWhere: {'id': storeId},
       table: 'stores',
     );
+    
+    if (skipLocalTracking) return;
+    final change = SyncChangeModel(
+      tableName: 'stores',
+      recordId: storeId,
+      operation: SyncOperation.update,
+      updatedAt: DateTime.now().toUtc(),
+    );
+    await _sync.addChange(change);
   }
 }

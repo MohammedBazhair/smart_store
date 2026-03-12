@@ -5,7 +5,10 @@ import '../models/exchange_rate_model.dart';
 abstract class RemoteSettingsDataSource {
   Future<List<ExchangeRateModel>> getExchangeRates();
 
-  Future<void> changeDefaultCurrency(CurrencyCode currency, String storeId);
+  Future<void> changeDefaultCurrency({
+    required CurrencyCode currency,
+    required String storeId,
+  });
 }
 
 class RemoteSettingsDataSourceImpl implements RemoteSettingsDataSource {
@@ -23,10 +26,10 @@ class RemoteSettingsDataSourceImpl implements RemoteSettingsDataSource {
   }
 
   @override
-  Future<void> changeDefaultCurrency(
-    CurrencyCode currency,
-    String storeId,
-  ) async {
+  Future<void> changeDefaultCurrency({
+    required CurrencyCode currency,
+    required String storeId,
+  }) async {
     await _remoteDatabase.update(
       updated: {
         'currency': currency.name,

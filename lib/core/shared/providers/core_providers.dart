@@ -57,15 +57,25 @@ final authRemoteDataSourceProvider = Provider((ref) {
 final userLocalDataSourceProvider = Provider((ref) {
   final localCache = ref.read(localCacheServiceProvider);
   final localDatabase = ref.read(localDatabaseServiceProvider);
-  return UserLocalDataSourceImpl(localDatabase, localCache);
+  final _sync = ref.read(syncLocalDataSourceProvider);
+
+  return UserLocalDataSourceImpl(localDatabase, localCache, _sync);
 });
 
 final userRepositoryProvider = Provider((ref) {
   final auth = ref.read(supabaseAuthProvider);
   final userRemoteDataSource = ref.read(userRemoteDataSourceProvider);
   final userLocalDataSource = ref.read(userLocalDataSourceProvider);
+  final _sync = ref.read(syncLocalDataSourceProvider);
+  final _connection = ref.read(networkProvider);
 
-  return UserRepositoryImpl(userRemoteDataSource, userLocalDataSource, auth);
+  return UserRepositoryImpl(
+    userRemoteDataSource,
+    userLocalDataSource,
+    auth,
+    _sync,
+    _connection,
+  );
 });
 
 final remoteDatabaseServiceProvider = Provider((ref) {
@@ -82,7 +92,6 @@ final syncLocalDataSourceProvider = Provider((ref) {
   final _db = ref.read(localDatabaseServiceProvider);
   return SyncLocalDataSourceImpl(_db);
 });
-
 
 final localCacheServiceProvider = Provider((ref) {
   final prefs = ref.read(sharedPreferencesProvider);
@@ -102,7 +111,7 @@ final userRemoteDataSourceProvider = Provider((ref) {
 
 final _userControllerProvider = Provider((ref) {
   final repo = ref.read(userRepositoryProvider);
-  
+
   return UserController(repo);
 });
 

@@ -12,9 +12,9 @@ abstract class SyncLocalDataSource {
 
   Future<void> clearTablesChanges(String table);
 
-  Future<void> savelastSynced(SyncStateModel state);
+  Future<void> saveLastSynced(SyncStateModel state);
 
-  Future<SyncStateModel?> getlastSynced(String tableName);
+  Future<SyncStateModel?> getLastSynced(String tableName);
 }
 
 class SyncLocalDataSourceImpl implements SyncLocalDataSource {
@@ -92,8 +92,8 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
   }
 
   @override
-  Future<void> savelastSynced(SyncStateModel state) async {
-    final existing = await getlastSynced(state.tableName);
+  Future<void> saveLastSynced(SyncStateModel state) async {
+    final existing = await getLastSynced(state.tableName);
 
     if (existing != null) {
       await _db.update(
@@ -110,7 +110,7 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
   }
 
   @override
-  Future<SyncStateModel?> getlastSynced(String tableName) async {
+  Future<SyncStateModel?> getLastSynced(String tableName) async {
     final maps = await _db.readRowsWhere(
       table: 'sync_state',
       filters: {

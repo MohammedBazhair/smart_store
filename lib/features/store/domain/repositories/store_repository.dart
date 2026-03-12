@@ -5,7 +5,7 @@ import '../entities/store_member.dart';
 abstract class StoreRepository {
   Future<Store> createStore(Store store);
 
-  Future<List<Store>> getUserStores(String userPhone, );
+  Future<List<Store>> getUserStores(String userPhone);
 
   Future<Set<StoreMember>> getStoreMembers(String storeId);
 

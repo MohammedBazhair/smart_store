@@ -14,7 +14,8 @@ final remoteSettingDataSourceProvider = Provider((ref) {
 final localSettingDataSourceProvider = Provider((ref) {
   final _localDb = ref.read(localDatabaseServiceProvider);
   final _cache = ref.read(localCacheServiceProvider);
-  return LocalSettingsDataSourceImpl(_localDb,_cache);
+  final _sync = ref.read(syncLocalDataSourceProvider);
+  return LocalSettingsDataSourceImpl(_localDb, _cache, _sync);
 });
 
 final settingsRepositoryProvider = Provider((ref) {

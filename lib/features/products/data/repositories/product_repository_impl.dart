@@ -322,8 +322,8 @@ class ProductRepositoryImpl implements ProductRepository {
     await pushGlobalProductsChanges();
     await pushStoreProductsChanges();
 
-    final lastGlobalSync = await _sync.getlastSynced('global_products');
-    final lastStoreProductsSync = await _sync.getlastSynced('store_products');
+    final lastGlobalSync = await _sync.getLastSynced('global_products');
+    final lastStoreProductsSync = await _sync.getLastSynced('store_products');
 
     final globalProducts =
         await _remoteDatabase.fetchGlobalProducts(lastSynced: lastGlobalSync);
@@ -343,7 +343,7 @@ class ProductRepositoryImpl implements ProductRepository {
     final newLastStoreProductsSync =
         SyncStateModel(tableName: 'store_products', lastSynced: newDate);
 
-    await _sync.savelastSynced(newLastGlobalSync);
-    await _sync.savelastSynced(newLastStoreProductsSync);
+    await _sync.saveLastSynced(newLastGlobalSync);
+    await _sync.saveLastSynced(newLastStoreProductsSync);
   }
 }

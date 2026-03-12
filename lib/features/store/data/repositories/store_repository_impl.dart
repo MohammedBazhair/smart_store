@@ -57,7 +57,10 @@ class StoreRepositoryImpl implements StoreRepository {
 
     final stores = hasConnection
         ? await remote.getUserStores(userPhone: userPhone, isDeleted: false)
-        : await local.getUserStores(userPhone:userPhone,includeDeleted: false);
+        : await local.getUserStores(
+            userPhone: userPhone,
+            includeDeleted: false,
+          );
 
     if (hasConnection) await local.upsertStores(stores, hasConnection);
 
@@ -195,8 +198,8 @@ class StoreRepositoryImpl implements StoreRepository {
     await pushStoresChanges();
     await pushMembersChanges();
 
-    final lastSyncedStores = await syncLocal.getlastSynced('stores');
-    final lastSyncedMembers = await syncLocal.getlastSynced('store_members');
+    final lastSyncedStores = await syncLocal.getLastSynced('stores');
+    final lastSyncedMembers = await syncLocal.getLastSynced('store_members');
 
     final stores = await remote.getUserStores(
       userPhone: userPhone,
@@ -215,8 +218,8 @@ class StoreRepositoryImpl implements StoreRepository {
       lastSynced: DateTime.now().toUtc(),
     );
 
-    await syncLocal.savelastSynced(storesSyncState);
-    await syncLocal.savelastSynced(membersSyncState);
+    await syncLocal.saveLastSynced(storesSyncState);
+    await syncLocal.saveLastSynced(membersSyncState);
   }
 
   @override

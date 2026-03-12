@@ -1,69 +1,80 @@
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/enums.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/shared/data/models/sync_change_model.dart';
+import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../domain/entities/profile.dart';
 
 abstract interface class UserLocalDataSource {
-  Future<void> saveProfile(ProfileEntity profile);
-  Future<ProfileEntity> readProfile();
+  Future<void> upsertProfile(
+    ProfileEntity profile, [
+    bool skipLocalTracking = false,
+  ]);
+  Future<ProfileEntity> readProfile([String? userId]);
 }
 
 class UserLocalDataSourceImpl implements UserLocalDataSource {
-  UserLocalDataSourceImpl(this._localService, this._cacheService);
+  UserLocalDataSourceImpl(this._localService, this._cacheService, this._sync);
 
   final LocalDatabaseService _localService;
   final LocalCacheService _cacheService;
+  final SyncLocalDataSource _sync;
 
   @override
-  Future<void> saveProfile(ProfileEntity profile) async {
+  Future<void> upsertProfile(
+    ProfileEntity profile, [
+    bool skipLocalTracking = false,
+  ]) async {
     await _cacheService.setString(
       key: AppConstants.profileUserIdKey,
       value: profile.userId,
     );
 
-    final row = await _localService.readRow(
+    final existingRow = await _localService.readRow(
       id: profile.userId,
       column: 'id',
       table: AppConstants.profilesTable,
     );
 
-    final map = profile.toMap();
+    final isNew = existingRow.isEmpty;
 
-    if (row.isEmpty) {
+    if (isNew) {
       await _localService.insertRow(
-        map: map,
+        map: profile.toMap(),
         table: AppConstants.profilesTable,
       );
-      return;
+    } else {
+      await _localService.update(
+        filterWhere: {'id': profile.userId},
+        updated: profile.toMapUpdate(),
+        table: AppConstants.profilesTable,
+      );
     }
 
-    map.remove('id');
+    if (skipLocalTracking) return;
 
-    await _localService.update(
-      filterWhere: {
-        'id': profile.userId,
-      },
-      updated: map,
-      table: AppConstants.profilesTable,
+    final change = SyncChangeModel(
+      tableName: AppConstants.profilesTable,
+      recordId: profile.userId,
+      operation: isNew ? SyncOperation.insert : SyncOperation.update,
+      updatedAt: DateTime.now().toUtc(),
     );
-
-    await _cacheService.setString(
-      key: AppConstants.profileUserIdKey,
-      value: profile.userId,
-    );
+    await _sync.addChange(change);
   }
 
   @override
-  Future<ProfileEntity> readProfile() async {
-    final id = _cacheService.getString(key: AppConstants.profileUserIdKey);
+  Future<ProfileEntity> readProfile([String? userId]) async {
+    final id =
+        userId ?? _cacheService.getString(key: AppConstants.profileUserIdKey);
     if (id == null) return ProfileEntity.guest();
 
-    final raw = await _localService.readRow(
+    final map = await _localService.readRow(
       id: id,
       column: 'id',
       table: AppConstants.profilesTable,
     );
 
-    return ProfileEntity.fromMap(raw);
+    return ProfileEntity.fromMap(map);
   }
 }

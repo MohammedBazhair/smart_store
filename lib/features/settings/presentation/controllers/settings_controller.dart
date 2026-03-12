@@ -35,7 +35,7 @@ class SettingsController extends AsyncNotifier<Settings> {
 
       final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
       final repository = ref.read(settingsRepositoryProvider);
-      await repository.changeDefaultCurrency(currency, storeId);
+      await repository.changeDefaultCurrency(currency: currency, storeId: storeId);
       final settings = state.requireValue.copyWith(defaultCurrency: currency);
       await updateSettings(settings);
       return const SuccessState(true);
