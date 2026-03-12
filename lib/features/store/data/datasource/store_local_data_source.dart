@@ -108,7 +108,6 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     required String userPhone,
     bool includeDeleted = true,
   }) async {
-    const queryIsDeleted = ' AND s.is_deleted = 0 AND m.is_deleted = 0';
     final query = StringBuffer('''
         SELECT s.*
         FROM stores s
@@ -117,7 +116,9 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         WHERE m.member_phone = ?
     ''');
 
-    if (!includeDeleted) query.write(queryIsDeleted);
+    if (!includeDeleted) {
+      query.write(' AND s.is_deleted = 0 AND m.is_deleted = 0');
+    }
 
     final rows = await _db.rawQuery(
       query: query.toString(),
