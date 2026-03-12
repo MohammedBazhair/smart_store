@@ -1,7 +1,6 @@
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/local_database_service.dart';
-import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/data/models/sync_change_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../../user/domain/entities/role.dart';
@@ -10,38 +9,40 @@ import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
 abstract class StoreLocalDataSource {
-  Future<void> createStore(StoreModel store, [bool isSync = false]);
+  Future<void> addStore(StoreModel store, [bool skipLocalTracking = false]);
   Future<StoreModel?> getStore(String storeId);
-  Future<void> updateStore(StoreModel store, [bool isSync = false]);
-
-  Future<List<StoreModel>> getUserStores(String userPhone);
-  Future<void> setUserStores(List<StoreModel> stores, [bool isSync = false]);
+  Future<void> updateStore(StoreModel store, [bool skipLocalTracking = false]);
+  Future<void> removeStore(String storeId, [bool skipLocalTracking = false]);
+  Future<List<StoreModel>> getUserStores({
+    required String userPhone,
+    bool includeDeleted = true,
+  });
+  Future<void> upsertStores(
+    List<StoreModel> stores, [
+    bool skipLocalTracking = false,
+  ]);
 
   Future<List<StoreMemberModel>> getMembers({
     required String storeId,
-    bool isDeleted = true,
+    bool includeDeleted = true,
   });
-  Future<void> setMembers(
-    List<StoreMemberModel> members, [
-    bool isSync = false,
-  ]);
-
   Future<void> insertStoreMember(
     StoreMemberModel member, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]);
   Future<void> updateStoreMember(
     StoreMemberModel member, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]);
-  Future<StoreMemberModel?> getStoreMember(StoreMemberKey key);
-
+  Future<void> upsertMembers(
+    List<StoreMemberModel> members, [
+    bool skipLocalTracking = false,
+  ]);
   Future<void> deleteStoreMember({
     required StoreMemberKey key,
-    bool isSync = false,
+    bool skipLocalTracking = false,
   });
-
-  Future<void> deleteStore(String storeId, [bool isSync = false]);
+  Future<StoreMemberModel?> getStoreMember(StoreMemberKey key);
 }
 
 class StoreLocalDataSourceImpl implements StoreLocalDataSource {
@@ -59,7 +60,10 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   }
 
   @override
-  Future<void> createStore(StoreModel store, [bool isSync = false]) async {
+  Future<void> addStore(
+    StoreModel store, [
+    bool skipLocalTracking = false,
+  ]) async {
     try {
       final member = StoreMemberModel(
         memberPhone: store.ownerPhone,
@@ -75,7 +79,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         await t.insert('store_members', member.toMap());
       });
 
-      if (isSync) return;
+      if (skipLocalTracking) return;
 
       final storeChange = SyncChangeModel(
         tableName: 'stores',
@@ -100,17 +104,23 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   }
 
   @override
-  Future<List<StoreModel>> getUserStores(String userPhone) async {
-    final rows = await _db.rawQuery(
-      query: '''
+  Future<List<StoreModel>> getUserStores({
+    required String userPhone,
+    bool includeDeleted = true,
+  }) async {
+    const queryIsDeleted = ' AND s.is_deleted = 0 AND m.is_deleted = 0';
+    final query = StringBuffer('''
         SELECT s.*
         FROM stores s
         JOIN store_members m
         ON s.id = m.store_id
         WHERE m.member_phone = ?
-        AND s.is_deleted = 0
-        AND m.is_deleted = 0
-    ''',
+    ''');
+
+    if (!includeDeleted) query.write(queryIsDeleted);
+
+    final rows = await _db.rawQuery(
+      query: query.toString(),
       arguments: [userPhone],
     );
 
@@ -120,20 +130,25 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   @override
   Future<List<StoreMemberModel>> getMembers({
     required String storeId,
-    bool isDeleted = true,
+    bool includeDeleted = true,
   }) async {
-    final result = await _db.readRowsWhere(
+    final filters = {
+      'store_id': storeId,
+      if (!includeDeleted) 'is_deleted': 0,
+    };
+
+    final rows = await _db.readRowsWhere(
       table: 'store_members',
-      filters: {'store_id': storeId, 'is_deleted': isDeleted.toInt},
+      filters: filters,
     );
 
-    return result.map(StoreMemberModel.fromMap).toList();
+    return rows.map(StoreMemberModel.fromMap).toList();
   }
 
   @override
   Future<void> insertStoreMember(
     StoreMemberModel member, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]) async {
     await _db.insertRow(
       table: 'store_members',
@@ -142,7 +157,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
 
     await _updateStore(member.storeId);
 
-    if (isSync) return;
+    if (skipLocalTracking) return;
 
     final memberKey = StoreMemberKey(
       storeId: member.storeId,
@@ -162,7 +177,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   @override
   Future<void> deleteStoreMember({
     required StoreMemberKey key,
-    bool isSync = false,
+    bool skipLocalTracking = false,
   }) async {
     await _db.update(
       table: 'store_members',
@@ -173,7 +188,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       },
     );
 
-    if (isSync) return;
+    if (skipLocalTracking) return;
 
     final syncChange = SyncChangeModel(
       tableName: 'store_members',
@@ -188,25 +203,25 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   }
 
   @override
-  Future<void> setUserStores(
+  Future<void> upsertStores(
     List<StoreModel> stores, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]) async {
     for (final store in stores) {
       final isFound = (await getStore(store.id!)) != null;
 
       if (isFound) {
-        await updateStore(store, isSync);
+        await updateStore(store, skipLocalTracking);
       } else {
-        await createStore(store, isSync);
+        await addStore(store, skipLocalTracking);
       }
     }
   }
 
   @override
-  Future<void> setMembers(
+  Future<void> upsertMembers(
     List<StoreMemberModel> members, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]) async {
     for (final member in members) {
       final memberKey = StoreMemberKey(
@@ -216,7 +231,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       final isFound = (await getStoreMember(memberKey)) != null;
 
       if (isFound) {
-        await updateStoreMember(member, isSync);
+        await updateStoreMember(member, skipLocalTracking);
       } else {
         await insertStoreMember(member, isFound);
       }
@@ -226,7 +241,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   @override
   Future<void> updateStore(
     StoreModel store, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]) async {
     await _db.update(
       updated: store.toMap(),
@@ -234,7 +249,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       table: 'stores',
     );
 
-    if (isSync) return;
+    if (skipLocalTracking) return;
 
     final change = SyncChangeModel(
       tableName: 'stores',
@@ -280,7 +295,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   @override
   Future<void> updateStoreMember(
     StoreMemberModel member, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]) async {
     await _db.update(
       updated: member.toUpdateMap(),
@@ -291,7 +306,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       table: 'store_members',
     );
 
-    if (isSync) return;
+    if (skipLocalTracking) return;
 
     final memberKey = StoreMemberKey(
       storeId: member.storeId,
@@ -308,7 +323,10 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   }
 
   @override
-  Future<void> deleteStore(String storeId, [bool isSync = false]) async {
+  Future<void> removeStore(
+    String storeId, [
+    bool skipLocalTracking = false,
+  ]) async {
     await _db.update(
       table: 'stores',
       filterWhere: {'id': storeId},
@@ -317,7 +335,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
     );
-    if (isSync) return;
+    if (skipLocalTracking) return;
 
     final change = SyncChangeModel(
       tableName: 'stores',

@@ -82,6 +82,7 @@ class DatabaseHelper {
         barcode TEXT UNIQUE,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
+        is_deleted INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (category_id) REFERENCES categories(category_id)
       );
     ''');

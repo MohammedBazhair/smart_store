@@ -1,3 +1,4 @@
+import '../../../../core/extensions/extensions.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/sub_entities/global_product.dart';
 
@@ -9,6 +10,7 @@ class GlobalProductModel extends GlobalProduct {
     required super.barcode,
     required super.createdAt,
     required super.updatedAt,
+    super.isDeleted,
   });
 
   factory GlobalProductModel.fromEntity(GlobalProduct product) {
@@ -19,6 +21,7 @@ class GlobalProductModel extends GlobalProduct {
       barcode: product.barcode,
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
+      isDeleted: product.isDeleted,
     );
   }
 
@@ -30,6 +33,7 @@ class GlobalProductModel extends GlobalProduct {
       barcode: map['barcode'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
+      isDeleted: map['is_deleted'] == 1,
     );
   }
 
@@ -41,6 +45,7 @@ class GlobalProductModel extends GlobalProduct {
       barcode: map['barcode'] as String?,
       createdAt: DateTime.parse(map['product_created_at'] as String),
       updatedAt: DateTime.parse(map['product_updated_at'] as String),
+      isDeleted: map['product_is_deleted'] == 1,
     );
   }
 
@@ -51,7 +56,8 @@ class GlobalProductModel extends GlobalProduct {
       'name': name,
       'barcode': barcode,
       'created_at': createdAt.toIso8601String(),
-      'updated_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'is_deleted': isDeleted.toInt,
     };
   }
 }

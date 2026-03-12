@@ -1,32 +1,32 @@
 class SyncStateModel {
   const SyncStateModel({
     required this.tableName,
-    required this.lastSync,
+    required this.lastSynced,
   });
 
   factory SyncStateModel.fromMap(Map<String, dynamic> map) {
     return SyncStateModel(
       tableName: map['table_name'],
-      lastSync: DateTime.parse(map['last_sync']),
+      lastSynced: DateTime.parse(map['last_sync']),
     );
   }
   final String tableName;
-  final DateTime lastSync;
+  final DateTime lastSynced;
 
   Map<String, dynamic> toMap() {
     return {
       'table_name': tableName,
-      'last_sync': lastSync.toIso8601String(),
+      'last_sync': lastSynced.toIso8601String(),
     };
   }
 
   SyncStateModel copyWith({
     String? tableName,
-    DateTime? lastSync,
+    DateTime? lastSynced,
   }) {
     return SyncStateModel(
       tableName: tableName ?? this.tableName,
-      lastSync: lastSync ?? this.lastSync,
+      lastSynced: lastSynced ?? this.lastSynced,
     );
   }
 }

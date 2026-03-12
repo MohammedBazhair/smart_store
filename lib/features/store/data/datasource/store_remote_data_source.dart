@@ -6,39 +6,32 @@ import '../models/store_member_model.dart';
 import '../models/store_model.dart';
 
 abstract class StoreRemoteDataSource {
-  Future<void> createStore(StoreModel store);
+  Future<void> addStore(StoreModel store);
   Future<void> updateStore(StoreModel store);
-
+  Future<void> removeStore(String storeId);
+  Future<void> insertStores(List<StoreModel> stores);
+  Future<void> deleteStores(List<String> storesIds);
+  Future<void> updateStores(List<StoreModel> stores);
   Future<List<StoreModel>> getUserStores({
     required String userPhone,
     bool isDeleted = true,
-    SyncStateModel? lastSync,
+    SyncStateModel? lastSynced,
   });
 
+  Future<void> addMember(StoreMemberModel member);
+  Future<void> updateMember(StoreMemberModel member);
+  Future<void> removeMember(StoreMemberKey key);
+  Future<void> insertMembers(List<StoreMemberModel> members);
+  Future<void> updateStoreMembers(List<StoreMemberModel> members);
   Future<List<StoreMemberModel>> getMembers({
     required String storeId,
-    bool isDeleted = true,
-    SyncStateModel? lastSync,
+    bool includeDeleted = true,
+    SyncStateModel? lastSynced,
   });
-
-  Future<void> insertMember(StoreMemberModel member);
-
-  Future<void> insertMembers(List<StoreMemberModel> members);
-  Future<void> insertStores(List<StoreModel> stores);
-
-  Future<void> deleteMember(StoreMemberKey key);
   Future<void> deleteMembers(List<StoreMemberKey> params);
-
-  Future<void> deleteStore(String storeId);
-  Future<void> deleteStores(List<String> storesIds);
-
-  Future<void> updateStoreMember(StoreMemberModel member);
-  Future<void> updateStoreMembers(List<StoreMemberModel> members);
-  Future<void> updateStores(List<StoreModel> stores);
-
   Future<List<StoreMemberModel>> getMembersForUser(
     String userPhone, [
-    SyncStateModel? lastSync,
+    SyncStateModel? lastSynced,
   ]);
 }
 
@@ -48,7 +41,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   final RemoteDatabaseService _client;
 
   @override
-  Future<void> createStore(StoreModel store) async {
+  Future<void> addStore(StoreModel store) async {
     await _client.insertRow(map: store.toMap(), table: 'stores');
   }
 
@@ -56,7 +49,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   Future<List<StoreModel>> getUserStores({
     required String userPhone,
     bool isDeleted = true,
-    SyncStateModel? lastSync,
+    SyncStateModel? lastSynced,
   }) async {
     final response = _client.client
         .from('stores')
@@ -64,9 +57,9 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
         .eq('store_members.member_phone', userPhone)
         .eq('is_deleted', isDeleted.toInt);
 
-    final lastSyncDate = lastSync?.lastSync.toIso8601String();
-    final result = await (lastSyncDate != null
-        ? response.gt('updated_at', lastSyncDate)
+    final lastSyncedDate = lastSynced?.lastSynced.toIso8601String();
+    final result = await (lastSyncedDate != null
+        ? response.gt('updated_at', lastSyncedDate)
         : response.order('created_at', ascending: true));
 
     return result.map(StoreModel.fromMap).toList();
@@ -75,8 +68,8 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   @override
   Future<List<StoreMemberModel>> getMembers({
     required String storeId,
-    bool isDeleted = true,
-    SyncStateModel? lastSync,
+    bool includeDeleted = true,
+    SyncStateModel? lastSynced,
   }) async {
     final response = _client.client
         .from('store_members')
@@ -84,27 +77,27 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
         .eq('store_id', storeId)
         .eq(
           'is_deleted',
-          isDeleted.toInt,
+          includeDeleted.toInt,
         );
 
-    final lastSyncDate = lastSync?.lastSync.toIso8601String();
+    final lastSyncedDate = lastSynced?.lastSynced.toIso8601String();
 
-    final result = await (lastSyncDate != null
-        ? response.gt('updated_at', lastSyncDate)
+    final result = await (lastSyncedDate != null
+        ? response.gt('updated_at', lastSyncedDate)
         : response);
 
     return result.map(StoreMemberModel.fromMap).toList();
   }
 
   @override
-  Future<void> insertMember(StoreMemberModel member) async {
+  Future<void> addMember(StoreMemberModel member) async {
     await _client.insertRow(table: 'store_members', map: member.toMap());
 
     await _updateStore(member.storeId);
   }
 
   @override
-  Future<void> deleteMember(StoreMemberKey key) async {
+  Future<void> removeMember(StoreMemberKey key) async {
     await _client.update(
       updated: {
         'is_deleted': true,
@@ -133,7 +126,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   }
 
   @override
-  Future<void> updateStoreMember(StoreMemberModel member) async {
+  Future<void> updateMember(StoreMemberModel member) async {
     await _client.update(
       updated: member.toUpdateMap(),
       table: 'store_members',
@@ -155,7 +148,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   }
 
   @override
-  Future<void> deleteStore(String storeId) {
+  Future<void> removeStore(String storeId) {
     return _client.update(
       updated: {
         'is_deleted': true,
@@ -184,7 +177,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
 
   @override
   Future<void> deleteMembers(List<StoreMemberKey> params) async {
-    final futures = params.map(deleteMember);
+    final futures = params.map(removeMember);
     await Future.wait(futures);
   }
 
@@ -206,7 +199,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
 
   @override
   Future<void> deleteStores(List<String> storesIds) async {
-    final futures = storesIds.map(deleteStore);
+    final futures = storesIds.map(removeStore);
 
     await Future.wait(futures);
   }
@@ -214,17 +207,17 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   @override
   Future<List<StoreMemberModel>> getMembersForUser(
     String userPhone, [
-    SyncStateModel? lastSync,
+    SyncStateModel? lastSynced,
   ]) async {
     final response = _client.client
         .from('store_members')
         .select('*, stores!inner(id)')
         .eq('member_phone', userPhone);
 
-    final lastSyncDate = lastSync?.lastSync.toIso8601String();
+    final lastSyncedDate = lastSynced?.lastSynced.toIso8601String();
 
-    final result = await (lastSyncDate != null
-        ? response.gt('updated_at', lastSyncDate)
+    final result = await (lastSyncedDate != null
+        ? response.gt('updated_at', lastSyncedDate)
         : response);
 
     return result.map(StoreMemberModel.fromMap).toList();

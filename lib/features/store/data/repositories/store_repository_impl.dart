@@ -37,9 +37,9 @@ class StoreRepositoryImpl implements StoreRepository {
 
       final newStore = store.copyWith(id: const Uuid().v4());
       final model = StoreModel.fromEntity(newStore);
-      await remote.createStore(model);
+      await remote.addStore(model);
 
-      await local.createStore(model, true);
+      await local.addStore(model, true);
       return newStore;
     } catch (e) {
       if (e.toString().contains('enough credits')) {
@@ -57,9 +57,9 @@ class StoreRepositoryImpl implements StoreRepository {
 
     final stores = hasConnection
         ? await remote.getUserStores(userPhone: userPhone, isDeleted: false)
-        : await local.getUserStores(userPhone);
+        : await local.getUserStores(userPhone:userPhone,includeDeleted: false);
 
-    if (hasConnection) await local.setUserStores(stores, hasConnection);
+    if (hasConnection) await local.upsertStores(stores, hasConnection);
 
     return stores;
   }
@@ -68,10 +68,10 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<Set<StoreMember>> getStoreMembers(String storeId) async {
     final hasConnection = await connectivityService.hasConnection();
     final members = hasConnection
-        ? await remote.getMembers(storeId: storeId, isDeleted: false)
-        : await local.getMembers(storeId: storeId, isDeleted: false);
+        ? await remote.getMembers(storeId: storeId, includeDeleted: false)
+        : await local.getMembers(storeId: storeId, includeDeleted: false);
 
-    if (hasConnection) await local.setMembers(members, hasConnection);
+    if (hasConnection) await local.upsertMembers(members, hasConnection);
 
     return members.toSet();
   }
@@ -91,7 +91,7 @@ class StoreRepositoryImpl implements StoreRepository {
 
     final model = StoreMemberModel.fromEntity(member);
 
-    await remote.insertMember(model);
+    await remote.addMember(model);
     await local.insertStoreMember(model);
   }
 
@@ -100,10 +100,10 @@ class StoreRepositoryImpl implements StoreRepository {
     final hasConnection = await connectivityService.hasConnection();
 
     if (hasConnection) {
-      await remote.deleteMember(key);
+      await remote.removeMember(key);
     }
 
-    await local.deleteStoreMember(key: key, isSync: hasConnection);
+    await local.deleteStoreMember(key: key, skipLocalTracking: hasConnection);
   }
 
   @override
@@ -195,34 +195,35 @@ class StoreRepositoryImpl implements StoreRepository {
     await pushStoresChanges();
     await pushMembersChanges();
 
-    final lastSyncStores = await syncLocal.getLastSync('stores');
-    final lastSyncMembers = await syncLocal.getLastSync('store_members');
+    final lastSyncedStores = await syncLocal.getlastSynced('stores');
+    final lastSyncedMembers = await syncLocal.getlastSynced('store_members');
 
     final stores = await remote.getUserStores(
       userPhone: userPhone,
-      lastSync: lastSyncStores,
+      lastSynced: lastSyncedStores,
     );
-    await local.setUserStores(stores, true);
+    await local.upsertStores(stores, true);
 
-    final members = await remote.getMembersForUser(userPhone, lastSyncMembers);
-    await local.setMembers(members, true);
+    final members =
+        await remote.getMembersForUser(userPhone, lastSyncedMembers);
+    await local.upsertMembers(members, true);
 
     final storesSyncState =
-        SyncStateModel(tableName: 'stores', lastSync: DateTime.now().toUtc());
+        SyncStateModel(tableName: 'stores', lastSynced: DateTime.now().toUtc());
     final membersSyncState = SyncStateModel(
       tableName: 'store_members',
-      lastSync: DateTime.now().toUtc(),
+      lastSynced: DateTime.now().toUtc(),
     );
 
-    await syncLocal.saveLastSync(storesSyncState);
-    await syncLocal.saveLastSync(membersSyncState);
+    await syncLocal.savelastSynced(storesSyncState);
+    await syncLocal.savelastSynced(membersSyncState);
   }
 
   @override
   Future<void> deleteStore(String storeId) async {
     final hasConnection = await connectivityService.hasConnection();
-    if (hasConnection) await remote.deleteStore(storeId);
+    if (hasConnection) await remote.removeStore(storeId);
 
-    await local.deleteStore(storeId, hasConnection);
+    await local.removeStore(storeId, hasConnection);
   }
 }

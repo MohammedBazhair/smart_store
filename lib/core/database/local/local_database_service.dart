@@ -2,12 +2,18 @@ import 'package:sqflite/sqflite.dart';
 import '../../constants/typedef.dart';
 
 abstract interface class LocalDatabaseService {
+  Batch get batch;
+
   Future<int> insertRow({
     required Map<String, dynamic> map,
     required String table,
   });
 
-  Future<void> insertRows({required RowList rows, required String table, ConflictAlgorithm? conflictAlgorithm});
+  Future<void> insertRows({
+    required RowList rows,
+    required String table,
+    ConflictAlgorithm? conflictAlgorithm,
+  });
 
   Future<Map<String, dynamic>> readRow({
     required String id,
@@ -61,6 +67,9 @@ abstract interface class LocalDatabaseService {
 class LocalDatabaseServiceImpl implements LocalDatabaseService {
   LocalDatabaseServiceImpl(this._database);
   final Database _database;
+
+  @override
+  Batch get batch => _database.batch();
 
   @override
   Future<int> insertRow({
@@ -136,7 +145,7 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
   Future<void> insertRows({
     required RowList rows,
     required String table,
-     ConflictAlgorithm? conflictAlgorithm,
+    ConflictAlgorithm? conflictAlgorithm,
   }) async {
     final batch = _database.batch();
 

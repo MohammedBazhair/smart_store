@@ -3,5 +3,5 @@ import 'product_provider.dart';
 
 final initDataFromNetProvider = FutureProvider((ref) async {
   final repo = ref.read(productRepositoryProvider);
-  await repo.initDataFromNetwork();
+  await repo.initializeDataFromNetwork();
 });

@@ -13,57 +13,54 @@ import '../models/store_product_key.dart';
 import '../models/store_product_model.dart';
 
 abstract class ProductLocalDataSource {
-  Future<List<Category>> getAllCategories();
-  Future<List<GlobalProductModel>> getGlobalProducts({bool isDeleted = true});
-  Future<void> saveAllCategories(List<Category> categories);
-  Future<ModelsProductsByIdentifier> getStoreProducts({
-    required String storeId,
-    bool isDeleted = true,
+  Future<List<Category>> fetchAllCategories();
+  Future<void> setAllCategories(List<Category> categories);
+
+  Future<List<GlobalProductModel>> fetchGlobalProducts({
+    bool includeDeleted = true,
   });
-  Future<StoreProductModel?> getStoreProductById(StoreProductKey productKey);
-  Future<GlobalProductModel?> getGlobalProductById(String productId);
+  Future<GlobalProductModel?> fetchGlobalProductById(String productId);
   Future<GlobalProductModel?> getGlobalProductByBarcode(String barcode);
-  Future<List<StoreProductModel>> searchProducts({
+
+  Future<ModelsProductsByIdentifier> fetchStoreProducts({
+    required String storeId,
+    bool includeDeleted = true,
+  });
+  Future<StoreProductModel?> fetchStoreProductById(StoreProductKey productKey);
+  Future<List<StoreProductModel>> searchStoreProducts({
     required String query,
     required String storeId,
   });
-
-  Future<List<StoreProductModel>> getExpiredProducts(
-    String storeId,
-  );
-  Future<List<StoreProductModel>> getNearExpiryProducts(
+  Future<List<StoreProductModel>> fetchExpiredStoreProducts(String storeId);
+  Future<List<StoreProductModel>> fetchNearExpiryStoreProducts(
     String storeId,
     int days,
   );
-  Future<StoreProduct> addStoreProduct(
-    StoreProductModel product, [
-    bool isSync = false,
-  ]);
+
   Future<GlobalProductModel> addGlobalProduct(
     GlobalProductModel product, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
+  ]);
+  Future<StoreProduct> addStoreProduct(
+    StoreProductModel product, [
+    bool skipLocalTracking = false,
+  ]);
+
+  Future<void> updateGlobalProduct(
+    GlobalProductModel product, [
+    bool skipLocalTracking = false,
   ]);
   Future<void> updateStoreProduct(
     StoreProductModel product, [
-    bool isSync = false,
-  ]);
-  Future<void> updateGlobalProduct(
-    GlobalProductModel product, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]);
 
-  Future<void> setGlobalProducts(
-    List<GlobalProductModel> products, [
-    bool isSync = false,
-  ]);
+  Future<void> setGlobalProducts(List<GlobalProductModel> products);
+  Future<void> setStoreProducts(List<StoreProductModel> products);
 
-  Future<void> setStoreProducts(
-    List<StoreProductModel> products, [
-    bool isSync = false,
-  ]);
   Future<void> deleteStoreProduct(
     StoreProductModel product, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]);
 }
 
@@ -89,8 +86,8 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           gp.id             AS global_product_id,
           gp.name           AS product_name,
           gp.barcode        AS barcode,
-          gp.created_at     AS product_created_at
-          gp.updated_at     AS product_updated_at
+          gp.created_at     AS product_created_at,
+          gp.updated_at     AS product_updated_at,
           gp.is_deleted     AS product_is_deleted
 
         FROM store_products sp
@@ -99,55 +96,60 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   ''';
 
   @override
-  Future<List<Category>> getAllCategories() async {
+  Future<List<Category>> fetchAllCategories() async {
     final maps = await db.readRows(table: 'categories');
     return maps.map(Category.fromLocal).toList();
   }
 
   @override
-  Future<ModelsProductsByIdentifier> getStoreProducts({
-    required String storeId,
-    bool isDeleted = true,
-  }) async {
-    final response = await db.rawQuery(
-      query: '''
-        SELECT ${_storeProductColumnsAndJoins()}
-        WHERE sp.store_id = ? AND is_deleted = ? 
-       ''',
-      arguments: [storeId, isDeleted.toInt],
-    );
-    final products = <String, StoreProductModel>{};
-
-    for (final m in response) {
-      final product = StoreProductModel.fromRemote(m);
-      final key = product.globalProduct.barcode ?? product.globalProduct.id!;
-      products[key] = product;
-    }
-
-    return products;
+  Future<void> setAllCategories(List<Category> categories) async {
+    final rows = categories.map((c) => c.toMap()).toList();
+    await db.insertRows(rows: rows, table: 'categories');
   }
 
-
   @override
-  Future<List<GlobalProductModel>> getGlobalProducts({
-    bool isDeleted = true,
+  Future<List<GlobalProductModel>> fetchGlobalProducts({
+    bool includeDeleted = true,
   }) async {
     final rows = await db.rawQuery(
       query: '''
+    SELECT
       gp.id             AS global_product_id,
       gp.name           AS product_name,
       gp.barcode        AS barcode,
       gp.created_at     AS product_created_at,
-      gp.updated_at     AS product_updated_at,
+      gp.updated_at     AS product_updated_at
 
     FROM global_products gp 
     LEFT JOIN categories c ON gp.category_id = c.category_id
+    WHERE gp.is_deleted = ?
   ''',
+      arguments: [includeDeleted.toInt],
     );
 
     return rows.map(GlobalProductModel.fromRemote).toList();
   }
 
+  @override
+  Future<GlobalProductModel?> fetchGlobalProductById(String productId) async {
+    final response = await db.rawQuery(
+      query: '''
+        SELECT 
+          gp.id             AS global_product_id,
+          gp.name           AS product_name,
+          gp.barcode        AS barcode,
+          gp.created_at     AS product_created_at,
+          gp.updated_at     AS product_updated_at
+        FROM global_products as gp
+        where gp.id = ?
+''',
+      arguments: [productId],
+    );
+
+    if (response.isEmpty) return null;
+
+    return GlobalProductModel.fromLocal(response.first);
+  }
 
   @override
   Future<GlobalProductModel?> getGlobalProductByBarcode(String barcode) async {
@@ -158,7 +160,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           gp.id             AS global_product_id,
           gp.name           AS product_name,
           gp.barcode        AS barcode,
-          gp.created_at     AS product_created_at
+          gp.created_at     AS product_created_at,
           gp.updated_at     AS product_updated_at
 
         FROM global_products gp
@@ -179,7 +181,47 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<List<StoreProductModel>> searchProducts({
+  Future<ModelsProductsByIdentifier> fetchStoreProducts({
+    required String storeId,
+    bool includeDeleted = true,
+  }) async {
+    final response = await db.rawQuery(
+      query: '''
+        SELECT ${_storeProductColumnsAndJoins()}
+        WHERE sp.store_id = ? AND sp.is_deleted = ? 
+       ''',
+      arguments: [storeId, includeDeleted.toInt],
+    );
+    final products = <String, StoreProductModel>{};
+
+    for (final m in response) {
+      final product = StoreProductModel.fromRemote(m);
+      final key = product.globalProduct.barcode ?? product.globalProduct.id!;
+      products[key] = product;
+    }
+
+    return products;
+  }
+
+  @override
+  Future<StoreProductModel?> fetchStoreProductById(
+    StoreProductKey productKey,
+  ) async {
+    final response = await db.rawQuery(
+      query: '''
+          SELECT ${_storeProductColumnsAndJoins()}
+          WHERE sp.store_id = ? AND sp.product_id = ?
+          LIMIT 1
+        ''',
+      arguments: [productKey.storeId, productKey.productId],
+    );
+    if (response.isEmpty) return null;
+    final map = response.first;
+    return StoreProductModel.fromRemote(map);
+  }
+
+  @override
+  Future<List<StoreProductModel>> searchStoreProducts({
     required String query,
     required String storeId,
   }) async {
@@ -188,15 +230,16 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           SELECT ${_storeProductColumnsAndJoins()}
           WHERE sp.store_id = ? 
           AND LOWER(gp.name) LIKE LOWER(?)
+          AND sp.is_deleted = ?
         ''',
-      arguments: [storeId, '%$query%'],
+      arguments: [storeId, '%$query%', false.toInt],
     );
 
     return maps.map(StoreProductModel.fromLocal).toList();
   }
 
   @override
-  Future<List<StoreProductModel>> getExpiredProducts(
+  Future<List<StoreProductModel>> fetchExpiredStoreProducts(
     String storeId,
   ) async {
     final today = DateTime.now().toUtc().toIso8601String();
@@ -205,15 +248,16 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           SELECT ${_storeProductColumnsAndJoins()}
           WHERE sp.store_id = ?
           AND DATE(sp.expiry_date) <= DATE(?) 
+          AND sp.is_deleted = ?
         ''',
-      arguments: [storeId, today],
+      arguments: [storeId, today, false.toInt],
     );
 
     return maps.map(StoreProductModel.fromLocal).toList();
   }
 
   @override
-  Future<List<StoreProductModel>> getNearExpiryProducts(
+  Future<List<StoreProductModel>> fetchNearExpiryStoreProducts(
     String storeId,
     int days,
   ) async {
@@ -224,17 +268,39 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           SELECT ${_storeProductColumnsAndJoins()}
           WHERE sp.store_id = ?
           AND DATE(sp.expiry_date) BETWEEN DATE(?) AND DATE(?) 
+          AND sp.is_deleted = ?
         ''',
-      arguments: [storeId, now.toIso8601String(), near],
+      arguments: [storeId, now.toIso8601String(), near, false.toInt],
     );
 
     return maps.map(StoreProductModel.fromLocal).toList();
   }
 
   @override
+  Future<GlobalProductModel> addGlobalProduct(
+    GlobalProductModel product, [
+    bool skipLocalTracking = false,
+  ]) async {
+    await db.insertRow(map: product.toMap(), table: 'global_products');
+
+    if (skipLocalTracking) return product;
+
+    final globalProductChange = SyncChangeModel(
+      tableName: 'global_products',
+      recordId: product.id!,
+      operation: SyncOperation.insert,
+      updatedAt: DateTime.now().toUtc(),
+    );
+
+    await _sync.addChange(globalProductChange);
+
+    return product;
+  }
+
+  @override
   Future<StoreProductModel> addStoreProduct(
     StoreProductModel product, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]) async {
     bool isAddedToGlobal = false;
     await db.transaction((txn) async {
@@ -256,7 +322,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       );
     });
 
-    if (isSync) return product;
+    if (skipLocalTracking) return product;
 
     final globalProductChange = SyncChangeModel(
       tableName: 'global_products',
@@ -283,9 +349,37 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
+  Future<void> updateGlobalProduct(
+    GlobalProductModel product, [
+    bool skipLocalTracking = false,
+  ]) async {
+    final updated = product.toMap();
+    final filterWhere = {
+      'id': product.id,
+    };
+
+    await db.update(
+      updated: updated,
+      filterWhere: filterWhere,
+      table: 'global_products',
+    );
+
+    if (skipLocalTracking) return;
+
+    final globalProductChange = SyncChangeModel(
+      tableName: 'global_products',
+      recordId: product.id!,
+      operation: SyncOperation.update,
+      updatedAt: DateTime.now().toUtc(),
+    );
+
+    await _sync.addChange(globalProductChange);
+  }
+
+  @override
   Future<void> updateStoreProduct(
     StoreProductModel product, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]) async {
     final updated = product.toMap();
     final filterWhere = {
@@ -299,7 +393,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       table: 'store_products',
     );
 
-    if (isSync) return;
+    if (skipLocalTracking) return;
 
     final storeProductKey = StoreProductKey(
       storeId: product.storeId,
@@ -317,79 +411,39 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<void> updateGlobalProduct(
-    GlobalProductModel product, [
-    bool isSync = false,
-  ]) async {
-    final updated = product.toMap();
-    final filterWhere = {
-      'id': product.id,
-    };
-
-    await db.update(
-      updated: updated,
-      filterWhere: filterWhere,
-      table: 'global_products',
-    );
-
-    if (isSync) return;
-
-    final globalProductChange = SyncChangeModel(
-      tableName: 'global_products',
-      recordId: product.id!,
-      operation: SyncOperation.update,
-      updatedAt: DateTime.now().toUtc(),
-    );
-
-    await _sync.addChange(globalProductChange);
-  }
-
-  @override
-  Future<void> saveAllCategories(List<Category> categories) async {
-    final rows = categories.map((c) => c.toMap()).toList();
-    await db.insertRows(rows: rows, table: 'categories');
-  }
-
-  @override
   Future<void> setGlobalProducts(
-    List<GlobalProductModel> products, [
-    bool isSync = false,
-  ]) async {
+    List<GlobalProductModel> products,
+  ) async {
+    final batch = db.batch;
     for (final product in products) {
-      final isFound = (await getGlobalProductById(product.id!)) != null;
-
-      if (isFound) {
-        await updateGlobalProduct(product, isSync);
-      } else {
-        await addGlobalProduct(product, isSync);
-      }
+      batch.insert(
+        'global_products',
+        product.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     }
+    await batch.commit(noResult: true);
   }
 
   @override
   Future<void> setStoreProducts(
-    List<StoreProductModel> products, [
-    bool isSync = false,
-  ]) async {
+    List<StoreProductModel> products,
+  ) async {
+    final batch = db.batch;
     for (final product in products) {
-      final productKey = StoreProductKey(
-        storeId: product.storeId,
-        productId: product.globalProduct.id!,
+      batch.insert(
+        'store_products',
+        product.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      final isFound = (await getStoreProductById(productKey)) != null;
-
-      if (isFound) {
-        await updateStoreProduct(product, isSync);
-      } else {
-        await updateStoreProduct(product, isSync);
-      }
     }
+    await batch.commit(noResult: true);
   }
 
   @override
   Future<void> deleteStoreProduct(
     StoreProductModel product, [
-    bool isSync = false,
+    bool skipLocalTracking = false,
   ]) async {
     await db.update(
       updated: {'is_deleted': true, 'updated_at': DateTime.now().toUtc()},
@@ -400,7 +454,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       table: 'store_products',
     );
 
-    if (isSync) return;
+    if (skipLocalTracking) return;
 
     final storeProductKey = StoreProductKey(
       storeId: product.storeId,
@@ -415,64 +469,5 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     );
 
     await _sync.addChange(change);
-  }
-
-  @override
-  Future<StoreProductModel?> getStoreProductById(
-    StoreProductKey productKey,
-  ) async {
-    final response = await db.rawQuery(
-      query: '''
-          SELECT ${_storeProductColumnsAndJoins()}
-          WHERE sp.store_id = ? AND sp.product_id = ?
-          LIMIT 1
-        ''',
-      arguments: [productKey.storeId, productKey.productId],
-    );
-    if (response.isEmpty) return null;
-    final map = response.first;
-    return StoreProductModel.fromRemote(map);
-  }
-
-  @override
-  Future<GlobalProductModel?> getGlobalProductById(String productId) async {
-    final response = await db.rawQuery(
-      query: '''
-        SELECT 
-          gp.id             AS global_product_id,
-          gp.name           AS product_name,
-          gp.barcode        AS barcode,
-          gp.created_at     AS product_created_at
-          gp.updated_at     AS product_updated_at
-        FROM global_products as gp
-        where gp.id = ?
-''',
-      arguments: [productId],
-    );
-
-    if (response.isEmpty) return null;
-
-    return GlobalProductModel.fromLocal(response.first);
-  }
-
-  @override
-  Future<GlobalProductModel> addGlobalProduct(
-    GlobalProductModel product, [
-    bool isSync = false,
-  ]) async {
-    await db.insertRow(map: product.toMap(), table: 'global_products');
-
-    if (isSync) return product;
-
-    final globalProductChange = SyncChangeModel(
-      tableName: 'global_products',
-      recordId: product.id!,
-      operation: SyncOperation.insert,
-      updatedAt: DateTime.now().toUtc(),
-    );
-
-    await _sync.addChange(globalProductChange);
-
-    return product;
   }
 }

@@ -8,35 +8,24 @@ import '../entities/sub_entities/global_product.dart';
 
 abstract class ProductRepository {
   Future<List<Category>> getAllCategories();
-  Future<ProductsByIdentifier> getStoreProducts(String storeId);
 
   Future<List<GlobalProduct>> getGlobalProducts();
-
-  Future<StoreProduct?> getStoreProductById(StoreProductKey key);
-
   Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
 
+  Future<ProductsByIdentifier> getStoreProducts(String storeId);
+  Future<StoreProduct?> getStoreProductById(StoreProductKey key);
   Future<List<StoreProduct>> searchProducts({
     required String query,
     required String storeId,
   });
-
   Future<List<StoreProduct>> getExpiredProducts(String storeId);
-
-  Future<List<StoreProduct>> getNearExpiryProducts(
-    String storeId,
-    int days,
-  );
+  Future<List<StoreProduct>> getNearExpiryProducts(String storeId, int days);
 
   Future<Result<StoreProduct>> addProduct(StoreProduct product);
-
   Future<Result<void>> updateProduct(Product product);
 
-  Future<void> initDataFromNetwork();
-
+  Future<void> initializeDataFromNetwork();
   Future<void> pushGlobalProductsChanges();
-
   Future<void> pushStoreProductsChanges();
-
-  Future<void> syncAll(String storeId);
+  Future<void> syncAllProducts(String storeId);
 }

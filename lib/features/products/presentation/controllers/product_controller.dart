@@ -35,11 +35,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     );
   }
 
-  Future<List<Category>> getExchangeRates() async {
-    final exchangeRates =
-        await ref.read(productRepositoryProvider).getAllCategories();
-    return exchangeRates;
-  }
+
 
   Future<List<Category>> getCategories() async {
     final categories =

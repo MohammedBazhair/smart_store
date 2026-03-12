@@ -53,8 +53,8 @@ class StoreProductModel extends StoreProduct {
       expiryDate: DateTime.tryParse(map['expiry_date']),
       notes: map['notes'],
       globalProduct: GlobalProductModel.fromLocal(map),
-      updatedAt: DateTime.parse(map['store_updated_at']),
-      isDeleted: map['store_is_deleted'] == 1,
+      updatedAt: DateTime.parse(map['updated_at']),
+      isDeleted: map['is_deleted'] == 1,
     );
   }
 

@@ -64,6 +64,12 @@ abstract interface class RemoteDatabaseService {
     required List<dynamic> values,
     List<String> columnsSelect = const ['*'],
   });
+
+  Future<void> upsertRow({
+    required String table,
+    required Map<String, dynamic> row,
+     String? onConflict,
+  });
 }
 
 class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
@@ -203,5 +209,13 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
     await _client.from(table).upsert(rows, onConflict: onConflict);
   }
 
-  
+  @override
+  Future<void> upsertRow({
+    required String table,
+    required Map<String, dynamic> row,
+    String? onConflict,
+
+  }) async {
+    await _client.from(table).upsert(row, onConflict: onConflict);
+  }
 }

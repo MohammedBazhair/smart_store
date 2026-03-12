@@ -9,39 +9,38 @@ import '../models/store_product_key.dart';
 import '../models/store_product_model.dart';
 
 abstract class ProductRemoteDataSource {
-  Future<List<Category>> getAllCategories();
-  Future<List<GlobalProductModel>> getGlobalProducts({
-    SyncStateModel? lastSync,
-    bool isDeleted = true,
+  Future<List<Category>> fetchAllCategories();
+
+  Future<List<GlobalProductModel>> fetchGlobalProducts({
+    SyncStateModel? lastSynced,
+    bool includeDeleted = true,
   });
-  Future<ModelsProductsByIdentifier> getStoreProducts({
+  Future<GlobalProductModel?> fetchGlobalProductByBarcode(String barcode);
+  Future<StoreProductModel> fetchStoreProductById(StoreProductKey productKey);
+  Future<ModelsProductsByIdentifier> fetchStoreProducts({
     required String storeId,
-    SyncStateModel? lastSync,
-    bool isDeleted = true,
+    SyncStateModel? lastSynced,
+    bool includeDeleted = true,
   });
-  Future<StoreProductModel> getProductById(StoreProductKey productKey);
-  Future<GlobalProductModel?> getGlobalProductByBarcode(String barcode);
-  Future<List<StoreProductModel>> getExpiredProducts(
-    String storeId,
-  );
-  Future<List<StoreProductModel>> getNearExpiryProducts(
+  Future<List<StoreProductModel>> fetchExpiredStoreProducts(String storeId);
+  Future<List<StoreProductModel>> fetchNearExpiryStoreProducts(
     String storeId,
     int days,
   );
-  Future<void> insertStoreProducts(List<StoreProductModel> products);
-  Future<void> updateStoreProductss(List<StoreProductModel> products);
-  Future<void> deleteStoreProducts(List<StoreProductKey> productKeys);
 
-  Future<void> deleteStoreProduct(StoreProductKey productKey);
+  Future<void> addStoreProduct(StoreProductModel product);
+  Future<void> addGlobalProducts(List<GlobalProductModel> products);
+  Future<void> addStoreProducts(List<StoreProductModel> products);
 
-  Future<void> insertGlobalProducts(List<GlobalProductModel> products);
-  Future<void> updateGlobalProducts(List<GlobalProductModel> products);
-  Future<void> addProduct(StoreProductModel product);
-  Future<void> updateStoreProduct(StoreProductModel product);
   Future<void> updateGlobalProduct(GlobalProductModel product);
+  Future<void> updateGlobalProducts(List<GlobalProductModel> products);
+  Future<void> updateStoreProduct(StoreProductModel product);
+  Future<void> updateStoreProducts(List<StoreProductModel> products);
 
-  Future<void> deleteGlobalProducts(List<String> productsIds);
   Future<void> deleteGlobalProduct(String productId);
+  Future<void> deleteGlobalProducts(List<String> productsIds);
+  Future<void> deleteStoreProduct(StoreProductKey productKey);
+  Future<void> deleteStoreProducts(List<StoreProductKey> productKeys);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
@@ -49,74 +48,35 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   final RemoteDatabaseService _client;
 
   @override
-  Future<List<Category>> getAllCategories() async {
+  Future<List<Category>> fetchAllCategories() async {
     final response = await _client.readRows(table: 'categories');
     return response.map(Category.fromRemote).toList();
   }
 
   @override
-  Future<ModelsProductsByIdentifier> getStoreProducts({
-    required String storeId,
-    SyncStateModel? lastSync,
-    bool isDeleted = true,
+  Future<List<GlobalProductModel>> fetchGlobalProducts({
+    SyncStateModel? lastSynced,
+    bool includeDeleted = true,
   }) async {
-    final response = _client.client
-        .from('store_products')
-        .select(
-          '*, global_products(*, categories(*))',
-        )
-        .eq('store_id', storeId)
-        .eq('is_deleted', isDeleted.toInt);
-
-    final lastDate = lastSync?.lastSync.toIso8601String();
-    final result =
-        lastDate != null ? response.gt('updated_at', lastDate) : response;
-    final rows = await result;
-    final products = <String, StoreProductModel>{};
-
-    for (final m in rows) {
-      final product = StoreProductModel.fromRemote(m);
-      final key = product.globalProduct.barcode ?? product.globalProduct.id!;
-      products[key] = product;
-    }
-    return products;
-  }
-
-  @override
-  Future<List<GlobalProductModel>> getGlobalProducts({
-    SyncStateModel? lastSync,
-    bool isDeleted = true,
-  }) async {
-    final response = _client.client
-        .from('global_products')
-        .select(
+    final response = _client.client.from('global_products').select(
           '*, categories(*)',
-        )
-        .eq('is_deleted', isDeleted.toInt);
+        );
 
-    final lastDate = lastSync?.lastSync.toIso8601String();
-    final results =
-        lastDate != null ? response.gt('updated_at', lastDate) : response;
+    final reponseResult = includeDeleted
+        ? response
+        : response.eq('is_deleted', includeDeleted.toInt);
+
+    final lastDate = lastSynced?.lastSynced.toIso8601String();
+    final results = lastDate != null
+        ? reponseResult.gt('updated_at', lastDate)
+        : reponseResult;
     final rows = await results;
 
     return rows.map(GlobalProductModel.fromRemote).toList();
   }
 
   @override
-  Future<StoreProductModel> getProductById(StoreProductKey productKey) async {
-    final response = await _client.client
-        .from('store_products')
-        .select(
-          '*, global_products(*, categories(*))',
-        )
-        .eq('store_id', productKey.storeId)
-        .eq('product_id', productKey.productId);
-    final map = response.first;
-    return StoreProductModel.fromRemote(map);
-  }
-
-  @override
-  Future<GlobalProductModel?> getGlobalProductByBarcode(
+  Future<GlobalProductModel?> fetchGlobalProductByBarcode(
     String barcode,
   ) async {
     try {
@@ -134,7 +94,54 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<List<StoreProductModel>> getExpiredProducts(
+  Future<StoreProductModel> fetchStoreProductById(
+    StoreProductKey productKey,
+  ) async {
+    final response = await _client.client
+        .from('store_products')
+        .select(
+          '*, global_products(*, categories(*))',
+        )
+        .eq('store_id', productKey.storeId)
+        .eq('product_id', productKey.productId);
+    final map = response.first;
+    return StoreProductModel.fromRemote(map);
+  }
+
+  @override
+  Future<ModelsProductsByIdentifier> fetchStoreProducts({
+    required String storeId,
+    SyncStateModel? lastSynced,
+    bool includeDeleted = true,
+  }) async {
+    final response = _client.client
+        .from('store_products')
+        .select(
+          '*, global_products(*, categories(*))',
+        )
+        .eq('store_id', storeId);
+
+    final reponseResult = includeDeleted
+        ? response
+        : response.eq('is_deleted', includeDeleted.toInt);
+
+    final lastDate = lastSynced?.lastSynced.toIso8601String();
+    final result = lastDate != null
+        ? reponseResult.gt('updated_at', lastDate)
+        : reponseResult;
+    final rows = await result;
+    final products = <String, StoreProductModel>{};
+
+    for (final m in rows) {
+      final product = StoreProductModel.fromRemote(m);
+      final key = product.globalProduct.barcode ?? product.globalProduct.id!;
+      products[key] = product;
+    }
+    return products;
+  }
+
+  @override
+  Future<List<StoreProductModel>> fetchExpiredStoreProducts(
     String storeId,
   ) async {
     final today = DateTime.now().toUtc().toIso8601String();
@@ -150,7 +157,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<List<StoreProductModel>> getNearExpiryProducts(
+  Future<List<StoreProductModel>> fetchNearExpiryStoreProducts(
     String storeId,
     int days,
   ) async {
@@ -169,28 +176,53 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<StoreProductModel> addProduct(
+  Future<StoreProductModel> addStoreProduct(
     StoreProductModel product,
   ) async {
-    final globalProduct =
-        await getGlobalProductByBarcode(product.globalProduct.barcode ?? '');
-
-    if (globalProduct == null) {
-      final globalProductMap =
-          GlobalProductModel.fromEntity(product.globalProduct).toMap();
-      await _client.insertRow(
-        map: globalProductMap,
-        table: 'global_products',
-      );
-    }
-    final storeProductMap = StoreProductModel.fromEntity(product).toMap();
+    final globalModel = GlobalProductModel.fromEntity(product.globalProduct);
+    await _client.upsertRow(
+      table: 'global_products',
+      row: globalModel.toMap(),
+      onConflict: 'id',
+    );
 
     await _client.insertRow(
-      map: storeProductMap,
+      map: product.toMap(),
       table: 'store_products',
     );
 
     return product;
+  }
+
+  @override
+  Future<void> addGlobalProducts(List<GlobalProductModel> products) async {
+    final rows = products.map((m) => m.toMap()).toList();
+    await _client.insertRows(rows: rows, table: 'global_products');
+  }
+
+  @override
+  Future<void> addStoreProducts(List<StoreProductModel> products) async {
+    final rows = products.map((m) => m.toMap()).toList();
+    await _client.insertRows(rows: rows, table: 'store_products');
+  }
+
+  @override
+  Future<void> updateGlobalProduct(GlobalProductModel product) async {
+    await _client.update(
+      updated: product.toMap(),
+      table: 'global_products',
+      whereFilter: {'id': product.id!},
+    );
+  }
+
+  @override
+  Future<void> updateGlobalProducts(List<GlobalProductModel> products) async {
+    final rows = products.map((m) => m.toMap()).toList();
+    await _client.updateRows(
+      rows: rows,
+      table: 'global_products',
+      onConflict: 'id',
+    );
   }
 
   @override
@@ -206,74 +238,74 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   }
 
   @override
-  Future<void> updateGlobalProduct(GlobalProductModel product) async {
-    await _client.update(
-      updated: product.toMap(),
-      table: 'global_products',
-      whereFilter: {'id': product.id!},
-    );
-  }
-
-  @override
-  Future<void> insertGlobalProducts(List<GlobalProductModel> products) async {
-    final rows = products.map((m) => m.toMap()).toList();
-    await _client.insertRows(rows: rows, table: 'global_products');
-  }
-
-  @override
-  Future<void> updateGlobalProducts(List<GlobalProductModel> products) async {
-    final rows = products.map((m) => m.toMap()).toList();
-    await _client.updateRows(
-      rows: rows,
-      table: 'global_products',
-      onConflict: 'id',
-    );
-  }
-
-  @override
-  Future<void> deleteGlobalProduct(String productId) {
-    return _client.delete(
-      id: productId,
-      column: 'id',
-      table: 'global_products',
-    );
-  }
-
-  @override
-  Future<void> deleteGlobalProducts(List<String> productsIds) async {
-    final futures = productsIds.map(deleteGlobalProduct);
-
-    await Future.wait(futures);
-  }
-
-  @override
-  Future<void> deleteStoreProduct(StoreProductKey productKey) {
-    return _client.deleteWhere(
-      filters: productKey.toMap(),
-      table: 'store_products',
-    );
-  }
-
-  @override
-  Future<void> deleteStoreProducts(List<StoreProductKey> productKeys) async {
-    final futures = productKeys.map(deleteStoreProduct);
-
-    await Future.wait(futures);
-  }
-
-  @override
-  Future<void> insertStoreProducts(List<StoreProductModel> products) async {
-    final rows = products.map((m) => m.toMap()).toList();
-    await _client.insertRows(rows: rows, table: 'store_products');
-  }
-
-  @override
-  Future<void> updateStoreProductss(List<StoreProductModel> products) async {
+  Future<void> updateStoreProducts(List<StoreProductModel> products) async {
     final rows = products.map((m) => m.toMap()).toList();
     await _client.updateRows(
       rows: rows,
       table: 'store_products',
       onConflict: 'store_id, product_id',
     );
+  }
+
+  @override
+  Future<void> deleteGlobalProduct(String productId) {
+    return _client.update(
+      updated: {
+        'is_deleted': true.toInt,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      whereFilter: {'id': productId},
+      table: 'global_products',
+    );
+  }
+
+  @override
+  Future<void> deleteGlobalProducts(List<String> productsIds) async {
+    if (productsIds.isEmpty) return;
+
+    await _client.client.from('global_products').update({
+      'is_deleted': true.toInt,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }).inFilter('id', productsIds);
+  }
+
+  @override
+  Future<void> deleteStoreProduct(StoreProductKey productKey) {
+    return _client.update(
+      updated: {
+        'is_deleted': true.toInt,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      whereFilter: productKey.toMap(),
+      table: 'store_products',
+    );
+  }
+
+  @override
+  Future<void> deleteStoreProducts(List<StoreProductKey> productKeys) async {
+    if (productKeys.isEmpty) return;
+
+    final grouped = <String, List<String>>{};
+
+    for (final key in productKeys) {
+      grouped.update(
+        key.storeId,
+        (value) => value..add(key.productId),
+        ifAbsent: () => [key.productId],
+      );
+    }
+
+    final futures = grouped.entries.map((entry) {
+      return _client.client
+          .from('store_products')
+          .update({
+            'is_deleted': true.toInt,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('store_id', entry.key)
+          .inFilter('product_id', entry.value);
+    });
+
+    await Future.wait(futures);
   }
 }

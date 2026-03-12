@@ -39,14 +39,44 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       final hasConnection = await _connectivity.hasConnection();
       final result = hasConnection
-          ? await _remoteDatabase.getAllCategories()
-          : await _localDatabase.getAllCategories();
+          ? await _remoteDatabase.fetchAllCategories()
+          : await _localDatabase.fetchAllCategories();
 
-      await _localDatabase.saveAllCategories(result);
+      await _localDatabase.setAllCategories(result);
       return result;
     } catch (e) {
       return [];
     }
+  }
+
+  @override
+  Future<List<GlobalProduct>> getGlobalProducts() async {
+    try {
+      final hasConnection = await _connectivity.hasConnection();
+      final products = hasConnection
+          ? await _remoteDatabase.fetchGlobalProducts(includeDeleted: false)
+          : await _localDatabase.fetchGlobalProducts(includeDeleted: false);
+
+      if (hasConnection) {
+        await _localDatabase.setGlobalProducts(products);
+      }
+      return products;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
+  Future<GlobalProduct?> getGlobalProductByBarcode(
+    String barcode,
+  ) async {
+    final hasConnection = await _connectivity.hasConnection();
+
+    final product = hasConnection
+        ? await _remoteDatabase.fetchGlobalProductByBarcode(barcode)
+        : await _localDatabase.getGlobalProductByBarcode(barcode);
+
+    return product;
   }
 
   @override
@@ -55,13 +85,13 @@ class ProductRepositoryImpl implements ProductRepository {
       final hasConnection = await _connectivity.hasConnection();
 
       final products = hasConnection
-          ? await _remoteDatabase.getStoreProducts(
+          ? await _remoteDatabase.fetchStoreProducts(
               storeId: storeId,
-              isDeleted: false,
+              includeDeleted: false,
             )
-          : await _localDatabase.getStoreProducts(
+          : await _localDatabase.fetchStoreProducts(
               storeId: storeId,
-              isDeleted: false,
+              includeDeleted: false,
             );
 
       if (hasConnection) {
@@ -79,8 +109,8 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       final hasConnection = await _connectivity.hasConnection();
       final result = hasConnection
-          ? await _remoteDatabase.getProductById(key)
-          : await _localDatabase.getStoreProductById(key);
+          ? await _remoteDatabase.fetchStoreProductById(key)
+          : await _localDatabase.fetchStoreProductById(key);
 
       return result;
     } catch (e) {
@@ -89,25 +119,12 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<GlobalProduct?> getGlobalProductByBarcode(
-    String barcode,
-  ) async {
-    final hasConnection = await _connectivity.hasConnection();
-
-    final product = hasConnection
-        ? await _remoteDatabase.getGlobalProductByBarcode(barcode)
-        : await _localDatabase.getGlobalProductByBarcode(barcode);
-
-    return product;
-  }
-
-  @override
   Future<List<StoreProduct>> searchProducts({
     required String query,
     required String storeId,
   }) async {
     try {
-      return _localDatabase.searchProducts(
+      return _localDatabase.searchStoreProducts(
         query: query,
         storeId: storeId,
       );
@@ -124,8 +141,8 @@ class ProductRepositoryImpl implements ProductRepository {
       final hasConnection = await _connectivity.hasConnection();
 
       final result = hasConnection
-          ? await _remoteDatabase.getExpiredProducts(storeId)
-          : await _localDatabase.getExpiredProducts(storeId);
+          ? await _remoteDatabase.fetchExpiredStoreProducts(storeId)
+          : await _localDatabase.fetchExpiredStoreProducts(storeId);
 
       return result;
     } catch (e) {
@@ -142,8 +159,8 @@ class ProductRepositoryImpl implements ProductRepository {
       final hasConnection = await _connectivity.hasConnection();
 
       final result = hasConnection
-          ? await _remoteDatabase.getNearExpiryProducts(storeId, days)
-          : await _localDatabase.getNearExpiryProducts(storeId, days);
+          ? await _remoteDatabase.fetchNearExpiryStoreProducts(storeId, days)
+          : await _localDatabase.fetchNearExpiryStoreProducts(storeId, days);
 
       return result;
     } catch (e) {
@@ -164,12 +181,10 @@ class ProductRepositoryImpl implements ProductRepository {
 
     final model = StoreProductModel.fromEntity(newProduct);
     try {
-      if (await _connectivity.hasConnection()) {
-        await _remoteDatabase.addProduct(model);
-      }
+      final hasConnection = await _connectivity.hasConnection();
+      if (hasConnection) await _remoteDatabase.addStoreProduct(model);
 
-      await _localDatabase.addStoreProduct(model);
-      Logger.debugLog(message: newProduct.toString());
+      await _localDatabase.addStoreProduct(model, hasConnection);
       return SuccessState(newProduct);
     } catch (e) {
       Logger.debugLog(error: e);
@@ -198,24 +213,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<GlobalProduct>> getGlobalProducts() async {
-    try {
-      final hasConnection = await _connectivity.hasConnection();
-      final products = hasConnection
-          ? await _remoteDatabase.getGlobalProducts(isDeleted: false)
-          : await _localDatabase.getGlobalProducts(isDeleted: false);
-
-      if (hasConnection) {
-        await _localDatabase.setGlobalProducts(products, hasConnection);
-      }
-      return products;
-    } catch (e) {
-      return [];
-    }
-  }
-
-  @override
-  Future<void> initDataFromNetwork() async {
+  Future<void> initializeDataFromNetwork() async {
     try {
       final isDownloaded =
           _localCache.getBool(key: 'isDownloadedInit') ?? false;
@@ -254,18 +252,18 @@ class ProductRepositoryImpl implements ProductRepository {
           deletes.add(change.recordId);
         case SyncOperation.update:
           final product =
-              await _localDatabase.getGlobalProductById(change.recordId);
+              await _localDatabase.fetchGlobalProductById(change.recordId);
           if (product != null) updates.add(product);
 
         case SyncOperation.insert:
           final product =
-              await _localDatabase.getGlobalProductById(change.recordId);
+              await _localDatabase.fetchGlobalProductById(change.recordId);
           if (product != null) inserts.add(product);
       }
     }
 
     if (inserts.isNotEmpty) {
-      await _remoteDatabase.insertGlobalProducts(inserts);
+      await _remoteDatabase.addGlobalProducts(inserts);
     }
 
     if (updates.isNotEmpty) {
@@ -293,21 +291,23 @@ class ProductRepositoryImpl implements ProductRepository {
         case SyncOperation.delete:
           deletes.add(productKey);
         case SyncOperation.update:
-          final product = await _localDatabase.getStoreProductById(productKey);
+          final product =
+              await _localDatabase.fetchStoreProductById(productKey);
           if (product != null) updates.add(product);
 
         case SyncOperation.insert:
-          final product = await _localDatabase.getStoreProductById(productKey);
+          final product =
+              await _localDatabase.fetchStoreProductById(productKey);
           if (product != null) inserts.add(product);
       }
     }
 
     if (inserts.isNotEmpty) {
-      await _remoteDatabase.insertStoreProducts(inserts);
+      await _remoteDatabase.addStoreProducts(inserts);
     }
 
     if (updates.isNotEmpty) {
-      await _remoteDatabase.updateStoreProductss(updates);
+      await _remoteDatabase.updateStoreProducts(updates);
     }
 
     if (deletes.isNotEmpty) {
@@ -318,32 +318,32 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<void> syncAll(String storeId) async {
+  Future<void> syncAllProducts(String storeId) async {
     await pushGlobalProductsChanges();
     await pushStoreProductsChanges();
 
-    final lastGlobalSync = await _sync.getLastSync('global_products');
-    final lastStoreProductsSync = await _sync.getLastSync('store_products');
+    final lastGlobalSync = await _sync.getlastSynced('global_products');
+    final lastStoreProductsSync = await _sync.getlastSynced('store_products');
 
     final globalProducts =
-        await _remoteDatabase.getGlobalProducts(lastSync: lastGlobalSync);
+        await _remoteDatabase.fetchGlobalProducts(lastSynced: lastGlobalSync);
 
-    await _localDatabase.setGlobalProducts(globalProducts, true);
+    await _localDatabase.setGlobalProducts(globalProducts);
 
-    final storeProducts = await _remoteDatabase.getStoreProducts(
+    final storeProducts = await _remoteDatabase.fetchStoreProducts(
       storeId: storeId,
-      lastSync: lastStoreProductsSync,
+      lastSynced: lastStoreProductsSync,
     );
 
-    await _localDatabase.setStoreProducts(storeProducts.values.toList(), true);
+    await _localDatabase.setStoreProducts(storeProducts.values.toList());
 
     final newDate = DateTime.now().toUtc();
     final newLastGlobalSync =
-        SyncStateModel(tableName: 'global_products', lastSync: newDate);
+        SyncStateModel(tableName: 'global_products', lastSynced: newDate);
     final newLastStoreProductsSync =
-        SyncStateModel(tableName: 'store_products', lastSync: newDate);
+        SyncStateModel(tableName: 'store_products', lastSynced: newDate);
 
-    await _sync.saveLastSync(newLastGlobalSync);
-    await _sync.saveLastSync(newLastStoreProductsSync);
+    await _sync.savelastSynced(newLastGlobalSync);
+    await _sync.savelastSynced(newLastStoreProductsSync);
   }
 }
