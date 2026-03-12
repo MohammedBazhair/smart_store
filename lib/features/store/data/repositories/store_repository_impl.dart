@@ -120,8 +120,7 @@ class StoreRepositoryImpl implements StoreRepository {
     await local.updateStore(storeModel, hasConnection);
   }
 
-  @override
-  Future<void> pushStoresChanges() async {
+  Future<void> _pushStoresChanges() async {
     final storesChanges = await syncLocal.getTableChanges('stores');
 
     final inserts = <StoreModel>[];
@@ -157,8 +156,8 @@ class StoreRepositoryImpl implements StoreRepository {
     await syncLocal.clearTablesChanges('stores');
   }
 
-  @override
-  Future<void> pushMembersChanges() async {
+  
+  Future<void> _pushMembersChanges() async {
     final membersChanges = await syncLocal.getTableChanges('store_members');
 
     final inserts = <StoreMemberModel>[];
@@ -195,8 +194,8 @@ class StoreRepositoryImpl implements StoreRepository {
 
   @override
   Future<void> syncAll(String userPhone) async {
-    await pushStoresChanges();
-    await pushMembersChanges();
+    await _pushStoresChanges();
+    await _pushMembersChanges();
 
     final lastSyncedStores = await syncLocal.getLastSynced('stores');
     final lastSyncedMembers = await syncLocal.getLastSynced('store_members');

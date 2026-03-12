@@ -25,7 +25,5 @@ abstract class ProductRepository {
   Future<Result<void>> updateProduct(Product product);
 
   Future<void> initializeDataFromNetwork();
-  Future<void> pushGlobalProductsChanges();
-  Future<void> pushStoreProductsChanges();
-  Future<void> syncAllProducts(String storeId);
+  Future<void> syncAllProducts([String? storeId]);
 }

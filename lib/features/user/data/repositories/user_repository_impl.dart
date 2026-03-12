@@ -63,8 +63,7 @@ class UserRepositoryImpl implements UserRepository {
     return _remoteDataSource.isPhoneSignUp(phoneNumber);
   }
 
-  @override
-  Future<void> pushProfileChanges() async {
+  Future<void> _pushProfileChanges() async {
     final changes = await _sync.getTableChanges(AppConstants.profilesTable);
 
     for (final change in changes) {
@@ -80,15 +79,16 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<void> syncProfile() async {
-    await pushProfileChanges();
+  Future<ProfileEntity> syncProfile() async {
+    await _pushProfileChanges();
 
     final userId = currentUser?.id;
-    if (userId == null) return;
+    if (userId == null) return _localDataSource.readProfile();
 
     final remoteProfile = await _remoteDataSource.readProfile(userId);
 
     await _localDataSource.upsertProfile(remoteProfile, true);
 
+    return remoteProfile;
   }
 }

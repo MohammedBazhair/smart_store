@@ -10,35 +10,23 @@ import '../../providers/core_providers.dart';
 import '../widgets/common/loading_widget.dart';
 import 'dashboard_screen.dart';
 
-class AuthGate extends ConsumerStatefulWidget {
+class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
 
   @override
-  ConsumerState<AuthGate> createState() => _AuthGateState();
-}
-
-class _AuthGateState extends ConsumerState<AuthGate> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(userControllerProvider.notifier).loadProfile();
-      await ref.read(storeControllerProvider.notifier).loadMyStores();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,ref) {
     final isLogged = ref.watch(userControllerProvider.notifier).isUserLoggedIn;
 
     if (!isLogged) {
       return const SignInScreen();
     }
+    final appSync = ref.watch(appSyncProvider);
     final profile = ref.watch(userControllerProvider).profile;
 
-    final isLoadingStores =
-        ref.watch(storeControllerProvider) is LoadinMyStoresEvent;
-    if (!profile.isDataComplete || isLoadingStores) {
+final storeState = ref.watch(storeControllerProvider);
+    final isLoadingStores = storeState is LoadinMyStoresEvent;
+
+    if (!profile.isDataComplete || isLoadingStores || appSync.isLoading) {
       return const SplashScreen();
     }
 

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/log.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/result.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/currence_code.dart';
@@ -19,7 +20,11 @@ class SettingsController extends AsyncNotifier<Settings> {
   }
 
   Future<void> refreshSettings() async {
-    final settings =await _getSettings();
+    final repo = ref.read(storeRepositoryProvider);
+    final userPhone = ref.watch(userControllerProvider).profile.phone!;
+    await repo.syncAll(userPhone);
+
+    final settings = await _getSettings();
     state = AsyncData(settings);
   }
 
@@ -35,7 +40,11 @@ class SettingsController extends AsyncNotifier<Settings> {
 
       final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
       final repository = ref.read(settingsRepositoryProvider);
-      await repository.changeDefaultCurrency(currency: currency, storeId: storeId);
+      await repository.changeDefaultCurrency(
+        currency: currency,
+        storeId: storeId,
+      );
+      
       final settings = state.requireValue.copyWith(defaultCurrency: currency);
       await updateSettings(settings);
       return const SuccessState(true);

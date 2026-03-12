@@ -56,6 +56,7 @@ class _SettingsFormState extends ConsumerState<SettingsForm> {
       child: RefreshIndicator(
         onRefresh: () async {
           await ref.read(settingsControllerProvider.notifier).refreshSettings();
+          
         },
         child: ListView(
           padding: const EdgeInsets.all(16),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../../products/presentation/screens/init_screen.dart';
 import '../../../user/domain/entities/status_config.dart';
 import '../../../user/presentation/widgets/status_icon_widget.dart';
@@ -32,8 +33,10 @@ class StoreSelectionScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         edgeOffset: 100,
-        onRefresh: () =>
-            ref.read(storeControllerProvider.notifier).loadMyStores(),
+        onRefresh: () {
+          final state = ref.refresh(appSyncProvider.future);
+          return state;
+        },
         child: CustomScrollView(
           slivers: [
             const SliverAppBar(

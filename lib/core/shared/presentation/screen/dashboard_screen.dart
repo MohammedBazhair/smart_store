@@ -119,8 +119,9 @@ class DashboardBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(initializeDashboardProvider);
+      onRefresh: ()  {
+        final state = ref.refresh(initializeDashboardProvider.future);
+        return state;
       },
       child: const SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(),

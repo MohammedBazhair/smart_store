@@ -14,7 +14,6 @@ abstract interface class UserRepository {
   Future<bool> isPhoneSignUp(String phoneNumber);
 
 
-  Future<void> pushProfileChanges();
   Future<void> syncProfile();
 
 }

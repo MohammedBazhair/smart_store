@@ -237,8 +237,7 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
-  @override
-  Future<void> pushGlobalProductsChanges() async {
+  Future<void> _pushGlobalProductsChanges() async {
     final globalProductsChanges =
         await _sync.getTableChanges('global_products');
 
@@ -277,8 +276,7 @@ class ProductRepositoryImpl implements ProductRepository {
     await _sync.clearTablesChanges('global_products');
   }
 
-  @override
-  Future<void> pushStoreProductsChanges() async {
+  Future<void> _pushStoreProductsChanges() async {
     final storeProductsChanges = await _sync.getTableChanges('store_products');
 
     final inserts = <StoreProductModel>[];
@@ -318,9 +316,11 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<void> syncAllProducts(String storeId) async {
-    await pushGlobalProductsChanges();
-    await pushStoreProductsChanges();
+  Future<void> syncAllProducts([String? storeId]) async {
+    if (!await _connectivity.hasConnection()) return;
+
+    await _pushGlobalProductsChanges();
+    await _pushStoreProductsChanges();
 
     final lastGlobalSync = await _sync.getLastSynced('global_products');
     final lastStoreProductsSync = await _sync.getLastSynced('store_products');
@@ -329,6 +329,8 @@ class ProductRepositoryImpl implements ProductRepository {
         await _remoteDatabase.fetchGlobalProducts(lastSynced: lastGlobalSync);
 
     await _localDatabase.setGlobalProducts(globalProducts);
+
+    if (storeId == null) return;
 
     final storeProducts = await _remoteDatabase.fetchStoreProducts(
       storeId: storeId,

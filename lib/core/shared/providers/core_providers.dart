@@ -14,6 +14,9 @@ import '../../../../features/user/data/datasources/user_remote_data_source.dart'
 import '../../../../features/user/data/repositories/user_repository_impl.dart';
 import '../../../../features/user/presentation/controllers/user_controller.dart';
 import '../../../../features/user/presentation/controllers/user_state.dart';
+import '../../../features/products/presentation/controllers/product_provider.dart';
+import '../../../features/store/presentation/controller/store_provider.dart';
+import '../../constants/app_constants.dart';
 import '../../database/local/cache_service.dart';
 import '../../database/local/local_database_service.dart';
 import '../../database/remote/remote_database_service.dart';
@@ -153,4 +156,30 @@ final tokenRefreshProvider = Provider((ref) {
   });
 
   ref.onDispose(subscription.cancel);
+});
+
+final appSyncProvider = FutureProvider((ref) async {
+  final network = ref.read(networkProvider);
+  
+  Future<void> call() async {
+    await ref.read(userControllerProvider.notifier).loadProfile();
+    await ref.read(storeControllerProvider.notifier).loadMyStores();
+  }
+
+  if (!await network.hasConnection()) return call();
+
+  final productRepo = ref.read(productRepositoryProvider);
+  final storesRepo = ref.read(storeRepositoryProvider);
+  final userRepo = ref.read(userRepositoryProvider);
+  final cache = ref.read(localCacheServiceProvider);
+  
+  final profile = await userRepo.syncProfile();
+
+  final storeId = cache.getString(key: AppConstants.lastStoreIdKey);
+
+  await Future.wait([
+    storesRepo.syncAll(profile.phone!),
+    productRepo.syncAllProducts(storeId),
+  ]);
+  await call();
 });

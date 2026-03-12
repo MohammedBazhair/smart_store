@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
 import '../controllers/product_provider.dart';
@@ -136,8 +137,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     }
     return RefreshIndicator(
       onRefresh: () async {
+        final state = ref.refresh(appSyncProvider.future);
+       await state;
         await ref.read(productControllerProvider.notifier).loadStoreProducts();
-        ref.invalidate(searchFilterProductsProvider);
       },
       child: ProductsList(
         products: products,

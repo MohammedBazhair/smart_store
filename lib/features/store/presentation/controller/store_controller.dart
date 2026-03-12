@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
@@ -144,7 +145,7 @@ class StoreController extends Notifier<StoreEventState> {
 
   Future<void> selectStore(String storeId) async {
     final cache = ref.read(localCacheServiceProvider);
-    await cache.setString(key: 'selected_store_id', value: storeId);
+    await cache.setString(key: AppConstants.lastStoreIdKey, value: storeId);
     state =
         SelectStoreEvent(state: state.state.copyWith(selectedStoreId: storeId));
   }

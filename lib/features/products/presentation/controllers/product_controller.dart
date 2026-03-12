@@ -22,6 +22,9 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   Future<void> initialize() async {
     final repo = ref.read(productRepositoryProvider);
     final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
+
+    await repo.syncAllProducts(storeId) ;
+
     final categories = await getCategories();
     final products = await getStoreProducts();
     final expiredProducts = await repo.getExpiredProducts(storeId!);
@@ -34,8 +37,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       categories: categories,
     );
   }
-
-
 
   Future<List<Category>> getCategories() async {
     final categories =
@@ -142,9 +143,8 @@ class ProductManagementController extends Notifier<ProductManagementState> {
           StoreProductKey(storeId: storeId!, productId: productId);
       final result = await productRepo.getStoreProductById(productKey);
 
-
       return result;
-    }  catch (e) {
+    } catch (e) {
       Logger.debugLog(error: e);
       return null;
     }

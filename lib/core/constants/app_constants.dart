@@ -17,6 +17,7 @@ class AppConstants {
   static const String fontFamily = 'cairo';
 
   static const String lastUserIdKey = 'last_user_id';
+  static const String lastStoreIdKey = 'selected_store_id';
 
   static const String profilesTable = 'profiles';
 
