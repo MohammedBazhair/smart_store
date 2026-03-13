@@ -7,14 +7,14 @@ import '../../../../features/store/presentation/screens/store_selection_screen.d
 import '../../../../features/user/domain/entities/account_status.dart';
 import '../../../../features/user/presentation/screens/account_status_screen.dart';
 import '../../providers/core_providers.dart';
-import '../widgets/common/loading_widget.dart';
 import 'dashboard_screen.dart';
+import 'splash_screen.dart';
 
 class AuthGate extends ConsumerWidget {
   const AuthGate({super.key});
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     final isLogged = ref.watch(userControllerProvider.notifier).isUserLoggedIn;
 
     if (!isLogged) {
@@ -23,7 +23,7 @@ class AuthGate extends ConsumerWidget {
     final appSync = ref.watch(appSyncProvider);
     final profile = ref.watch(userControllerProvider).profile;
 
-final storeState = ref.watch(storeControllerProvider);
+    final storeState = ref.watch(storeControllerProvider);
     final isLoadingStores = storeState is LoadinMyStoresEvent;
 
     if (!profile.isDataComplete || isLoadingStores || appSync.isLoading) {
@@ -43,28 +43,5 @@ final storeState = ref.watch(storeControllerProvider);
       case AccountStatus.pending:
         return AccountStatusScreen(profile: profile);
     }
-  }
-}
-
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/images/app_logo.png',
-              width: 300,
-              height: 300,
-            ),
-            const LoadingWidget(size: 40),
-          ],
-        ),
-      ),
-    );
   }
 }

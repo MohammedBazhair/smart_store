@@ -22,22 +22,26 @@ void callbackDispatcher() {
       ],
     );
 
-    final tasksUtils = BackgroundUtils();
+    final tasksUtils = BackgroundUtils(container);
     try {
       final task = BackgroundTask.values.byName(taskName);
 
       switch (task) {
-        case BackgroundTask.dailyExpiryCheck:
-          await tasksUtils.dailyExpiryCheck(container);
+        case BackgroundTask.checkDailyExpiry:
+          await tasksUtils.dailyExpiryCheck();
 
-        case BackgroundTask.addAlertForProduct:
+        case BackgroundTask.addProductAlert:
           if (inputData?.isEmpty ?? true) return Future.value(false);
 
           final backgroundParams = AlertBackgroundParams.fromMap(inputData!);
 
-          if (backgroundParams.product.globalProduct.id == null) return Future.value(false);
+          if (backgroundParams.product.globalProduct.id == null) {
+            return Future.value(false);
+          }
 
-          await tasksUtils.addAlertInBackground(container, backgroundParams);
+          await tasksUtils.addAlertInBackground( backgroundParams);
+        case BackgroundTask.syncAllData:
+          await tasksUtils.syncAllData();
       }
     } catch (e) {
       return Future.value(false);

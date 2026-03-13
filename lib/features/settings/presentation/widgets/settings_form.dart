@@ -9,9 +9,10 @@ import '../../domain/entities/settings.dart';
 import '../controllers/settings_provider.dart';
 import 'backup_settings_card.dart';
 import 'change_phone_card.dart';
-import 'change_store_selection.dart';
+import 'change_store_selection_card.dart';
 import 'currency_settings_card.dart';
 import 'notifications_settings_card.dart';
+import 'sync_card.dart';
 
 class SettingsForm extends ConsumerStatefulWidget {
   const SettingsForm({
@@ -56,12 +57,13 @@ class _SettingsFormState extends ConsumerState<SettingsForm> {
       child: RefreshIndicator(
         onRefresh: () async {
           await ref.read(settingsControllerProvider.notifier).refreshSettings();
-          
         },
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             CurrencySettingsCard(settings: widget.settings),
+            const SizedBox(height: 16),
+            const SyncCard(),
             const SizedBox(height: 16),
             NotificationsSettingsCard(
               settings: widget.settings,

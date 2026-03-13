@@ -6,18 +6,22 @@ import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/domain/alert.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
+import '../../features/store/presentation/controller/store_provider.dart';
+import '../constants/app_constants.dart';
 import '../shared/providers/core_providers.dart';
 import '../shared/providers/repositories_provider.dart';
 import 'date_utils.dart';
 
 class BackgroundUtils {
-  factory BackgroundUtils() => _instance ??= BackgroundUtils._();
-  BackgroundUtils._();
+  factory BackgroundUtils(ProviderContainer container) =>
+      _instance ??= BackgroundUtils._(container);
+  BackgroundUtils._(this.container);
 
   static BackgroundUtils? _instance;
 
+  final ProviderContainer container;
+
   Future<Result<int>> addAlertInBackground(
-    ProviderContainer container,
     AlertBackgroundParams params,
   ) {
     final product = params.product;
@@ -34,7 +38,7 @@ class BackgroundUtils {
     return repository.addAlert(alert);
   }
 
-  Future<void> dailyExpiryCheck(ProviderContainer container) async {
+  Future<void> dailyExpiryCheck() async {
     final repository = container.read(productRepositoryProvider);
     final cache = container.read(localCacheServiceProvider);
     final storeId = cache.getString(key: 'selected_store_id');
@@ -56,5 +60,21 @@ class BackgroundUtils {
     });
 
     await Future.wait(futures);
+  }
+
+  Future<void> syncAllData() async {
+    final productRepo = container.read(productRepositoryProvider);
+    final storesRepo = container.read(storeRepositoryProvider);
+    final userRepo = container.read(userRepositoryProvider);
+    final cache = container.read(localCacheServiceProvider);
+
+    final profile = await userRepo.syncProfile();
+
+    final storeId = cache.getString(key: AppConstants.lastStoreIdKey);
+
+    await Future.wait([
+      storesRepo.syncAll(profile.phone!),
+      productRepo.syncAllProducts(storeId),
+    ]);
   }
 }

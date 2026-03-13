@@ -24,6 +24,9 @@ class Category extends Equatable {
       'category_name': name,
     };
   }
+  Map<String, dynamic> toMapUpdate() {
+    return toMap()..remove('category_id');
+  }
 
   @override
   List<Object?> get props => [id];

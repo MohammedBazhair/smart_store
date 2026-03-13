@@ -160,10 +160,11 @@ final tokenRefreshProvider = Provider((ref) {
 
 final appSyncProvider = FutureProvider((ref) async {
   final network = ref.read(networkProvider);
-  
+
   Future<void> call() async {
     await ref.read(userControllerProvider.notifier).loadProfile();
     await ref.read(storeControllerProvider.notifier).loadMyStores();
+    await ref.read(productControllerProvider.notifier).initialize();
   }
 
   if (!await network.hasConnection()) return call();
@@ -172,7 +173,7 @@ final appSyncProvider = FutureProvider((ref) async {
   final storesRepo = ref.read(storeRepositoryProvider);
   final userRepo = ref.read(userRepositoryProvider);
   final cache = ref.read(localCacheServiceProvider);
-  
+
   final profile = await userRepo.syncProfile();
 
   final storeId = cache.getString(key: AppConstants.lastStoreIdKey);
@@ -183,3 +184,5 @@ final appSyncProvider = FutureProvider((ref) async {
   ]);
   await call();
 });
+
+final appSyncLoadingProvider = StateProvider<bool>((ref) => false);

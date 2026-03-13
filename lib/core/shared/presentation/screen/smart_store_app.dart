@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import '../../../../main.dart';
 import '../theme/app_theme.dart';
-import 'auth_gate.dart';
+import 'auth_gate_screen.dart';
 
 class SmartStoreApp extends StatelessWidget {
   const SmartStoreApp({

@@ -16,7 +16,7 @@ abstract interface class LocalDatabaseService {
   });
 
   Future<Map<String, dynamic>> readRow({
-    required String id,
+    required Object id,
     required String column,
     required String table,
   });
@@ -85,7 +85,7 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
 
   @override
   Future<Map<String, dynamic>> readRow({
-    required String id,
+    required Object id,
     required String column,
     required String table,
   }) async {

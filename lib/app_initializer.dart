@@ -54,8 +54,17 @@ Future<void> _initializeWorkManager() async {
 Future<void> _registerBackgroundTasks() async {
   await Workmanager().registerPeriodicTask(
     'dailyExpiryTask',
-    BackgroundTask.dailyExpiryCheck.name,
+    BackgroundTask.checkDailyExpiry.name,
     frequency: const Duration(hours: 24),
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
+    backoffPolicy: BackoffPolicy.linear,
+    backoffPolicyDelay: const Duration(minutes: 5),
+  );
+
+  await Workmanager().registerPeriodicTask(
+    'syncAllDataTask',
+    BackgroundTask.syncAllData.name,
+    frequency: const Duration(hours: 2),
     existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
     backoffPolicy: BackoffPolicy.linear,
     backoffPolicyDelay: const Duration(minutes: 5),

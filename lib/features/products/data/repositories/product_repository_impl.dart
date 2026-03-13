@@ -224,6 +224,7 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       final categoriesResult = await getAllCategories();
+      Logger.debugLog(message: categoriesResult.toString());
 
       if (categoriesResult.isEmpty) {
         throw Exception('Categories not loaded');
@@ -317,35 +318,57 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<void> syncAllProducts([String? storeId]) async {
-    if (!await _connectivity.hasConnection()) return;
+    try {
+      if (!await _connectivity.hasConnection()) return;
+      Logger.debugLog(message: '1');
+      Logger.debugLog(message: '2');
+      await _pushGlobalProductsChanges();
+      Logger.debugLog(message: '3');
+      await _pushStoreProductsChanges();
+      Logger.debugLog(message: '4');
 
-    await _pushGlobalProductsChanges();
-    await _pushStoreProductsChanges();
+      final lastGlobalSync = await _sync.getLastSynced('global_products');
+      Logger.debugLog(message: '5');
+      final lastStoreProductsSync = await _sync.getLastSynced('store_products');
+      Logger.debugLog(message: '6');
 
-    final lastGlobalSync = await _sync.getLastSynced('global_products');
-    final lastStoreProductsSync = await _sync.getLastSynced('store_products');
+      final categories = await _remoteDatabase.fetchAllCategories();
+      Logger.debugLog(message: '7');
 
-    final globalProducts =
-        await _remoteDatabase.fetchGlobalProducts(lastSynced: lastGlobalSync);
+      await _localDatabase.setAllCategories(categories);
+      Logger.debugLog(message: '8');
 
-    await _localDatabase.setGlobalProducts(globalProducts);
+      final globalProducts =
+          await _remoteDatabase.fetchGlobalProducts(lastSynced: lastGlobalSync);
+      Logger.debugLog(message: '9');
 
-    if (storeId == null) return;
+      await _localDatabase.setGlobalProducts(globalProducts);
+      Logger.debugLog(message: '10');
 
-    final storeProducts = await _remoteDatabase.fetchStoreProducts(
-      storeId: storeId,
-      lastSynced: lastStoreProductsSync,
-    );
+      if (storeId == null) return;
+      Logger.debugLog(message: '11');
 
-    await _localDatabase.setStoreProducts(storeProducts.values.toList());
+      final storeProducts = await _remoteDatabase.fetchStoreProducts(
+        storeId: storeId,
+        lastSynced: lastStoreProductsSync,
+      );
+      Logger.debugLog(message: '12');
 
-    final newDate = DateTime.now().toUtc();
-    final newLastGlobalSync =
-        SyncStateModel(tableName: 'global_products', lastSynced: newDate);
-    final newLastStoreProductsSync =
-        SyncStateModel(tableName: 'store_products', lastSynced: newDate);
+      await _localDatabase.setStoreProducts(storeProducts.values.toList());
+      Logger.debugLog(message: '13');
 
-    await _sync.saveLastSynced(newLastGlobalSync);
-    await _sync.saveLastSynced(newLastStoreProductsSync);
+      final newDate = DateTime.now().toUtc();
+      final newLastGlobalSync =
+          SyncStateModel(tableName: 'global_products', lastSynced: newDate);
+      final newLastStoreProductsSync =
+          SyncStateModel(tableName: 'store_products', lastSynced: newDate);
+      Logger.debugLog(message: '14');
+
+      await _sync.saveLastSynced(newLastGlobalSync);
+      await _sync.saveLastSynced(newLastStoreProductsSync);
+      Logger.debugLog(message: '15');
+    } catch (e) {
+      Logger.debugLog(error: e);
+    }
   }
 }

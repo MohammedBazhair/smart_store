@@ -101,7 +101,7 @@ class ExchangeRateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      spacing: 20,
+      spacing: 24,
       children: [
         // Header
         Row(
@@ -163,19 +163,20 @@ class ExchangeRateWidget extends StatelessWidget {
             Expanded(
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     '1',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[600],
                     ),
                   ),
                   Text(
                     currentExchangeRate.currency.label,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryColor,
-                      height: 2,
                     ),
                   ),
                 ],
@@ -200,7 +201,7 @@ class ExchangeRateWidget extends StatelessWidget {
                   Text(
                     currentExchangeRate.rateToBase.toString(),
                     style: const TextStyle(
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryColor,
                     ),
@@ -208,10 +209,9 @@ class ExchangeRateWidget extends StatelessWidget {
                   Text(
                     primaryCurrency.label,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: Colors.grey[600],
-                      height: 2,
                     ),
                   ),
                 ],
@@ -238,7 +238,7 @@ class ExchangeRateWidget extends StatelessWidget {
                   fontSize: 11,
                   color: Colors.grey[900],
                   fontWeight: FontWeight.w600,
-                  height: 1.4,
+                  height: 2,
                 ),
               ),
             ),

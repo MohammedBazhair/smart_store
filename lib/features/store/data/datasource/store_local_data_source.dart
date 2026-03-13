@@ -64,7 +64,8 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     StoreModel store, [
     bool skipLocalTracking = false,
   ]) async {
-    try {
+    bool isStoreCreated = false;
+    bool isMemberInserted = false;
       final member = StoreMemberModel(
         memberPhone: store.ownerPhone,
         storeId: store.id!,
@@ -74,10 +75,15 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         isDeleted: false,
       );
 
-      await _db.transaction((t) async {
-        await t.insert('stores', store.toMap());
-        await t.insert('store_members', member.toMap());
-      });
+    try {
+
+      final storeResult =
+          await _db.insertRow(table: 'stores', map: store.toMap());
+      final memberResult =
+          await _db.insertRow(table: 'store_members', map: member.toMap());
+
+      isStoreCreated = storeResult != 0;
+      isMemberInserted = memberResult != 0;
 
       if (skipLocalTracking) return;
 
@@ -87,7 +93,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         operation: SyncOperation.insert,
         updatedAt: DateTime.now().toUtc(),
       );
-      await _sync.addChange(storeChange);
+      if (isStoreCreated) await _sync.addChange(storeChange);
 
       final memberKey =
           StoreMemberKey(storeId: store.id!, memberPhone: member.memberPhone);
@@ -97,9 +103,12 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         operation: SyncOperation.insert,
         updatedAt: DateTime.now().toUtc(),
       );
-      await _sync.addChange(memberChange);
+      if (isMemberInserted) await _sync.addChange(memberChange);
     } catch (e) {
       Logger.debugLog(error: e);
+      if (isStoreCreated && !isMemberInserted) {
+        await _db.deleteWhere(table: 'stores', filters: {'id': store.id!});
+      }
     }
   }
 

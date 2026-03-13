@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../domain/entities/product_expiry_status.dart';
@@ -87,10 +85,7 @@ class AnimatedProductCard extends StatelessWidget {
           ),
         ),
       )
-          .animate()
-          .fadeIn(duration: 400.ms)
-          .slideX(begin: 0.1, end: 0)
-          .then(delay: 100.ms, duration: 150.ms, curve: Curves.easeOutCubic),
+        ,
     );
   }
 }

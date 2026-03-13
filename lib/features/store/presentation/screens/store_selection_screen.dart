@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/providers/core_providers.dart';
+import '../../../auth/presentation/widgets/sign_out_button.dart';
 import '../../../products/presentation/screens/init_screen.dart';
 import '../../../user/domain/entities/status_config.dart';
 import '../../../user/presentation/widgets/status_icon_widget.dart';
@@ -21,6 +22,7 @@ class StoreSelectionScreen extends ConsumerWidget {
     ref.listen(storeControllerProvider, (_, event) {
       handleStoreStates(event, context);
     });
+    final stores = ref.watch(storeControllerProvider).state.myStoresList;
 
     return Scaffold(
       backgroundColor: const Color(0xffF5F7FA),
@@ -33,17 +35,21 @@ class StoreSelectionScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         edgeOffset: 100,
-        onRefresh: () {
-          final state = ref.refresh(appSyncProvider.future);
-          return state;
+        onRefresh: () async {
+          await ref.refresh(appSyncProvider.future);
         },
         child: CustomScrollView(
+          physics: const NeverScrollableScrollPhysics(),
           slivers: [
             const SliverAppBar(
               toolbarHeight: 60,
               pinned: true,
               floating: true,
               backgroundColor: AppTheme.primaryColor,
+              actionsPadding: EdgeInsets.symmetric(horizontal: 5),
+              actions: [
+                SignOutButton(),
+              ],
               title: Text(
                 'المتاجر',
                 style: TextStyle(
@@ -53,34 +59,37 @@ class StoreSelectionScreen extends ConsumerWidget {
               ),
             ),
 
-            const SliverPadding(
-              padding: EdgeInsetsGeometry.only(
-                top: 24,
-                left: 24,
-                right: 24,
-              ),
-              sliver: SliverToBoxAdapter(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.touch_app_outlined,
-                      size: 18,
-                      color: AppTheme.textSecondary,
-                    ),
-                    SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'اضغط مطولاً على المتجر لإدارة الأعضاء',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
-                          fontWeight: FontWeight.w500,
+            SliverVisibility(
+              visible: stores.isNotEmpty,
+              sliver: const SliverPadding(
+                padding: EdgeInsetsGeometry.only(
+                  top: 24,
+                  left: 24,
+                  right: 24,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.touch_app_outlined,
+                        size: 18,
+                        color: AppTheme.textSecondary,
+                      ),
+                      SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          'اضغط مطولاً على المتجر لإدارة الأعضاء',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -88,29 +97,22 @@ class StoreSelectionScreen extends ConsumerWidget {
             /// STORES GRID
             SliverPadding(
               padding: const EdgeInsetsGeometry.all(24),
-              sliver: Consumer(
-                builder: (_, ref, __) {
-                  final stores =
-                      ref.watch(storeControllerProvider).state.myStoresList;
-
-                  return stores.isEmpty
-                      ? const SliverFillRemaining(
-                          child: _EmptyStoresView(),
-                        )
-                      : SliverList.separated(
-                          itemCount: stores.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 20),
-                          itemBuilder: (context, index) {
-                            return _StoreCard(
-                              store: stores[index].store,
-                              owner: stores[index].owner,
-                              members: stores[index].members,
-                            );
-                          },
+              sliver: stores.isEmpty
+                  ? const SliverFillRemaining(
+                      child: _EmptyStoresView(),
+                    )
+                  : SliverList.separated(
+                      itemCount: stores.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 20),
+                      itemBuilder: (context, index) {
+                        return _StoreCard(
+                          store: stores[index].store,
+                          owner: stores[index].owner,
+                          members: stores[index].members,
                         );
-                },
-              ),
+                      },
+                    ),
             ),
           ],
         ),
@@ -140,9 +142,9 @@ class _StoreCard extends ConsumerWidget {
     );
     final borderRadius = BorderRadius.circular(25);
     return Material(
+      shadowColor: const Color(0x42F3F2F2),
       color: Colors.transparent,
       borderRadius: borderRadius,
-      shadowColor: const Color(0x42DADADA),
       elevation: 7,
       child: InkWell(
         borderRadius: borderRadius,
@@ -256,13 +258,24 @@ class _StoreCard extends ConsumerWidget {
                       ],
                     ),
 
-                    Icon(
-                      isSelected
-                          ? Icons.check_circle
-                          : Icons.arrow_forward_ios_rounded,
-                      color: color,
-                      size: isSelected ? 28 : 18,
-                    ),
+                    if (isSelected)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: const Text(
+                          'محدد',
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ],
@@ -292,6 +305,7 @@ class _EmptyStoresView extends StatelessWidget {
           // أيقونة احترافية
           StatusIconWidget(
             config: config,
+            onPressed: () => showCreateStoreDialog(context),
           ),
           const SizedBox(height: 60),
 

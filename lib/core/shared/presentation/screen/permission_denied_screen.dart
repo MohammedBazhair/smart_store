@@ -4,7 +4,7 @@ import '../../../../errors/result.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
 import '../theme/app_theme.dart';
-import 'auth_gate.dart';
+import 'auth_gate_screen.dart';
 
 class PermissionDeniedScreen extends StatelessWidget {
   const PermissionDeniedScreen({super.key});

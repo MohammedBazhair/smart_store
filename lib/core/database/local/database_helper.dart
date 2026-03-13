@@ -22,7 +22,7 @@ class DatabaseHelper {
   Future<Database> _initDB(String filePath) async {
     final path = await getDatabaseFilePath();
     Logger.debugLog(message: path);
-    
+
     return openDatabase(
       path,
       version: AppConstants.databaseVersion,
@@ -153,10 +153,23 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE INDEX idx_store_member
-      ON store_members(store_id, member_phone);
-      CREATE INDEX idx_store
-      ON stores(id);
+      CREATE INDEX idx_store_member_id_store
+      ON store_members(store_id);
+
+      CREATE INDEX idx_store_member_phone
+      ON store_members(member_phone);
+
+      CREATE INDEX idx_store_owner
+      ON stores(owner_phone);
+
+      CREATE INDEX idx_global_products_is_deleted
+      ON global_products(is_deleted);
+
+      CREATE INDEX idx_global_products_category_id
+      ON global_products(category_id);
+
+      CREATE INDEX idx_store_products_product_id
+      ON store_products(product_id);
 ''');
   }
 

@@ -13,6 +13,7 @@ import '../models/store_product_key.dart';
 import '../models/store_product_model.dart';
 
 abstract class ProductLocalDataSource {
+  Future<Category?> fetchCategory(int categoryId);
   Future<List<Category>> fetchAllCategories();
   Future<void> setAllCategories(List<Category> categories);
 
@@ -103,8 +104,19 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
   @override
   Future<void> setAllCategories(List<Category> categories) async {
-    final rows = categories.map((c) => c.toMap()).toList();
-    await db.insertRows(rows: rows, table: 'categories');
+    for (final category in categories) {
+      final result = await fetchCategory(category.id);
+
+      if (result == null) {
+        await db.insertRow(map: category.toMap(), table: 'categories');
+      } else {
+        await db.update(
+          updated: category.toMapUpdate(),
+          filterWhere: {'category_id': category.id},
+          table: 'categories',
+        );
+      }
+    }
   }
 
   @override
@@ -469,5 +481,19 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     );
 
     await _sync.addChange(change);
+  }
+
+  @override
+  Future<Category?> fetchCategory(int categoryId) async {
+    final row = await db.readRow(
+      id: categoryId,
+      column: 'category_id',
+      table: 'categories',
+    );
+
+    if (row.isEmpty) return null;
+
+    final category = Category.fromLocal(row);
+    return category;
   }
 }

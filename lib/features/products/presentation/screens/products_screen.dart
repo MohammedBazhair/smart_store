@@ -137,8 +137,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     }
     return RefreshIndicator(
       onRefresh: () async {
-        final state = ref.refresh(appSyncProvider.future);
-       await state;
+        ref.read(appSyncLoadingProvider.notifier).state = true;
+        await ref.refresh(appSyncProvider.future);
+        ref.read(appSyncLoadingProvider.notifier).state = false;
         await ref.read(productControllerProvider.notifier).loadStoreProducts();
       },
       child: ProductsList(
