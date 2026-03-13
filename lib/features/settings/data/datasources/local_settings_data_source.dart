@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/cache_service.dart';
@@ -40,9 +42,14 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
 
   @override
   Future<void> setExchangeRates(List<ExchangeRateModel> exchangeRates) async {
+    if (exchangeRates.isEmpty) return;
     try {
       final rows = exchangeRates.map((e) => e.toMap()).toList();
-      await _localDatabase.insertRows(rows: rows, table: 'exchange_rates');
+      await _localDatabase.insertRows(
+        rows: rows,
+        table: 'exchange_rates',
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
     } catch (e) {
       Logger.debugLog(error: e);
     }
@@ -73,7 +80,7 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
       filterWhere: {'id': storeId},
       table: 'stores',
     );
-    
+
     if (skipLocalTracking) return;
     final change = SyncChangeModel(
       tableName: 'stores',

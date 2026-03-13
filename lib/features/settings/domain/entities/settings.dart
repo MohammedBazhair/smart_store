@@ -25,7 +25,6 @@ class Settings extends Equatable {
 
   ExchangeRate get defaultExchangeRate {
     try {
-      Logger.debugLog(message: exchageRates.toString());
       final result =
           exchageRates.firstWhere((e) => e.currency == defaultCurrency);
 

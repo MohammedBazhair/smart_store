@@ -17,6 +17,7 @@ import '../../../../features/user/presentation/controllers/user_state.dart';
 import '../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../features/store/presentation/controller/store_provider.dart';
 import '../../constants/app_constants.dart';
+import '../../constants/log.dart';
 import '../../database/local/cache_service.dart';
 import '../../database/local/local_database_service.dart';
 import '../../database/remote/remote_database_service.dart';
@@ -159,6 +160,7 @@ final tokenRefreshProvider = Provider((ref) {
 });
 
 final appSyncProvider = FutureProvider((ref) async {
+  Logger.debugLog(message: 'appSyncProvider');
   final network = ref.read(networkProvider);
 
   Future<void> call() async {

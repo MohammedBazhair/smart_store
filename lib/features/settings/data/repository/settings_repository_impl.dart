@@ -30,7 +30,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
     final exchangeRates = await getExchangeRates();
 
-    Logger.debugLog(message: exchangeRates.toString());
 
     if (raw == null) {
       return Settings.theDefault(exchangeRates);
@@ -38,7 +37,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
     final model = SettingsModel.fromJson(raw, exchangeRates);
 
-    Logger.debugLog(message: model.toString());
     return model;
   }
 
@@ -72,7 +70,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
   Future<void> setSettings(Settings settings) async {
     try {
       final model = SettingsModel.fromEntity(settings);
-      Logger.debugLog(message: model.toJson());
       await _cache.setString(key: 'settings', value: model.toJson());
     } catch (e) {
       Logger.debugLog(error: e);

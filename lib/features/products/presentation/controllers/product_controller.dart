@@ -160,7 +160,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
         storeId: storeId,
       );
 
-      Logger.debugLog(message: products.toString());
       if (!query.hasCategory) return products;
 
       return products

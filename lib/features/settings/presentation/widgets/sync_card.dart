@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/shared/presentation/widgets/common/conditional_builder.dart';
 import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 
@@ -36,12 +37,18 @@ class SyncCard extends StatelessWidget {
                                 false;
                           }
                         },
-                  icon: isLoading
-                      ? const ThreeDotsLoading(dotSize: 4)
-                      : const Icon(Icons.sync),
-                  label: isLoading
-                      ? const Text('جارٍ المزامنة..')
-                      : const Text('مزامنة'),
+                  icon: ConditionalBuilder(
+                    condition: isLoading,
+                    builder: (context) => const Text('جارٍ المزامنة'),
+                    fallback: (context) => const Text('مزامنة'),
+                  ),
+                  label: ConditionalBuilder(
+                    condition: isLoading,
+                    builder: (context) => const ThreeDotsLoading(
+                      dotSize: 4,
+                      dotColor: Colors.grey,
+                    ),
+                  ),
                 );
               },
             ),
