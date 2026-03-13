@@ -46,7 +46,7 @@ class SyncCard extends StatelessWidget {
                     condition: isLoading,
                     builder: (context) => const ThreeDotsLoading(
                       dotSize: 4,
-                      dotColor: Colors.grey,
+                      dotColor: Colors.black,
                     ),
                   ),
                 );

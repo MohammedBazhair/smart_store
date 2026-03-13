@@ -1,6 +1,4 @@
 import 'package:equatable/equatable.dart';
-
-import '../../../../core/constants/log.dart';
 import 'currence_code.dart';
 import 'exchange_rate.dart';
 

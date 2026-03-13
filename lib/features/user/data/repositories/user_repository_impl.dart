@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
@@ -36,7 +35,8 @@ class UserRepositoryImpl implements UserRepository {
     try {
       final profileModel = await _remoteDataSource.readProfile(params.userId);
 
-      await _localDataSource.upsertProfile(profileModel);
+      // البيانات من السيرفر لا تحتاج لتتبع محلي (لا نضيفها لـ sync_changes)
+      await _localDataSource.upsertProfile(profileModel, true);
       return profileModel;
     } catch (e) {
       debugPrint(e.toString());
@@ -67,8 +67,6 @@ class UserRepositoryImpl implements UserRepository {
     final changes = await _sync.getTableChanges(AppConstants.profilesTable);
 
     for (final change in changes) {
-      if (change.operation != SyncOperation.update) continue;
-
       final userId = change.recordId;
       final profile = await _localDataSource.readProfile(userId);
 
