@@ -16,13 +16,13 @@ import '../../../../features/user/presentation/controllers/user_controller.dart'
 import '../../../../features/user/presentation/controllers/user_state.dart';
 import '../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../features/store/presentation/controller/store_provider.dart';
-import '../../constants/app_constants.dart';
 import '../../constants/log.dart';
 import '../../database/local/cache_service.dart';
 import '../../database/local/local_database_service.dart';
 import '../../database/remote/remote_database_service.dart';
 import '../../network/connectivity_service.dart';
 import '../../network/network_clinet.dart';
+import '../../utils/background_utils.dart';
 import '../datasources/sync_local_data_source.dart';
 import 'repositories_provider.dart';
 
@@ -103,11 +103,9 @@ final localCacheServiceProvider = Provider((ref) {
 });
 
 final userRemoteDataSourceProvider = Provider((ref) {
-  final supabaseClinet = ref.read(supabaseProvider).client;
   final remoteDatabaseService = ref.read(remoteDatabaseServiceProvider);
   final localCacheService = ref.read(localCacheServiceProvider);
   return UserRemoteDataSourceImpl(
-    supabaseClinet,
     remoteDatabaseService,
     localCacheService,
   );
@@ -161,30 +159,25 @@ final tokenRefreshProvider = Provider((ref) {
 
 final appSyncProvider = FutureProvider((ref) async {
   Logger.debugLog(message: 'appSyncProvider');
-  final network = ref.read(networkProvider);
 
-  Future<void> call() async {
-    await ref.read(userControllerProvider.notifier).loadProfile();
-    await ref.read(storeControllerProvider.notifier).loadMyStores();
-    await ref.read(productControllerProvider.notifier).initialize();
+  try {
+    final network = ref.read(networkProvider);
+
+    Future<void> loadLocal() async {
+      await ref.read(userControllerProvider.notifier).loadProfile();
+      await ref.read(storeControllerProvider.notifier).loadMyStores();
+      await ref.read(productControllerProvider.notifier).initialize();
+    }
+
+    if (!await network.hasConnection()) return loadLocal();
+
+    final backgroundUtils = BackgroundUtils(ref.container);
+    await backgroundUtils.syncAllData();
+
+    await loadLocal();
+  } catch (e, st) {
+    Logger.debugLog(error: e, stackTrace: st);
   }
-
-  if (!await network.hasConnection()) return call();
-
-  final productRepo = ref.read(productRepositoryProvider);
-  final storesRepo = ref.read(storeRepositoryProvider);
-  final userRepo = ref.read(userRepositoryProvider);
-  final cache = ref.read(localCacheServiceProvider);
-
-  final profile = await userRepo.syncProfile();
-
-  final storeId = cache.getString(key: AppConstants.lastStoreIdKey);
-
-  await Future.wait([
-    storesRepo.syncAll(profile.phone!),
-    productRepo.syncAllProducts(storeId),
-  ]);
-  await call();
 });
 
-final appSyncLoadingProvider = StateProvider<bool>((ref) => false);
+final appSyncLoadingProvider = StateProvider.autoDispose<bool>((ref) => false);

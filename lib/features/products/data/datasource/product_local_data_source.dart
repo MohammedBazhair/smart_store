@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../../../core/constants/enums.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/local_database_service.dart';
 import '../../../../core/extensions/extensions.dart';
@@ -89,8 +90,11 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           gp.barcode        AS barcode,
           gp.created_at     AS product_created_at,
           gp.updated_at     AS product_updated_at,
-          gp.is_deleted     AS product_is_deleted
+          gp.is_deleted     AS product_is_deleted,
 
+          c.category_id     AS category_id,
+          c.category_name   AS category_name
+        
         FROM store_products sp
         LEFT JOIN global_products gp ON sp.product_id = gp.id
         LEFT JOIN categories c ON gp.category_id = c.category_id
@@ -197,22 +201,28 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     required String storeId,
     bool includeDeleted = true,
   }) async {
-    final response = await db.rawQuery(
-      query: '''
-        SELECT ${_storeProductColumnsAndJoins()}
-        WHERE sp.store_id = ? AND sp.is_deleted = ? 
-       ''',
-      arguments: [storeId, includeDeleted.toInt],
-    );
-    final products = <String, StoreProductModel>{};
+    try {
+      final response = await db.rawQuery(
+        query: '''
+    SELECT ${_storeProductColumnsAndJoins()}
+    WHERE sp.store_id = ? AND sp.is_deleted = ? 
+   ''',
+        arguments: [storeId, includeDeleted.toInt],
+      );
+      final products = <String, StoreProductModel>{};
 
-    for (final m in response) {
-      final product = StoreProductModel.fromRemote(m);
-      final key = product.globalProduct.barcode ?? product.globalProduct.id!;
-      products[key] = product;
+      for (final m in response) {
+        Logger.debugLog(message: m.toString());
+        final product = StoreProductModel.fromLocal(m);
+        final key = product.globalProduct.barcode ?? product.globalProduct.id!;
+        products[key] = product;
+      }
+
+      return products;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      return {};
     }
-
-    return products;
   }
 
   @override
@@ -315,24 +325,28 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     bool skipLocalTracking = false,
   ]) async {
     bool isAddedToGlobal = false;
-    await db.transaction((txn) async {
-      final globalProductModel =
-          GlobalProductModel.fromEntity(product.globalProduct);
+    try {
+      await db.transaction((txn) async {
+        final globalProductModel =
+            GlobalProductModel.fromEntity(product.globalProduct);
 
-      final id = await txn.insert(
-        'global_products',
-        globalProductModel.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+        final id = await txn.insert(
+          'global_products',
+          globalProductModel.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
 
-      isAddedToGlobal = id != 0;
+        isAddedToGlobal = id != 0;
 
-      await txn.insert(
-        'store_products',
-        product.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
-    });
+        await txn.insert(
+          'store_products',
+          product.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      });
+    } catch (e) {
+      Logger.debugLog(error: e);
+    }
 
     if (skipLocalTracking) return product;
 

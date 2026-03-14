@@ -1,5 +1,8 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/enums.dart';
+import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/database/local/local_database_service.dart';
 import '../../../../core/shared/data/models/sync_change_model.dart';
@@ -12,6 +15,7 @@ abstract interface class UserLocalDataSource {
     bool skipLocalTracking = false,
   ]);
   Future<ProfileEntity> readProfile([String? userId]);
+  Future<void> setProfiles(RowList maps);
 }
 
 class UserLocalDataSourceImpl implements UserLocalDataSource {
@@ -76,5 +80,38 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
     );
 
     return ProfileEntity.fromMap(map);
+  }
+
+  @override
+  Future<void> setProfiles(RowList maps) async {
+    final aleradyProfiles =
+        await _localService.rawQuery(query: 'SELECT id FROM profiles');
+
+    final ids = aleradyProfiles.map((m) => m['id'] as String).toSet();
+
+    final batch = _localService.batch;
+
+    for (final element in maps) {
+      final userId = element['id'] as String?;
+      if (userId == null) continue;
+
+      if (ids.contains(userId)) {
+        final map = {...element}..remove('id');
+        batch.update(
+          AppConstants.profilesTable,
+          map,
+          where: 'id = ? AND updated_at < ?',
+          whereArgs: [userId, element['updated_at']],
+        );
+      } else {
+        batch.insert(
+          AppConstants.profilesTable,
+          element,
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+    }
+
+    await batch.commit(noResult: true);
   }
 }

@@ -1,5 +1,4 @@
 import '../../../../core/database/remote/remote_database_service.dart';
-import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/data/models/sync_state_model.dart';
 import '../models/store_member_key.dart';
 import '../models/store_member_model.dart';
@@ -14,7 +13,7 @@ abstract class StoreRemoteDataSource {
   Future<void> updateStores(List<StoreModel> stores);
   Future<List<StoreModel>> getUserStores({
     required String userPhone,
-    bool isDeleted = true,
+    bool includeDeleted = true,
     SyncStateModel? lastSynced,
   });
 
@@ -48,19 +47,21 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   @override
   Future<List<StoreModel>> getUserStores({
     required String userPhone,
-    bool isDeleted = true,
+    bool includeDeleted = true,
     SyncStateModel? lastSynced,
   }) async {
     final response = _client.client
         .from('stores')
         .select('*, store_members!inner(*)')
-        .eq('store_members.member_phone', userPhone)
-        .eq('is_deleted', isDeleted.toInt);
+        .eq('store_members.member_phone', userPhone);
+
+    final resultResponse =
+        includeDeleted ? response : response.eq('is_deleted', 0);
 
     final lastSyncedDate = lastSynced?.lastSynced.toIso8601String();
     final result = await (lastSyncedDate != null
-        ? response.gt('updated_at', lastSyncedDate)
-        : response.order('created_at', ascending: true));
+        ? resultResponse.gt('updated_at', lastSyncedDate)
+        : resultResponse.order('created_at', ascending: true));
 
     return result.map(StoreModel.fromMap).toList();
   }
@@ -71,20 +72,17 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     bool includeDeleted = true,
     SyncStateModel? lastSynced,
   }) async {
-    final response = _client.client
-        .from('store_members')
-        .select()
-        .eq('store_id', storeId)
-        .eq(
-          'is_deleted',
-          includeDeleted.toInt,
-        );
+    final response =
+        _client.client.from('store_members').select().eq('store_id', storeId);
+
+    final resultResponse =
+        includeDeleted ? response : response.eq('is_deleted', 0);
 
     final lastSyncedDate = lastSynced?.lastSynced.toIso8601String();
 
     final result = await (lastSyncedDate != null
-        ? response.gt('updated_at', lastSyncedDate)
-        : response);
+        ? resultResponse.gt('updated_at', lastSyncedDate)
+        : resultResponse);
 
     return result.map(StoreMemberModel.fromMap).toList();
   }
@@ -93,7 +91,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
   Future<void> addMember(StoreMemberModel member) async {
     await _client.insertRow(table: 'store_members', map: member.toMap());
 
-    await _updateStore(member.storeId);
+    await _updateStore(member.primaryKey.storeId);
   }
 
   @override
@@ -130,13 +128,10 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     await _client.update(
       updated: member.toUpdateMap(),
       table: 'store_members',
-      whereFilter: {
-        'store_id': member.storeId,
-        'member_phone': member.memberPhone,
-      },
+      whereFilter:member.primaryKey.toMap(),
     );
 
-    await _updateStore(member.storeId);
+    await _updateStore(member.primaryKey.storeId);
   }
 
   Future<void> _updateStore(String storeId) async {

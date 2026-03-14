@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
-import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../data/datasource/product_local_data_source.dart';
 import '../../data/datasource/product_remote_data_source.dart';
 import '../../data/repositories/product_repository_impl.dart';
@@ -91,8 +90,3 @@ final productControllerProvider =
   return ProductManagementController();
 });
 
-final initializeDashboardProvider = FutureProvider((ref) async {
-  final controller = ref.read(productControllerProvider.notifier);
-  await controller.initialize();
-  await ref.read(alertControllerProvider.notifier).loadAlerts();
-});

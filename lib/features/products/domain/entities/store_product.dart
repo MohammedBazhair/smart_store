@@ -10,7 +10,7 @@ class StoreProduct extends Product {
     required this.expiryDate,
     required this.quantity,
     required this.currency,
-    this.notes,
+  required  this.notes,
     required this.updatedAt,
     this.isDeleted = false,
   });
@@ -35,7 +35,7 @@ class StoreProduct extends Product {
   final DateTime? expiryDate;
   final int? quantity;
   final CurrencyCode currency;
-  final String? notes;
+  final String notes;
   final DateTime updatedAt;
   final bool isDeleted;
 

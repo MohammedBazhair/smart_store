@@ -131,6 +131,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
         ),
       ),
+      dividerTheme: DividerThemeData(color: Colors.grey[300]),
       listTileTheme: ListTileThemeData(
         tileColor: cardColor,
         shape: RoundedRectangleBorder(

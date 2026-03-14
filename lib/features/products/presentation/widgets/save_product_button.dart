@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/shared/presentation/widgets/common/conditional_builder.dart';
-import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
+import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 
 class SaveProductButton extends ConsumerWidget {
@@ -16,15 +16,12 @@ class SaveProductButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final isLoading = ref.watch(isLoadingProvider(IsLoading.saveProduct));
-    return AbsorbPointer(
-      absorbing: isLoading,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        child: ConditionalBuilder(
-          condition: !isLoading,
-          builder: (_) => const Text('حفظ المنتج'),
-          fallback: (context) => const LoadingWidget(),
-        ),
+    return ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
+      child: ConditionalBuilder(
+        condition: !isLoading,
+        builder: (_) => const Text('حفظ المنتج'),
+        fallback: (context) => const ThreeDotsLoading(dotSize: 7),
       ),
     );
   }

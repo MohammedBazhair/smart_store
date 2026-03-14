@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:skeletonizer/skeletonizer.dart';
-
 import '../../../../errors/result.dart';
+import '../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../features/alerts/presentation/controllers/notification_cache.dart';
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
@@ -70,8 +69,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final initializeAsync = ref.watch(initializeDashboardProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('لوحة التحكم'),
@@ -84,28 +81,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ],
       ),
-      body: initializeAsync.when(
-        data: (data) {
-          return const DashboardBody();
-        },
-        loading: () {
-          return const Skeletonizer(child: DashboardBody());
-        },
-        error: (_, __) {
-          return const DashboardBody();
-        },
-      ),
+      body: const DashboardBody(),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: Skeletonizer(
-        enabled: initializeAsync.isLoading,
-        child: FloatingActionButton.extended(
-          elevation: 2.5,
-          onPressed: () {
-            context.pushTo(const BarcodeScannerScreen());
-          },
-          icon: const Icon(Icons.qr_code_scanner),
-          label: const Text('مسح الباركود'),
-        ),
+      floatingActionButton: FloatingActionButton.extended(
+        elevation: 2.5,
+        onPressed: () {
+          context.pushTo(const BarcodeScannerScreen());
+        },
+        icon: const Icon(Icons.qr_code_scanner),
+        label: const Text('مسح الباركود'),
       ),
     );
   }
@@ -120,7 +104,9 @@ class DashboardBody extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     return RefreshIndicator(
       onRefresh: () async {
-        await ref.refresh(initializeDashboardProvider.future);
+          final controller = ref.read(productControllerProvider.notifier);
+          await controller.initialize();
+          await ref.read(alertControllerProvider.notifier).loadAlerts();
       },
       child: const SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(),

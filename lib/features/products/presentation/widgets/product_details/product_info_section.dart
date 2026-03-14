@@ -94,11 +94,11 @@ class ProductInfoSection extends StatelessWidget {
               ),
             ],
           ),
-        if (product.notes?.isNotEmpty == true)
+        if (product.notes.isNotEmpty)
           ProductInfoCard(
             icon: Icons.note,
             label: 'ملاحظات',
-            value: product.notes!,
+            value: product.notes,
             detailsType: ProductDetailsType.notes,
             iconColor: const Color(0xFF9CA3AF),
           ),

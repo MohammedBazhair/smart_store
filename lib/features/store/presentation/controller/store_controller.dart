@@ -31,8 +31,7 @@ class StoreController extends Notifier<StoreEventState> {
 
     final futures = stores.map((s) async {
       final members = await repo.getStoreMembers(s.id!);
-      final storeWithMembers =
-          StoreWithMembers(store: s, members: members);
+      final storeWithMembers = StoreWithMembers(store: s, members: members);
       return MapEntry(s.id!, storeWithMembers);
     });
 
@@ -56,8 +55,8 @@ class StoreController extends Notifier<StoreEventState> {
       final now = DateTime.now().toUtc();
 
       final member = StoreMember(
-        memberPhone: phoneNumber,
-        storeId: selectedStoreId,
+        primaryKey:
+            StoreMemberKey(storeId: selectedStoreId, memberPhone: phoneNumber),
         role: Role.worker,
         createdAt: now,
         updatedAt: now,
@@ -111,8 +110,8 @@ class StoreController extends Notifier<StoreEventState> {
 
       final newStore = await repo.createStore(store);
       final ownerMember = StoreMember(
-        memberPhone: profile.phone!,
-        storeId: newStore.id!,
+        primaryKey:
+            StoreMemberKey(storeId: newStore.id!, memberPhone: profile.phone!),
         role: Role.storeOwner,
         createdAt: DateTime.now().toUtc(),
         updatedAt: DateTime.now().toUtc(),

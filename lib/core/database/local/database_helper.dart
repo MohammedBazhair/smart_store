@@ -110,7 +110,7 @@ class DatabaseHelper {
         quantity INTEGER NOT NULL,
         currency TEXT NOT NULL,
         expiry_date TEXT,
-        notes TEXT,
+        notes TEXT NOT NULL DEFAULT '',
         updated_at TEXT NOT NULL,
         is_deleted INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (product_id) REFERENCES global_products(id),

@@ -66,17 +66,21 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   ]) async {
     bool isStoreCreated = false;
     bool isMemberInserted = false;
-      final member = StoreMemberModel(
-        memberPhone: store.ownerPhone,
-        storeId: store.id!,
-        role: Role.storeOwner,
-        createdAt: store.createdAt,
-        updatedAt: store.createdAt,
-        isDeleted: false,
-      );
+    final member = StoreMemberModel(
+      primaryKey:
+          StoreMemberKey(storeId: store.id!, memberPhone: store.ownerPhone),
+      role: Role.storeOwner,
+      createdAt: store.createdAt,
+      updatedAt: store.createdAt,
+      isDeleted: false,
+    );
+    final parent = await _db.rawQuery(
+      query: 'SELECT phone FROM profiles WHERE phone = ?',
+      arguments: [store.ownerPhone],
+    );
 
+    Logger.debugLog(message: 'parent: $parent');
     try {
-
       final storeResult =
           await _db.insertRow(table: 'stores', map: store.toMap());
       final memberResult =
@@ -95,8 +99,10 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       );
       if (isStoreCreated) await _sync.addChange(storeChange);
 
-      final memberKey =
-          StoreMemberKey(storeId: store.id!, memberPhone: member.memberPhone);
+      final memberKey = StoreMemberKey(
+        storeId: store.id!,
+        memberPhone: member.primaryKey.memberPhone,
+      );
       final memberChange = SyncChangeModel(
         tableName: 'store_members',
         recordId: memberKey.toJson(),
@@ -104,9 +110,11 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         updatedAt: DateTime.now().toUtc(),
       );
       if (isMemberInserted) await _sync.addChange(memberChange);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(message: '1');
+      Logger.debugLog(error: e, stackTrace: st);
       if (isStoreCreated && !isMemberInserted) {
+        Logger.debugLog(message: '2');
         await _db.deleteWhere(table: 'stores', filters: {'id': store.id!});
       }
     }
@@ -165,18 +173,13 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       map: member.toMap(),
     );
 
-    await _updateStore(member.storeId);
+    await _updateStore(member.primaryKey.storeId);
 
     if (skipLocalTracking) return;
 
-    final memberKey = StoreMemberKey(
-      storeId: member.storeId,
-      memberPhone: member.memberPhone,
-    );
-
     final change = SyncChangeModel(
       tableName: 'store_members',
-      recordId: memberKey.toJson(),
+      recordId: member.primaryKey.toJson(),
       operation: SyncOperation.insert,
       updatedAt: DateTime.now().toUtc(),
     );
@@ -217,8 +220,13 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     List<StoreModel> stores, [
     bool skipLocalTracking = false,
   ]) async {
+    final idsRows = await _db.rawQuery(query: 'SELECT id FROM stores');
+    final storesIds = idsRows.map((m) => m['id'] as String).toSet();
+
     for (final store in stores) {
-      final isFound = (await getStore(store.id!)) != null;
+      if (store.id == null) continue;
+
+      final isFound = storesIds.contains(store.id);
 
       if (isFound) {
         await updateStore(store, skipLocalTracking);
@@ -233,17 +241,22 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     List<StoreMemberModel> members, [
     bool skipLocalTracking = false,
   ]) async {
+    final storesIdsRows = await _db.rawQuery(query: 'SELECT id FROM stores');
+    final storesIds = storesIdsRows.map((m) => m['id'] as String).toSet();
+
+    final membersRows =
+        await _db.rawQuery(query: 'SELECT * FROM store_members');
+    final membersKeys = membersRows.map(StoreMemberKey.fromMap).toSet();
+
     for (final member in members) {
-      final memberKey = StoreMemberKey(
-        storeId: member.storeId,
-        memberPhone: member.memberPhone,
-      );
-      final isFound = (await getStoreMember(memberKey)) != null;
+      if (!storesIds.contains(member.primaryKey.storeId)) continue;
+
+      final isFound = membersKeys.contains(member.primaryKey);
 
       if (isFound) {
         await updateStoreMember(member, skipLocalTracking);
       } else {
-        await insertStoreMember(member, isFound);
+        await insertStoreMember(member, skipLocalTracking);
       }
     }
   }
@@ -309,22 +322,15 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   ]) async {
     await _db.update(
       updated: member.toUpdateMap(),
-      filterWhere: {
-        'store_id': member.storeId,
-        'member_phone': member.memberPhone,
-      },
+      filterWhere: member.primaryKey.toMap(),
       table: 'store_members',
     );
 
     if (skipLocalTracking) return;
 
-    final memberKey = StoreMemberKey(
-      storeId: member.storeId,
-      memberPhone: member.memberPhone,
-    );
     final change = SyncChangeModel(
       tableName: 'store_members',
-      recordId: memberKey.toJson(),
+      recordId: member.primaryKey.toJson(),
       operation: SyncOperation.update,
       updatedAt: DateTime.now().toUtc(),
     );

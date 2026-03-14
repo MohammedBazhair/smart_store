@@ -87,7 +87,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
       _barcodeController.text = product.globalProduct.barcode ?? '';
       _quantityController.text = product.quantity?.toString() ?? '';
       _priceController.text = product.price.toString();
-      _notesController.text = product.notes ?? '';
+      _notesController.text = product.notes;
 
       _expiryDateController.text = product.expiryDate != null
           ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
@@ -288,6 +288,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueGrey.shade500,
+                        shadowColor: const Color(0x6D607D8B),
                       ),
                       onPressed: _clearForm,
                       child: const Icon(

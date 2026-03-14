@@ -87,8 +87,8 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       final globalProductMap = response.first;
       final globalProduct = GlobalProductModel.fromRemote(globalProductMap);
       return globalProduct;
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return null;
     }
   }

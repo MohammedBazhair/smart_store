@@ -1,11 +1,11 @@
 import '../../../../core/extensions/extensions.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store_member.dart';
+import 'store_member_key.dart';
 
 class StoreMemberModel extends StoreMember {
   const StoreMemberModel({
-    required super.memberPhone,
-    required super.storeId,
+    required super.primaryKey,
     required super.role,
     required super.createdAt,
     required super.updatedAt,
@@ -14,8 +14,7 @@ class StoreMemberModel extends StoreMember {
 
   factory StoreMemberModel.fromEntity(StoreMember member) {
     return StoreMemberModel(
-      memberPhone: member.memberPhone,
-      storeId: member.storeId,
+      primaryKey: member.primaryKey,
       role: member.role,
       createdAt: member.createdAt,
       updatedAt: member.updatedAt,
@@ -25,19 +24,17 @@ class StoreMemberModel extends StoreMember {
 
   factory StoreMemberModel.fromMap(Map<String, dynamic> map) {
     return StoreMemberModel(
-      memberPhone: map['member_phone'],
-      storeId: map['store_id'],
+      primaryKey: StoreMemberKey.fromMap(map),
       role: Role.fromString(map['role']),
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
-      isDeleted: map['is_deleted']==1,
+      isDeleted: map['is_deleted'] == 1,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'member_phone': memberPhone,
-      'store_id': storeId,
+      ...primaryKey.toMap(),
       'role': role.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),

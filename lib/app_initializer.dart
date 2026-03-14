@@ -68,6 +68,7 @@ Future<void> _registerBackgroundTasks() async {
     existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
     backoffPolicy: BackoffPolicy.linear,
     backoffPolicyDelay: const Duration(minutes: 5),
+    constraints: Constraints(networkType: NetworkType.connected),
   );
 }
 

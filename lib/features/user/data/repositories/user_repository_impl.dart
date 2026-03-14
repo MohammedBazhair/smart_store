@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/network/connectivity_service.dart';
+import '../../../../core/shared/data/models/sync_state_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../domain/entities/get_profile_params.dart';
 import '../../domain/entities/profile.dart';
@@ -77,8 +78,20 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<ProfileEntity> syncProfile() async {
+  Future<ProfileEntity> syncAllProfiles() async {
     await _pushProfileChanges();
+
+    final lastSynced = await _sync.getLastSynced(AppConstants.profilesTable);
+    final remoteProfilesMaps =
+        await _remoteDataSource.fetchProfiles(lastSynced);
+
+    await _localDataSource.setProfiles(remoteProfilesMaps);
+
+    final syncStateProfiles = SyncStateModel(
+      tableName: AppConstants.profilesTable,
+      lastSynced: DateTime.now().toUtc(),
+    );
+    await _sync.saveLastSynced(syncStateProfiles);
 
     final userId = currentUser?.id;
     if (userId == null) return _localDataSource.readProfile();

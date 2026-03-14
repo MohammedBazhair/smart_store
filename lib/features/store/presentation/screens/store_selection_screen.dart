@@ -208,7 +208,7 @@ class _StoreCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            owner.memberPhone,
+                            owner.primaryKey.memberPhone,
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppTheme.textSecondary,

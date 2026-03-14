@@ -23,12 +23,19 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final repo = ref.read(productRepositoryProvider);
     final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
 
-    await repo.syncAllProducts(storeId) ;
+    await repo.syncAllProducts(storeId);
 
     final categories = await getCategories();
     final products = await getStoreProducts();
-    final expiredProducts = await repo.getExpiredProducts(storeId!);
-    final nearbyExpiredProducts = await repo.getNearExpiryProducts(storeId, 30);
+
+    Logger.debugLog(message: products.toString());
+
+    final expiredProducts = storeId != null
+        ? await repo.getExpiredProducts(storeId)
+        : <StoreProduct>[];
+    final nearbyExpiredProducts = storeId != null
+        ? await repo.getNearExpiryProducts(storeId, 30)
+        : <StoreProduct>[];
 
     state = state.copyWith(
       products: products,
@@ -86,9 +93,18 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final result = await productRepository.addProduct(product);
 
     if (result is SuccessState<StoreProduct>) {
+      final storeProduct = result.data;
       final alertService = ref.read(alertServiceProvider);
-      await alertService.scheduleProductAlerts(result.data);
-      await loadStoreProducts();
+      await alertService.scheduleProductAlerts(storeProduct);
+
+      final copiedProducts = {...state.products};
+
+      final key =
+          storeProduct.globalProduct.barcode ?? storeProduct.globalProduct.id;
+      copiedProducts[key!] = storeProduct;
+
+      state = state.copyWith(products: copiedProducts);
+      Logger.debugLog(message: state.products.toString());
       return const SuccessState(null);
     }
 

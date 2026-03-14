@@ -56,7 +56,10 @@ class StoreRepositoryImpl implements StoreRepository {
     final hasConnection = await connectivityService.hasConnection();
 
     final stores = hasConnection
-        ? await remote.getUserStores(userPhone: userPhone, isDeleted: false)
+        ? await remote.getUserStores(
+            userPhone: userPhone,
+            includeDeleted: false,
+          )
         : await local.getUserStores(
             userPhone: userPhone,
             includeDeleted: false,
@@ -84,7 +87,7 @@ class StoreRepositoryImpl implements StoreRepository {
     if (!await connectivityService.hasConnection()) {
       throw const InternetException();
     }
-    final isUserExist = await userRepository.isPhoneSignUp(member.memberPhone);
+    final isUserExist = await userRepository.isPhoneSignUp(member.primaryKey.memberPhone);
 
     if (!isUserExist) {
       throw const UserPhoneNotFoundException(
@@ -156,7 +159,6 @@ class StoreRepositoryImpl implements StoreRepository {
     await syncLocal.clearTablesChanges('stores');
   }
 
-  
   Future<void> _pushMembersChanges() async {
     final membersChanges = await syncLocal.getTableChanges('store_members');
 
@@ -204,6 +206,7 @@ class StoreRepositoryImpl implements StoreRepository {
       userPhone: userPhone,
       lastSynced: lastSyncedStores,
     );
+
     await local.upsertStores(stores, true);
 
     final members =

@@ -13,7 +13,6 @@ abstract interface class UserRepository {
 
   Future<bool> isPhoneSignUp(String phoneNumber);
 
-
-  Future<void> syncProfile();
+  Future<void> syncAllProfiles();
 
 }

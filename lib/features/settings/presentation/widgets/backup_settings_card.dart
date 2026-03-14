@@ -64,30 +64,30 @@ class BackupSettingsCard extends ConsumerWidget {
         ),
       );
 
-      if (confirmed == true) {
-        ref
-            .read(isLoadingProvider(IsLoading.backup).notifier)
-            .update((i) => true);
+      if (confirmed != true) return;
 
-        final controller = ref.read(backupControllerProvider.notifier);
-        final restoreResult = await controller.restoreBackup(backupPath);
+      ref
+          .read(isLoadingProvider(IsLoading.backup).notifier)
+          .update((i) => true);
 
-        ref
-            .read(isLoadingProvider(IsLoading.backup).notifier)
-            .update((i) => false);
+      final controller = ref.read(backupControllerProvider.notifier);
+      final restoreResult = await controller.restoreBackup(backupPath);
 
-        if (!context.mounted) return;
+      ref
+          .read(isLoadingProvider(IsLoading.backup).notifier)
+          .update((i) => false);
 
-        if (restoreResult is SuccessState<void>) {
-          context.showSnakbar(
-            'تم استعادة النسخة الاحتياطية',
-            type: SnackBarType.success,
-          );
-          // إعادة تحميل البيانات
-          ref.invalidate(settingsControllerProvider);
-        } else if (restoreResult is ErrorState<void>) {
-          context.showSnakbar(restoreResult.message, type: SnackBarType.error);
-        }
+      if (!context.mounted) return;
+
+      if (restoreResult is SuccessState<void>) {
+        context.showSnakbar(
+          'تم استعادة النسخة الاحتياطية',
+          type: SnackBarType.success,
+        );
+        // إعادة تحميل البيانات
+        ref.invalidate(settingsControllerProvider);
+      } else if (restoreResult is ErrorState<void>) {
+        context.showSnakbar(restoreResult.message, type: SnackBarType.error);
       }
     }
   }

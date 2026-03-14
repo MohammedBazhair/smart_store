@@ -100,6 +100,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
       return products;
     } catch (e) {
+      Logger.debugLog(error: e);
+
       return {};
     }
   }

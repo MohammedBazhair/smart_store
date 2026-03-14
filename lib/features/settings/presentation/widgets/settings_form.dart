@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../errors/result.dart';
-import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../domain/entities/settings.dart';
 import '../controllers/settings_provider.dart';
+import 'account_info_card.dart';
 import 'backup_settings_card.dart';
 import 'change_phone_card.dart';
 import 'change_store_selection_card.dart';
@@ -79,16 +79,7 @@ class _SettingsFormState extends ConsumerState<SettingsForm> {
                   widget.isShimmerLoading ? null : _phoneController,
             ),
             const SizedBox(height: 16),
-            Consumer(
-              builder: (_, ref, __) {
-                return TextButton.icon(
-                  icon: const Icon(Icons.exit_to_app),
-                  onPressed: () =>
-                      ref.read(authControllerProvider.notifier).signOut(),
-                  label: const Text('تسجل الخروج'),
-                );
-              },
-            ),
+            const AccountInfoCard(),
           ],
         ),
       ),

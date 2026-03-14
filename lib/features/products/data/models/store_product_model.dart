@@ -12,7 +12,7 @@ class StoreProductModel extends StoreProduct {
     required super.price,
     required super.currency,
     required super.globalProduct,
-    super.notes,
+   required super.notes,
     super.isDeleted,
   });
 
@@ -36,7 +36,7 @@ class StoreProductModel extends StoreProduct {
       globalProduct: GlobalProductModel.fromRemote(map['global_products']),
       quantity: map['quantity'] as int?,
       expiryDate: DateTime.tryParse((map['expiry_date'] as String?) ?? ''),
-      notes: map['notes'] as String?,
+      notes: map['notes'] as String,
       updatedAt: DateTime.parse(map['updated_at'] as String),
       currency: CurrencyCode.values.byName(map['currency']),
       price: map['price'] as num,
@@ -50,7 +50,7 @@ class StoreProductModel extends StoreProduct {
       price: map['price'] as num,
       quantity: map['quantity'],
       currency: CurrencyCode.values.byName(map['currency']),
-      expiryDate: DateTime.tryParse(map['expiry_date']),
+      expiryDate: DateTime.tryParse(map['expiry_date']??''),
       notes: map['notes'],
       globalProduct: GlobalProductModel.fromLocal(map),
       updatedAt: DateTime.parse(map['updated_at']),

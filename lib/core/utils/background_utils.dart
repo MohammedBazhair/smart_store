@@ -6,6 +6,7 @@ import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/domain/alert.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
+import '../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../features/store/presentation/controller/store_provider.dart';
 import '../constants/app_constants.dart';
 import '../shared/providers/core_providers.dart';
@@ -62,19 +63,20 @@ class BackgroundUtils {
     await Future.wait(futures);
   }
 
-  Future<void> syncAllData() async {
+  Future<void> syncAllData([ProviderContainer? c]) async {
+    final container = c ?? this.container;
     final productRepo = container.read(productRepositoryProvider);
     final storesRepo = container.read(storeRepositoryProvider);
     final userRepo = container.read(userRepositoryProvider);
+    final settingsRepo = container.read(settingsRepositoryProvider);
     final cache = container.read(localCacheServiceProvider);
 
-    final profile = await userRepo.syncProfile();
+    await settingsRepo.getExchangeRates();
+    final profile = await userRepo.syncAllProfiles();
 
     final storeId = cache.getString(key: AppConstants.lastStoreIdKey);
 
-    await Future.wait([
-      storesRepo.syncAll(profile.phone!),
-      productRepo.syncAllProducts(storeId),
-    ]);
+    await storesRepo.syncAll(profile.phone!);
+    await productRepo.syncAllProducts(storeId);
   }
 }

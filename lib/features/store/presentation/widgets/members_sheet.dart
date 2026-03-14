@@ -61,15 +61,18 @@ void showMembersSheet(
                     return Consumer(
                       builder: (_, ref, __) {
                         return Dismissible(
-                          key: ValueKey(member.memberPhone),
-                          confirmDismiss: (direction) async=> member.role != Role.storeOwner,
+                          key: ObjectKey(member.primaryKey),
+                          confirmDismiss: (direction) async =>
+                              member.role != Role.storeOwner,
                           direction: member.role == Role.storeOwner
                               ? DismissDirection.none
                               : DismissDirection.endToStart,
                           onDismissed: (_) {
                             ref
                                 .read(storeControllerProvider.notifier)
-                                .removeStoreMember(member.memberPhone);
+                                .removeStoreMember(
+                                  member.primaryKey.memberPhone,
+                                );
                           },
                           background: Container(
                             alignment: Alignment.centerRight,
@@ -85,14 +88,14 @@ void showMembersSheet(
                               backgroundColor:
                                   AppTheme.primaryColor.withOpacity(.15),
                               child: Text(
-                                member.memberPhone.substring(0, 2),
+                                member.primaryKey.memberPhone.substring(0, 2),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.primaryColor,
                                 ),
                               ),
                             ),
-                            title: Text(member.memberPhone),
+                            title: Text(member.primaryKey.memberPhone),
                             subtitle: Text(member.role.label),
                             trailing: member.role.label == 'مالك'
                                 ? const Icon(

@@ -1,13 +1,15 @@
 import 'dart:convert';
 
-class StoreMemberKey {
-  StoreMemberKey({
+import 'package:equatable/equatable.dart';
+
+class StoreMemberKey extends Equatable {
+  const StoreMemberKey({
     required this.storeId,
     required this.memberPhone,
   });
 
   /// إنشاء الكائن من Map
-  factory StoreMemberKey.fromMap(Map<String, Object> map) {
+  factory StoreMemberKey.fromMap(Map<String, dynamic> map) {
     return StoreMemberKey(
       storeId: map['store_id'] as String,
       memberPhone: map['member_phone'] as String,
@@ -34,4 +36,7 @@ class StoreMemberKey {
 
   /// تحويل إلى JSON
   String toJson() => jsonEncode(toMap());
+
+  @override
+  List<Object?> get props => [storeId, memberPhone];
 }
