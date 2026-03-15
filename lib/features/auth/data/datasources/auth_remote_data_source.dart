@@ -100,8 +100,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       return response.user?.id;
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return null;
     }
   }

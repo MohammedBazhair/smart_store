@@ -35,8 +35,8 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       );
 
       return ProfileEntity.fromMap(map);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
 
       rethrow;
     }

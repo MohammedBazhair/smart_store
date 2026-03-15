@@ -115,6 +115,8 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     required String table,
     required Map<String, Object> filters,
   }) {
+    if (filters.isEmpty) return Future.value(0);
+
     final whereClause =
         filters.entries.map((e) => '${e.key} = ?').join(' AND ');
 
@@ -138,7 +140,9 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
   }) {
     final whereClause =
         filters.entries.map((e) => '${e.key} = ?').join(' AND ');
-    return _database.rawQuery('SELECT * FROM $table WHERE $whereClause', []);
+    final sql = 'SELECT * FROM $table WHERE $whereClause';
+
+    return _database.rawQuery(sql, filters.values.toList());
   }
 
   @override
@@ -192,6 +196,7 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     required Map<String, dynamic> filterWhere,
     required String table,
   }) {
+    if (filterWhere.isEmpty) return Future.value(0);
     final where = filterWhere.keys.map((k) => '$k = ?').join(' AND ');
     final whereArgs = filterWhere.values.toList();
     return _database.update(

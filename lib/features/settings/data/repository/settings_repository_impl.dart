@@ -60,8 +60,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
       }
 
       return _localSettings.getExchangeRates();
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return _localSettings.getExchangeRates();
     }
   }
@@ -71,8 +71,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     try {
       final model = SettingsModel.fromEntity(settings);
       await _cache.setString(key: 'settings', value: model.toJson());
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
     }
   }
 

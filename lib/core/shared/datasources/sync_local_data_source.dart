@@ -1,4 +1,5 @@
 import '../../constants/enums.dart';
+import '../../constants/log.dart';
 import '../../database/local/local_database_service.dart';
 import '../data/models/sync_change_model.dart';
 import '../data/models/sync_state_model.dart';
@@ -69,11 +70,17 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
 
   @override
   Future<List<SyncChangeModel>> getTableChanges(String table) async {
-    final maps = await _db.readRowsWhere(
-      table: 'sync_changes',
-      filters: {'table_name': table},
-    );
-    return maps.map(SyncChangeModel.fromMap).toSet().toList();
+    try {
+      final maps = await _db.readRowsWhere(
+        table: 'sync_changes',
+        filters: {'table_name': table},
+      );
+      
+      return maps.map(SyncChangeModel.fromMap).toSet().toList();
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
+      return [];
+    }
   }
 
   @override

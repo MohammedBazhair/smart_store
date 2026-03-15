@@ -48,8 +48,8 @@ class SettingsController extends AsyncNotifier<Settings> {
       final settings = state.requireValue.copyWith(defaultCurrency: currency);
       await updateSettings(settings);
       return const SuccessState(true);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return const ErrorState('حصلت مشكلة أثناء تحديث العملة حاول مرة اخرى');
     }
   }

@@ -6,7 +6,7 @@ class StoreProductKey {
     required this.productId,
   });
 
-  factory StoreProductKey.fromMap(Map<String, Object> map) {
+  factory StoreProductKey.fromMap(Map<String, dynamic> map) {
     return StoreProductKey(
       storeId: map['store_id'] as String,
       productId: map['product_id'] as String,

@@ -10,8 +10,10 @@ class SaveProductButton extends ConsumerWidget {
   const SaveProductButton({
     super.key,
     required this.onPressed,
+    required this.isEditing,
   });
   final VoidCallback onPressed;
+ final bool isEditing;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -20,7 +22,7 @@ class SaveProductButton extends ConsumerWidget {
       onPressed: isLoading ? null : onPressed,
       child: ConditionalBuilder(
         condition: !isLoading,
-        builder: (_) => const Text('حفظ المنتج'),
+        builder: (_) => isEditing ? const Text('تعديل المنتج') : const Text('حفظ المنتج'),
         fallback: (context) => const ThreeDotsLoading(dotSize: 7),
       ),
     );

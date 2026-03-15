@@ -87,8 +87,8 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       final globalProductMap = response.first;
       final globalProduct = GlobalProductModel.fromRemote(globalProductMap);
       return globalProduct;
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return null;
     }
   }
@@ -196,8 +196,16 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<void> addGlobalProducts(List<GlobalProductModel> products) async {
-    final rows = products.map((m) => m.toMap()).toList();
-    await _client.insertRows(rows: rows, table: 'global_products');
+    try {
+      Logger.debugLog(message: products.toString());
+      final rows = products.map((m) => m.toMap()).toList();
+      Logger.debugLog(message: 'rows:');
+      Logger.debugLog(message: rows.toString());
+
+      await _client.insertRows(rows: rows, table: 'global_products');
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+    }
   }
 
   @override
@@ -229,12 +237,15 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   Future<void> updateStoreProduct(
     StoreProductModel product,
   ) async {
-    final map = StoreProductModel.fromEntity(product).toMap();
-    await _client.client
-        .from('store_products')
-        .update(map)
-        .eq('product_id', product.globalProduct.id!)
-        .eq('store_id', product.storeId);
+    final map = product.toMap();
+    await _client.update(
+      updated: map,
+      table: 'store_products',
+      whereFilter: {
+        'product_id': product.globalProduct.id!,
+        'store_id': product.storeId,
+      },
+    );
   }
 
   @override

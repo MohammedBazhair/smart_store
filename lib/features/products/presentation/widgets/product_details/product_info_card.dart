@@ -31,10 +31,12 @@ class BaseProductInfoCard extends ConsumerWidget {
       child: ListTile(
         onTap: () {
           final product = ref.read(currentProductProvider);
+
           context.pushTo(
             UpesertProductScreen(
               product: product,
               detailsType: detailsType,
+              isEditing: true,
             ),
           );
         },
@@ -104,10 +106,12 @@ class ProductInfoCard extends ConsumerWidget {
             const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         onTap: () {
           final product = ref.read(currentProductProvider);
+
           context.pushTo(
             UpesertProductScreen(
               product: product,
               detailsType: detailsType,
+              isEditing: true,
             ),
           );
         },

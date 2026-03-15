@@ -119,6 +119,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
 
     final now = DateTime.now().toUtc();
     final globalProduct = GlobalProduct(
+      id: oldProduct?.globalProduct.id,
       category: _selectedCategory,
       name: _nameController.text.trim(),
       barcode: _barcodeController.text,
@@ -212,6 +213,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
 
     if (result is SuccessState<void>) {
       context.showSnakbar('تم تعديل المنتج بنجاح', type: SnackBarType.success);
+      ref.invalidate(productByIdProvider(updatedProduct.globalProduct.id!));
       Navigator.pop(context);
     } else if (result is ErrorState<void>) {
       context.showSnakbar(result.message, type: SnackBarType.error);
@@ -283,19 +285,21 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
                       child: SaveProductButton(
                         onPressed:
                             isEditingProduct ? _onEditProduct : _onAddProduct,
+                        isEditing: isEditingProduct,
                       ),
                     ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueGrey.shade500,
-                        shadowColor: const Color(0x6D607D8B),
+                    if (!isEditingProduct)
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade500,
+                          shadowColor: const Color(0x6D607D8B),
+                        ),
+                        onPressed: _clearForm,
+                        child: const Icon(
+                          Icons.clear,
+                          size: 24,
+                        ),
                       ),
-                      onPressed: _clearForm,
-                      child: const Icon(
-                        Icons.clear,
-                        size: 24,
-                      ),
-                    ),
                   ],
                 ),
               ],

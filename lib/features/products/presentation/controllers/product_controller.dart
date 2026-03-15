@@ -68,8 +68,8 @@ class ProductManagementController extends Notifier<ProductManagementState> {
           await ref.read(productRepositoryProvider).getStoreProducts(storeId);
 
       return products;
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return {};
     }
   }
@@ -130,7 +130,15 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       await alertService.scheduleProductAlerts(newProduct);
     }
 
-    await loadStoreProducts();
+    final oldKey =
+        oldProduct.globalProduct.barcode ?? oldProduct.globalProduct.id!;
+    final copiedProducts = {...state.products}..remove(oldKey);
+
+    final newKey =
+        newProduct.globalProduct.barcode ?? newProduct.globalProduct.id!;
+    copiedProducts[newKey] = newProduct;
+
+    state = state.copyWith(products: copiedProducts);
     return result;
   }
 
@@ -160,8 +168,8 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       final result = await productRepo.getStoreProductById(productKey);
 
       return result;
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return null;
     }
   }
@@ -181,8 +189,8 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       return products
           .where((p) => p.globalProduct.category.id == query.category?.id)
           .toList();
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return [];
     }
   }

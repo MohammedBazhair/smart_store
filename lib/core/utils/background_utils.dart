@@ -8,7 +8,6 @@ import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
 import '../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../features/store/presentation/controller/store_provider.dart';
-import '../constants/app_constants.dart';
 import '../shared/providers/core_providers.dart';
 import '../shared/providers/repositories_provider.dart';
 import 'date_utils.dart';
@@ -69,14 +68,12 @@ class BackgroundUtils {
     final storesRepo = container.read(storeRepositoryProvider);
     final userRepo = container.read(userRepositoryProvider);
     final settingsRepo = container.read(settingsRepositoryProvider);
-    final cache = container.read(localCacheServiceProvider);
 
     await settingsRepo.getExchangeRates();
     final profile = await userRepo.syncAllProfiles();
 
-    final storeId = cache.getString(key: AppConstants.lastStoreIdKey);
 
     await storesRepo.syncAll(profile.phone!);
-    await productRepo.syncAllProducts(storeId);
+    await productRepo.syncAllProducts();
   }
 }

@@ -53,8 +53,8 @@ class UserRepositoryImpl implements UserRepository {
       if (hasConnection) await _remoteDataSource.updateProfile(profile);
 
       await _localDataSource.upsertProfile(profile, hasConnection);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       rethrow;
     }
   }

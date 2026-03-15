@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
@@ -99,8 +100,8 @@ class ProductRepositoryImpl implements ProductRepository {
       }
 
       return products;
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
 
       return {};
     }
@@ -188,8 +189,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
       await _localDatabase.addStoreProduct(model, hasConnection);
       return SuccessState(newProduct);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return ErrorState('فشل في إضافة المنتج: ${e.toString()}');
     }
   }
@@ -234,48 +235,53 @@ class ProductRepositoryImpl implements ProductRepository {
       await getGlobalProducts();
 
       await _localCache.setBool(key: 'isDownloadedInit', value: true);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
     }
   }
 
   Future<void> _pushGlobalProductsChanges() async {
-    final globalProductsChanges =
-        await _sync.getTableChanges('global_products');
+    try {
+      final globalProductsChanges =
+          await _sync.getTableChanges('global_products');
+      Logger.debugLog(message: globalProductsChanges.toString());
+      
+      final inserts = <GlobalProductModel>[];
+      final updates = <GlobalProductModel>[];
+      final deletes = <String>[];
 
-    final inserts = <GlobalProductModel>[];
-    final updates = <GlobalProductModel>[];
-    final deletes = <String>[];
+      for (final change in globalProductsChanges) {
+        switch (change.operation) {
+          case SyncOperation.delete:
+            deletes.add(change.recordId);
+          case SyncOperation.update:
+            final product =
+                await _localDatabase.fetchGlobalProductById(change.recordId);
+            if (product != null) updates.add(product);
 
-    for (final change in globalProductsChanges) {
-      switch (change.operation) {
-        case SyncOperation.delete:
-          deletes.add(change.recordId);
-        case SyncOperation.update:
-          final product =
-              await _localDatabase.fetchGlobalProductById(change.recordId);
-          if (product != null) updates.add(product);
-
-        case SyncOperation.insert:
-          final product =
-              await _localDatabase.fetchGlobalProductById(change.recordId);
-          if (product != null) inserts.add(product);
+          case SyncOperation.insert:
+            final product =
+                await _localDatabase.fetchGlobalProductById(change.recordId);
+            if (product != null) inserts.add(product);
+        }
       }
-    }
 
-    if (inserts.isNotEmpty) {
-      await _remoteDatabase.addGlobalProducts(inserts);
-    }
+      if (inserts.isNotEmpty) {
+        await _remoteDatabase.addGlobalProducts(inserts);
+      }
 
-    if (updates.isNotEmpty) {
-      await _remoteDatabase.updateGlobalProducts(updates);
-    }
+      if (updates.isNotEmpty) {
+        await _remoteDatabase.updateGlobalProducts(updates);
+      }
 
-    if (deletes.isNotEmpty) {
-      await _remoteDatabase.deleteGlobalProducts(deletes);
-    }
+      if (deletes.isNotEmpty) {
+        await _remoteDatabase.deleteGlobalProducts(deletes);
+      }
 
-    await _sync.clearTablesChanges('global_products');
+      await _sync.clearTablesChanges('global_products');
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+    }
   }
 
   Future<void> _pushStoreProductsChanges() async {
@@ -320,6 +326,9 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<void> syncAllProducts([String? storeId]) async {
     try {
+      final selectedStoreId =
+          storeId ?? _localCache.getString(key: AppConstants.lastStoreIdKey);
+
       if (!await _connectivity.hasConnection()) return;
       await _pushGlobalProductsChanges();
       await _pushStoreProductsChanges();
@@ -336,10 +345,10 @@ class ProductRepositoryImpl implements ProductRepository {
 
       await _localDatabase.setGlobalProducts(globalProducts);
 
-      if (storeId == null) return;
+      if (selectedStoreId == null) return;
 
       final storeProducts = await _remoteDatabase.fetchStoreProducts(
-        storeId: storeId,
+        storeId: selectedStoreId,
         lastSynced: lastStoreProductsSync,
       );
 
@@ -353,8 +362,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
       await _sync.saveLastSynced(newLastGlobalSync);
       await _sync.saveLastSynced(newLastStoreProductsSync);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
     }
   }
 }

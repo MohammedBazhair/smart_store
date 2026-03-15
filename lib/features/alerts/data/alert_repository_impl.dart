@@ -23,8 +23,8 @@ class AlertRepositoryImpl implements AlertRepository {
       });
 
       return Map.fromEntries(entries);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return {};
     }
   }
@@ -45,8 +45,8 @@ class AlertRepositoryImpl implements AlertRepository {
       });
 
       return Map.fromEntries(entries);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return {};
     }
   }
@@ -66,8 +66,8 @@ class AlertRepositoryImpl implements AlertRepository {
       });
 
       return Map.fromEntries(entries);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return {};
     }
   }
@@ -95,8 +95,8 @@ class AlertRepositoryImpl implements AlertRepository {
         whereArgs: [id],
       );
       return const SuccessState(null);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return ErrorState('فشل في تحديث التنبيه: ${e.toString()}');
     }
   }

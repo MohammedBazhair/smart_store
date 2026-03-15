@@ -69,8 +69,8 @@ class StoreController extends Notifier<StoreEventState> {
       return null;
     } on AppException catch (e) {
       return e.message;
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return 'حدث خطأ أثناء إضافة العضو صاحب الرقم $phoneNumber';
     }
   }
@@ -136,8 +136,8 @@ class StoreController extends Notifier<StoreEventState> {
       return null;
     } on AppException catch (e) {
       return e.message;
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       return 'فشلت عملية إنشاء متجر تأكد من الاتصال بالانترنت او راجع الدعم الفني';
     }
   }

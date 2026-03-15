@@ -30,8 +30,8 @@ class UserController extends StateNotifier<UserState> {
 
       state = UserLoadedProfileState(newProfile);
       return newProfile;
-    } catch (e, _) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e,stackTrace: st);
       state = UserErrorState(
         state.profile,
         'حدث لم نتمكن من الحصول على بيانات بروفايلك',
@@ -45,8 +45,8 @@ class UserController extends StateNotifier<UserState> {
       await _userRepository.updateProfile(newProfile);
       state = UserUpdatedProfileState(newProfile);
       return const SuccessState(null);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
       state = UserErrorState(
         state.profile,
         'حصل خطا أثناء التحديث معلومات المستخدم',

@@ -87,6 +87,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
           gp.id             AS global_product_id,
           gp.name           AS product_name,
+          gp.category_id    AS category_id,
           gp.barcode        AS barcode,
           gp.created_at     AS product_created_at,
           gp.updated_at     AS product_updated_at,
@@ -143,7 +144,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       arguments: [includeDeleted.toInt],
     );
 
-    return rows.map(GlobalProductModel.fromRemote).toList();
+    return rows.map(GlobalProductModel.fromLocal).toList();
   }
 
   @override
@@ -153,10 +154,17 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         SELECT 
           gp.id             AS global_product_id,
           gp.name           AS product_name,
+          gp.category_id    AS category_id,
           gp.barcode        AS barcode,
           gp.created_at     AS product_created_at,
-          gp.updated_at     AS product_updated_at
+          gp.updated_at     AS product_updated_at,
+          gp.is_deleted     AS product_is_deleted,
+
+          c.category_id     AS category_id,
+          c.category_name   AS category_name
+
         FROM global_products as gp
+        LEFT JOIN categories as c ON gp.category_id = c.category_id
         where gp.id = ?
 ''',
       arguments: [productId],
@@ -239,7 +247,9 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     );
     if (response.isEmpty) return null;
     final map = response.first;
-    return StoreProductModel.fromRemote(map);
+    Logger.debugLog(message: 'response:');
+    Logger.debugLog(message: response.toString());
+    return StoreProductModel.fromLocal(map);
   }
 
   @override
@@ -344,8 +354,8 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           conflictAlgorithm: ConflictAlgorithm.ignore,
         );
       });
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
     }
 
     if (skipLocalTracking) return product;

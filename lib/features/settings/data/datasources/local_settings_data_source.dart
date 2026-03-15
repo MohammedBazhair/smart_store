@@ -50,8 +50,8 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
         table: 'exchange_rates',
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
     }
   }
 
@@ -61,8 +61,8 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
       final json = settings.toJson();
 
       await _cache.setString(key: 'settings', value: json);
-    } catch (e) {
-      Logger.debugLog(error: e);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
     }
   }
 
