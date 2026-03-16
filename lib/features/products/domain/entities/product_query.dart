@@ -30,10 +30,10 @@ class ProductQuery extends Equatable {
     return 'لا توجد نتائج متاحة.';
   }
 
-  ProductQuery copyWith({String? search, Category? category}) {
+  ProductQuery copyWith({String? search, Category? category, bool clearCategory= false}) {
     return ProductQuery(
       search: search ?? this.search,
-      category: category ?? this.category,
+      category:clearCategory? null: category ?? this.category,
     );
   }
 

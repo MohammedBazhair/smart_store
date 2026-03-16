@@ -13,17 +13,21 @@ class SaveProductButton extends ConsumerWidget {
     required this.isEditing,
   });
   final VoidCallback onPressed;
- final bool isEditing;
+  final bool isEditing;
 
   @override
   Widget build(BuildContext context, ref) {
     final isLoading = ref.watch(isLoadingProvider(IsLoading.saveProduct));
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.all(0),
+      ),
       child: ConditionalBuilder(
         condition: !isLoading,
-        builder: (_) => isEditing ? const Text('تعديل المنتج') : const Text('حفظ المنتج'),
-        fallback: (context) => const ThreeDotsLoading(dotSize: 7),
+        builder: (_) =>
+            isEditing ? const Text('تعديل المنتج') : const Text('حفظ المنتج'),
+        fallback: (context) => const ThreeDotsLoading(dotSize: 5),
       ),
     );
   }

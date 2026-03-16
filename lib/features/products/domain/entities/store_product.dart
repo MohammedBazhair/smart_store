@@ -10,13 +10,13 @@ class StoreProduct extends Product {
     required this.expiryDate,
     required this.quantity,
     required this.currency,
-  required  this.notes,
+    required this.notes,
     required this.updatedAt,
     this.isDeleted = false,
   });
 
   factory StoreProduct.fake() {
-    final date = DateTime.now().toUtc();
+    final date = DateTime.now().add(const Duration(days: 300)).toUtc();
     return StoreProduct(
       storeId: '',
       globalProduct: GlobalProduct.fake(),

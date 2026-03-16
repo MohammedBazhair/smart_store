@@ -216,8 +216,10 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<void> updateGlobalProduct(GlobalProductModel product) async {
+    final updated=product.toMap();
+    updated.remove('id'); 
     await _client.update(
-      updated: product.toMap(),
+      updated: updated,
       table: 'global_products',
       whereFilter: {'id': product.id!},
     );
@@ -246,6 +248,9 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         'store_id': product.storeId,
       },
     );
+
+    final globalProduct = GlobalProductModel.fromEntity(product.globalProduct);
+    await updateGlobalProduct(globalProduct);
   }
 
   @override

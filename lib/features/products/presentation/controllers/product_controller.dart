@@ -8,7 +8,6 @@ import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/models/store_product_key.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
-import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
 import 'product_provider.dart';
 import 'product_state.dart';
@@ -174,24 +173,20 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     }
   }
 
-  Future<List<StoreProduct>> searchProducts(ProductQuery query) async {
-    try {
-      final productRepo = ref.read(productRepositoryProvider);
-      final storeId = ref.watch(storeControllerProvider).state.selectedStoreId!;
+  // Future<List<StoreProduct>> searchProducts(ProductQuery query) async {
+  //   try {
+  //     final productRepo = ref.read(productRepositoryProvider);
+  //     final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
 
-      final products = await productRepo.searchProducts(
-        query: query.search,
-        storeId: storeId,
-      );
+  //     final products = await productRepo.searchProducts(
+  //       query: query,
+  //       storeId: storeId,
+  //     );
 
-      if (!query.hasCategory) return products;
-
-      return products
-          .where((p) => p.globalProduct.category.id == query.category?.id)
-          .toList();
-    } catch (e, st) {
-      Logger.debugLog(error: e, stackTrace: st);
-      return [];
-    }
-  }
+  //     return products;
+  //   } catch (e, st) {
+  //     Logger.debugLog(error: e, stackTrace: st);
+  //     return [];
+  //   }
+  // }
 }

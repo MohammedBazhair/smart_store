@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-
-import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../data/datasource/product_local_data_source.dart';
 import '../../data/datasource/product_remote_data_source.dart';
@@ -14,6 +12,7 @@ import '../../domain/entities/store_product.dart';
 import '../../domain/repositories/product_repository.dart';
 import 'expiry_date_controller.dart';
 import 'product_controller.dart';
+import 'product_search_controller.dart';
 import 'product_state.dart';
 
 final _productLocalDataSource = Provider((ref) {
@@ -43,19 +42,11 @@ final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
   (ref) => const ProductQuery(),
 );
 
-final searchFilterProductsProvider =
-    FutureProvider.autoDispose<List<StoreProduct>>((ref) async {
-  final query = ref.watch(productQueryProvider);
-  if (!query.hasQuery) return [];
 
-  Logger.debugLog(message: query.isSearching.toString());
-  final controller = ref.read(productControllerProvider.notifier);
-  final products = query.isSearching
-      ? await controller.searchProducts(query)
-      : <StoreProduct>[];
-
-  return products;
-});
+final productSearchProvider = AsyncNotifierProvider.autoDispose<
+    ProductSearchNotifier, List<StoreProduct>>(
+  ProductSearchNotifier.new,
+);
 
 final focusNodesProvider =
     Provider.autoDispose<Map<ProductDetailsType, FocusNode>>((ref) {
@@ -89,4 +80,3 @@ final productControllerProvider =
     NotifierProvider<ProductManagementController, ProductManagementState>(() {
   return ProductManagementController();
 });
-

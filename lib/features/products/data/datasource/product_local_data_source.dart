@@ -8,6 +8,7 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/data/models/sync_change_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../domain/entities/category.dart';
+import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
 import '../models/global_product_model.dart';
 import '../models/store_product_key.dart';
@@ -30,7 +31,7 @@ abstract class ProductLocalDataSource {
   });
   Future<StoreProductModel?> fetchStoreProductById(StoreProductKey productKey);
   Future<List<StoreProductModel>> searchStoreProducts({
-    required String query,
+    required ProductQuery query,
     required String storeId,
   });
   Future<List<StoreProductModel>> fetchExpiredStoreProducts(String storeId);
@@ -254,17 +255,24 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
   @override
   Future<List<StoreProductModel>> searchStoreProducts({
-    required String query,
+    required ProductQuery query,
     required String storeId,
   }) async {
-    final maps = await db.rawQuery(
-      query: '''
+    final queryRaw = StringBuffer('''
           SELECT ${_storeProductColumnsAndJoins()}
           WHERE sp.store_id = ? 
-          AND LOWER(gp.name) LIKE LOWER(?)
-          AND sp.is_deleted = ?
-        ''',
-      arguments: [storeId, '%$query%', false.toInt],
+          AND sp.is_deleted = 0
+        ''');
+
+    if (query.hasCategory) queryRaw.write(' AND c.category_id = ?');
+    if (query.isSearching) queryRaw.write(' AND LOWER(gp.name) LIKE LOWER(?)');
+    final maps = await db.rawQuery(
+      query: queryRaw.toString(),
+      arguments: [
+        storeId,
+        if (query.hasCategory) query.category?.id,
+        if (query.isSearching) '%${query.search}%',
+      ],
     );
 
     return maps.map(StoreProductModel.fromLocal).toList();
@@ -390,9 +398,9 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     bool skipLocalTracking = false,
   ]) async {
     final updated = product.toMap();
-    final filterWhere = {
-      'id': product.id,
-    };
+    updated.remove('id');
+
+    final filterWhere = {'id': product.id};
 
     await db.update(
       updated: updated,
@@ -428,6 +436,10 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       filterWhere: filterWhere,
       table: 'store_products',
     );
+
+    final globalProduct = GlobalProductModel.fromEntity(product.globalProduct);
+
+    await updateGlobalProduct(globalProduct);
 
     if (skipLocalTracking) return;
 

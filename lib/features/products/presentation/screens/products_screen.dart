@@ -1,6 +1,4 @@
-﻿import 'dart:async';
-
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/extensions/extensions.dart';
@@ -30,26 +28,24 @@ class ProductsScreen extends ConsumerStatefulWidget {
 
 class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   final _searchController = TextEditingController();
-  Timer? _debounceTimer;
 
   @override
   void dispose() {
     _searchController.dispose();
-    _debounceTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final query = ref.watch(productQueryProvider);
-    final productsAsync = ref.watch(searchFilterProductsProvider);
+    final productsSearchAsync = ref.watch(productSearchProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? 'المنتجات'),
       ),
       body: Skeletonizer(
-        enabled: query.hasQuery && productsAsync.isLoading,
+        enabled: query.hasQuery && productsSearchAsync.isLoading,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: GestureDetector(
@@ -65,17 +61,13 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                         controller: _searchController,
                         query: query,
                         onChanged: (value) {
-                          _debounceTimer?.cancel();
-                          _debounceTimer =
-                              Timer(const Duration(milliseconds: 800), () {
-                            ref.read(productQueryProvider.notifier).update(
-                                  (q) => q.copyWith(search: value.trim()),
-                                );
-                          });
+                          ref
+                              .read(productQueryProvider.notifier)
+                              .update((q) => q.copyWith(search: value.trim()));
+                          ref.read(productSearchProvider.notifier).search();
                         },
                         onClear: () {
                           _searchController.clear();
-                          _debounceTimer?.cancel();
                           ref
                               .read(productQueryProvider.notifier)
                               .update((q) => q.copyWith(search: ''));
@@ -83,9 +75,20 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'فلترة المنتجات',
-                      icon: const Icon(Icons.filter_list),
-                      onPressed: () => _showFilterDialog(context),
+                      tooltip: query.hasCategory
+                          ? query.category?.name
+                          : 'فلترة المنتجات',
+                      icon: query.hasCategory
+                          ? const Icon(Icons.filter_list)
+                          : const Icon(Icons.filter_list_off_rounded),
+                      onPressed: () {
+                        if (query.hasCategory) {
+                          ref.read(productQueryProvider.notifier).update(
+                                (q) => q.copyWith(clearCategory: true),
+                              );
+                        }
+                        _showFilterDialog(context);
+                      },
                     ),
                   ],
                 ),
@@ -95,7 +98,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 Expanded(
                   child: !query.hasQuery
                       ? _buildProductsBody(widget.products, query)
-                      : productsAsync.when(
+                      : productsSearchAsync.when(
                           data: (filteredProducts) {
                             return _buildProductsBody(filteredProducts, query);
                           },
@@ -138,7 +141,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     return RefreshIndicator(
       onRefresh: () async {
         ref.read(appSyncLoadingProvider.notifier).state = true;
-        
+
         await ref.refresh(appSyncProvider.future);
         ref.read(appSyncLoadingProvider.notifier).state = false;
         await ref.read(productControllerProvider.notifier).loadStoreProducts();
@@ -158,6 +161,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           ref.read(productQueryProvider.notifier).update(
                 (q) => q.copyWith(category: category),
               );
+          ref.read(productSearchProvider.notifier).search();
         },
       ),
     );

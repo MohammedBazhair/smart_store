@@ -11,6 +11,7 @@ import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
+import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
 import '../../domain/entities/sub_entities/global_product.dart';
 import '../../domain/repositories/product_repository.dart';
@@ -123,17 +124,13 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<List<StoreProduct>> searchProducts({
-    required String query,
+    required ProductQuery query,
     required String storeId,
-  }) async {
-    try {
-      return _localDatabase.searchStoreProducts(
-        query: query,
-        storeId: storeId,
-      );
-    } catch (e) {
-      return [];
-    }
+  }) {
+    return _localDatabase.searchStoreProducts(
+      query: query,
+      storeId: storeId,
+    );
   }
 
   @override
@@ -245,7 +242,7 @@ class ProductRepositoryImpl implements ProductRepository {
       final globalProductsChanges =
           await _sync.getTableChanges('global_products');
       Logger.debugLog(message: globalProductsChanges.toString());
-      
+
       final inserts = <GlobalProductModel>[];
       final updates = <GlobalProductModel>[];
       final deletes = <String>[];

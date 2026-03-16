@@ -3,6 +3,7 @@ import '../../../../errors/result.dart';
 import '../../data/models/store_product_key.dart';
 import '../entities/category.dart';
 import '../entities/product.dart';
+import '../entities/product_query.dart';
 import '../entities/store_product.dart';
 import '../entities/sub_entities/global_product.dart';
 
@@ -15,7 +16,7 @@ abstract class ProductRepository {
   Future<ProductsByIdentifier> getStoreProducts(String storeId);
   Future<StoreProduct?> getStoreProductById(StoreProductKey key);
   Future<List<StoreProduct>> searchProducts({
-    required String query,
+    required ProductQuery query,
     required String storeId,
   });
   Future<List<StoreProduct>> getExpiredProducts(String storeId);
