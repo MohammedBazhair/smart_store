@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import '../controllers/flashlight_controller.dart';
+import '../controllers/barcode_provider.dart';
 import 'error_scanner_widget.dart';
 
 class BarcodeCameraView extends ConsumerWidget {
@@ -14,9 +14,10 @@ class BarcodeCameraView extends ConsumerWidget {
   final ValueChanged<String> onBarcodeDetected;
 
   @override
-  Widget build(BuildContext context,ref) {
+  Widget build(BuildContext context, ref) {
     return MobileScanner(
-      controller: ref.read(mobileScannerControllerProvider),
+      controller:
+          ref.watch(barcodeControllerProvider.notifier).scannerController,
       errorBuilder: (_, error) {
         return ErrorScannerWidget(error: error);
       },

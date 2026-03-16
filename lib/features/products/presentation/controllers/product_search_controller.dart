@@ -10,6 +10,10 @@ import 'product_provider.dart';
 class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
   @override
   Future<List<StoreProduct>> build() async {
+      ref.onDispose(() {
+      _debounce?.cancel();
+    });
+    
     return [];
   }
 

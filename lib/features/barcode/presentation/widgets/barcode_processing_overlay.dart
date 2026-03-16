@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/enums.dart';
 import '../../../../core/shared/presentation/widgets/common/conditional_builder.dart';
-import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
-import '../../../../core/shared/providers/ui_providers.dart';
+import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
+import '../controllers/barcode_provider.dart';
 
 class BarcodeProcessingOverlay extends ConsumerWidget {
   const BarcodeProcessingOverlay({
@@ -13,11 +12,11 @@ class BarcodeProcessingOverlay extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final isProcessing = ref.watch(isLoadingProvider(IsLoading.processBarcode));
+    final isProcessing = ref.watch(barcodeControllerProvider).isProcessing;
 
     return ConditionalBuilder(
       condition: isProcessing,
-      builder: (context) => const LoadingWidget(),
+      builder: (context) => const ThreeDotsLoading(),
     );
   }
 }

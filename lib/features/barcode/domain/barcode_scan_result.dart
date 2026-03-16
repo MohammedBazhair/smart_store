@@ -10,8 +10,7 @@ class BarcodeScanResult {
   final String barcode;
   final Product? product;
 
-
- bool get isStoreProduct  => product!= null && product is StoreProduct;
- bool get isGlobalProduct  => product!= null && product is GlobalProduct;
- bool get isProductNotFound  => product == null;
+  bool get isStoreProduct => product is StoreProduct;
+  bool get isGlobalProduct => product is GlobalProduct;
+  bool get isProductNotFound => product == null;
 }

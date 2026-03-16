@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import '../controllers/flashlight_controller.dart';
+import '../../../../core/constants/log.dart';
+import '../controllers/barcode_provider.dart';
 
 class FlashlightButton extends ConsumerWidget {
   const FlashlightButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final torchState = ref.watch(flashlightProvider);
-
+    final torchState = ref.watch(barcodeControllerProvider).torchState;
+    Logger.debugLog(message: torchState.toString());
     return IconButton(
       iconSize: 40,
       highlightColor: Colors.transparent,
@@ -19,7 +20,7 @@ class FlashlightButton extends ConsumerWidget {
         color: Colors.white,
       ),
       onPressed: () {
-        ref.read(flashlightProvider.notifier).toggle();
+        ref.read(barcodeControllerProvider.notifier).toggleFlash();
       },
     );
   }

@@ -6,7 +6,7 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../errors/result.dart';
-import '../controllers/flashlight_controller.dart';
+import '../controllers/barcode_provider.dart';
 
 class ErrorScannerWidget extends ConsumerWidget {
   const ErrorScannerWidget({
@@ -53,7 +53,7 @@ class ErrorScannerWidget extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              final controller = ref.read(mobileScannerControllerProvider);
+              final controller = ref.read(barcodeControllerProvider.notifier).scannerController;
               switch (error.errorCode) {
                 case MobileScannerErrorCode.permissionDenied:
                   final result = await PermissionsService.requestCamera();
@@ -71,7 +71,6 @@ class ErrorScannerWidget extends ConsumerWidget {
                 case MobileScannerErrorCode.unsupported:
                 case MobileScannerErrorCode.controllerInitializing:
                 case MobileScannerErrorCode.controllerNotAttached:
-                  ref.invalidate(mobileScannerControllerProvider);
                   context.pop();
               }
             },

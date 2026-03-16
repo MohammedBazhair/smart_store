@@ -29,10 +29,10 @@ class ProductPriceDialog extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: scanResult.isStoreProduct
-            ? const Text('هذا المنتج غير موجود')
-            : ProductPriceContent(
+            ? 
+            ProductPriceContent(
                 product: scanResult.product as StoreProduct,
-              ),
+              ):const Text('هذا المنتج غير موجود'),
       ),
     );
   }

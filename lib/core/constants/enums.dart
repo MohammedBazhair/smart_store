@@ -25,7 +25,7 @@ enum SnackBarType {
   final Duration duration;
 }
 
-enum IsLoading { settings, saveProduct, processBarcode, backup }
+enum IsLoading { settings, saveProduct, backup }
 
 enum BackgroundTask { checkDailyExpiry, addProductAlert, syncAllData }
 
