@@ -7,10 +7,7 @@ class RolePermissions {
     Role.guest: {},
     Role.worker: {
       PermissionTask.addProduct,
-      PermissionTask.changeProductExpiryDate,
-      PermissionTask.changeProductName,
-      PermissionTask.changeProductPrice,
-      PermissionTask.changeProductQuantity,
+      PermissionTask.updateProduct,
       PermissionTask.scanBarcodeViewPrice,
       PermissionTask.viewStoreProducts,
     },

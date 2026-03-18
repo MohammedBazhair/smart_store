@@ -238,6 +238,17 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
         title: isEditingProduct
             ? const Text('تعديل منتج')
             : const Text('إضافة منتج'),
+        actions: [
+          if (isEditingProduct)
+            IconButton(
+              onPressed: () {
+                ref
+                    .read(productControllerProvider.notifier)
+                    .deleteProduct(widget.product!);
+              },
+              icon: const Icon(Icons.delete),
+            ),
+        ],
       ),
       body: GestureDetector(
         onTap: FocusScope.of(context).unfocus,

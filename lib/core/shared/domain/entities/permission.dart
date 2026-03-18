@@ -3,10 +3,7 @@ enum PermissionTask {
 
   addProduct,
   deleteProduct,
-  changeProductName,
-  changeProductPrice,
-  changeProductQuantity,
-  changeProductExpiryDate,
+updateProduct,
   scanBarcodeViewPrice,
   viewStoreProducts,
 }

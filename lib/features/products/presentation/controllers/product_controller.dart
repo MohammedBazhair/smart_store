@@ -5,6 +5,7 @@ import '../../../../core/constants/typedef.dart';
 import '../../../../core/shared/domain/entities/permission.dart';
 import '../../../../core/shared/domain/services/permission_service.dart';
 import '../../../../core/shared/providers/core_providers.dart';
+import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../store/presentation/controller/store_provider.dart';
@@ -122,6 +123,10 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   }) async {
     final repository = ref.read(productRepositoryProvider);
 
+    if (!_permissionService.can(PermissionTask.updateProduct)) {
+      return const ErrorState('لا تمتلك صلاحية تعديل بيانات المنتجات');
+    }
+
     final result = await repository.updateProduct(newProduct);
 
     if (result is ErrorState<void>) return result;
@@ -179,18 +184,33 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     }
   }
 
-  Future<void> deleteProduct(String productId) async {
+  Future<Result<void>> deleteProduct(Product product) async {
     try {
+      if (product is! StoreProduct) {
+        return const ErrorState(
+          'يجب أن يكون المنتج مضاف لديك بالفعل حتى تتمكن من حذفه',
+        );
+      }
+      final hasPermission =
+          _permissionService.can(PermissionTask.deleteProduct);
+      if (!hasPermission) {
+        throw const PermissionsException('لا توجد لديك صلاحية حذف المنتجات');
+      }
       final productRepo = ref.read(productRepositoryProvider);
       final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
-      final productKey =
-          StoreProductKey(storeId: storeId!, productId: productId);
-      final result = await productRepo.deleteProduct(productKey);
+      final productKey = StoreProductKey(
+        storeId: storeId!,
+        productId: product.globalProduct.id!,
+      );
+      await productRepo.deleteProduct(productKey);
 
-      return result;
+      return const SuccessState(null);
+    } on AppException catch (e) {
+      return ErrorState(e.message);
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
+      return const ErrorState('حصلت مشكلة أثناء حذف المنتج');
     }
   }
 }
