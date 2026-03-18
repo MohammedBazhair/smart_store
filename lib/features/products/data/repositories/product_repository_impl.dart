@@ -245,12 +245,11 @@ class ProductRepositoryImpl implements ProductRepository {
 
       final inserts = <GlobalProductModel>[];
       final updates = <GlobalProductModel>[];
-      final deletes = <String>[];
 
       for (final change in globalProductsChanges) {
         switch (change.operation) {
           case SyncOperation.delete:
-            deletes.add(change.recordId);
+            break;
           case SyncOperation.update:
             final product =
                 await _localDatabase.fetchGlobalProductById(change.recordId);
@@ -269,10 +268,6 @@ class ProductRepositoryImpl implements ProductRepository {
 
       if (updates.isNotEmpty) {
         await _remoteDatabase.updateGlobalProducts(updates);
-      }
-
-      if (deletes.isNotEmpty) {
-        await _remoteDatabase.deleteGlobalProducts(deletes);
       }
 
       await _sync.clearTablesChanges('global_products');
@@ -362,5 +357,13 @@ class ProductRepositoryImpl implements ProductRepository {
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
     }
+  }
+
+  @override
+  Future<void> deleteProduct(StoreProductKey key) async {
+    final hasConnection = await _connectivity.hasConnection();
+
+    if (hasConnection) await _remoteDatabase.deleteStoreProduct(key);
+    await _localDatabase.deleteStoreProduct(key, hasConnection);
   }
 }

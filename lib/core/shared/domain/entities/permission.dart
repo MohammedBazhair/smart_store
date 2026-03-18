@@ -2,17 +2,11 @@ enum PermissionTask {
   fullAccess,
 
   addProduct,
+  deleteProduct,
   changeProductName,
   changeProductPrice,
   changeProductQuantity,
   changeProductExpiryDate,
   scanBarcodeViewPrice,
-  viewSellerProducts,
-
-  assignWorkerToStore,
-
-  enableNotifications,
-  changeCurrencySettings,
-
-  change
+  viewStoreProducts,
 }

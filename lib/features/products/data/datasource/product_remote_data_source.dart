@@ -37,8 +37,6 @@ abstract class ProductRemoteDataSource {
   Future<void> updateStoreProduct(StoreProductModel product);
   Future<void> updateStoreProducts(List<StoreProductModel> products);
 
-  Future<void> deleteGlobalProduct(String productId);
-  Future<void> deleteGlobalProducts(List<String> productsIds);
   Future<void> deleteStoreProduct(StoreProductKey productKey);
   Future<void> deleteStoreProducts(List<StoreProductKey> productKeys);
 }
@@ -262,29 +260,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       onConflict: 'store_id, product_id',
     );
   }
-
-  @override
-  Future<void> deleteGlobalProduct(String productId) {
-    return _client.update(
-      updated: {
-        'is_deleted': true.toInt,
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      },
-      whereFilter: {'id': productId},
-      table: 'global_products',
-    );
-  }
-
-  @override
-  Future<void> deleteGlobalProducts(List<String> productsIds) async {
-    if (productsIds.isEmpty) return;
-
-    await _client.client.from('global_products').update({
-      'is_deleted': true.toInt,
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }).inFilter('id', productsIds);
-  }
-
+  
   @override
   Future<void> deleteStoreProduct(StoreProductKey productKey) {
     return _client.update(

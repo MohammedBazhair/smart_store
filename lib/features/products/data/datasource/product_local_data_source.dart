@@ -62,7 +62,7 @@ abstract class ProductLocalDataSource {
   Future<void> setStoreProducts(List<StoreProductModel> products);
 
   Future<void> deleteStoreProduct(
-    StoreProductModel product, [
+    StoreProductKey productKey, [
     bool skipLocalTracking = false,
   ]);
 }
@@ -490,28 +490,20 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
   @override
   Future<void> deleteStoreProduct(
-    StoreProductModel product, [
+    StoreProductKey productKey, [
     bool skipLocalTracking = false,
   ]) async {
     await db.update(
       updated: {'is_deleted': true, 'updated_at': DateTime.now().toUtc()},
-      filterWhere: {
-        'store_id': product.storeId,
-        'product_id': product.globalProduct.id,
-      },
+      filterWhere: productKey.toMap(),
       table: 'store_products',
     );
 
     if (skipLocalTracking) return;
 
-    final storeProductKey = StoreProductKey(
-      storeId: product.storeId,
-      productId: product.globalProduct.id!,
-    );
-
     final change = SyncChangeModel(
       tableName: 'store_products',
-      recordId: storeProductKey.toJson(),
+      recordId: productKey.toJson(),
       operation: SyncOperation.delete,
       updatedAt: DateTime.now().toUtc(),
     );

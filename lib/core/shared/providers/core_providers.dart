@@ -16,6 +16,7 @@ import '../../../../features/user/presentation/controllers/user_controller.dart'
 import '../../../../features/user/presentation/controllers/user_state.dart';
 import '../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../features/store/presentation/controller/store_provider.dart';
+import '../../../features/user/domain/entities/role.dart';
 import '../../constants/log.dart';
 import '../../database/local/cache_service.dart';
 import '../../database/local/local_database_service.dart';
@@ -24,6 +25,7 @@ import '../../network/connectivity_service.dart';
 import '../../network/network_clinet.dart';
 import '../../utils/background_utils.dart';
 import '../datasources/sync_local_data_source.dart';
+import '../domain/services/permission_service.dart';
 import 'repositories_provider.dart';
 
 final databaseProvider =
@@ -181,3 +183,11 @@ final appSyncProvider = FutureProvider((ref) async {
 });
 
 final appSyncLoadingProvider = StateProvider.autoDispose<bool>((ref) => false);
+
+final permissionServiceProvider = Provider((ref) {
+  final accountStatus = ref.watch(userControllerProvider).profile.accountStatus;
+  final member = ref.watch(storeControllerProvider.notifier).meAsCurrentMember;
+  final role = member?.role ?? Role.guest;
+  
+  return PermissionService(role: role, accountStatus: accountStatus);
+});

@@ -27,4 +27,6 @@ abstract class ProductRepository {
 
   Future<void> initializeDataFromNetwork();
   Future<void> syncAllProducts([String? storeId]);
+
+  Future<void> deleteProduct(StoreProductKey key);
 }

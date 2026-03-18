@@ -22,6 +22,22 @@ class StoreController extends Notifier<StoreEventState> {
     );
   }
 
+  StoreMember? get meAsCurrentMember {
+    try {
+      final storeId = state.state.selectedStoreId;
+      final phone = ref.read(userControllerProvider).profile.phone;
+
+      if (storeId == null || phone == null) return null;
+
+      final memberKey = StoreMemberKey(storeId: storeId, memberPhone: phone);
+      final members = state.state.selectedStore?.members;
+      return members?.firstWhere((m) => m.primaryKey == memberKey);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      return null;
+    }
+  }
+
   Future<void> loadMyStores() async {
     state = LoadinMyStoresEvent(state: state.state);
 
@@ -69,8 +85,8 @@ class StoreController extends Notifier<StoreEventState> {
       return null;
     } on AppException catch (e) {
       return e.message;
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return 'حدث خطأ أثناء إضافة العضو صاحب الرقم $phoneNumber';
     }
   }
@@ -136,8 +152,8 @@ class StoreController extends Notifier<StoreEventState> {
       return null;
     } on AppException catch (e) {
       return e.message;
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return 'فشلت عملية إنشاء متجر تأكد من الاتصال بالانترنت او راجع الدعم الفني';
     }
   }

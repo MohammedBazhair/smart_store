@@ -21,6 +21,8 @@ class StoreState {
   final String? selectedStoreId;
 
   List<StoreWithMembers> get myStoresList => myStores.values.toList();
+  StoreWithMembers? get selectedStore => myStores[selectedStoreId];
+
 
   StoreState copyWith({
     Map<String, StoreWithMembers>? myStores,

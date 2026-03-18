@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
+import '../../../../core/shared/domain/entities/permission.dart';
+import '../../../../core/shared/domain/services/permission_service.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../store/presentation/controller/store_provider.dart';
@@ -13,8 +16,11 @@ import 'product_provider.dart';
 import 'product_state.dart';
 
 class ProductManagementController extends Notifier<ProductManagementState> {
+  late final PermissionService _permissionService;
+
   @override
   ProductManagementState build() {
+    _permissionService = ref.read(permissionServiceProvider);
     return const ProductManagementState();
   }
 
@@ -59,6 +65,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
   Future<ProductsByIdentifier> getStoreProducts() async {
     try {
+      if (!_permissionService.can(PermissionTask.viewStoreProducts)) return {};
       final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
 
       if (storeId == null) return {};
@@ -91,23 +98,22 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
     final result = await productRepository.addProduct(product);
 
-    if (result is SuccessState<StoreProduct>) {
-      final storeProduct = result.data;
-      final alertService = ref.read(alertServiceProvider);
-      await alertService.scheduleProductAlerts(storeProduct);
-
-      final copiedProducts = {...state.products};
-
-      final key =
-          storeProduct.globalProduct.barcode ?? storeProduct.globalProduct.id;
-      copiedProducts[key!] = storeProduct;
-
-      state = state.copyWith(products: copiedProducts);
-      Logger.debugLog(message: state.products.toString());
-      return const SuccessState(null);
+    if (result is ErrorState<StoreProduct>) {
+      return const ErrorState('فشلت عملية إنشاء المنتج');
     }
 
-    return const ErrorState('فشلت عملية إنشاء المنتج');
+    final storeProduct = (result as SuccessState<StoreProduct>).data;
+    final alertService = ref.read(alertServiceProvider);
+    await alertService.scheduleProductAlerts(storeProduct);
+
+    final copiedProducts = {...state.products};
+
+    final key =
+        storeProduct.globalProduct.barcode ?? storeProduct.globalProduct.id;
+    copiedProducts[key!] = storeProduct;
+
+    state = state.copyWith(products: copiedProducts);
+    return const SuccessState(null);
   }
 
   Future<Result<void>> updateProduct({
@@ -173,20 +179,18 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     }
   }
 
-  // Future<List<StoreProduct>> searchProducts(ProductQuery query) async {
-  //   try {
-  //     final productRepo = ref.read(productRepositoryProvider);
-  //     final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
+  Future<void> deleteProduct(String productId) async {
+    try {
+      final productRepo = ref.read(productRepositoryProvider);
+      final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
-  //     final products = await productRepo.searchProducts(
-  //       query: query,
-  //       storeId: storeId,
-  //     );
+      final productKey =
+          StoreProductKey(storeId: storeId!, productId: productId);
+      final result = await productRepo.deleteProduct(productKey);
 
-  //     return products;
-  //   } catch (e, st) {
-  //     Logger.debugLog(error: e, stackTrace: st);
-  //     return [];
-  //   }
-  // }
+      return result;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+    }
+  }
 }
