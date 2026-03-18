@@ -184,13 +184,8 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     }
   }
 
-  Future<Result<void>> deleteProduct(Product product) async {
+  Future<Result<void>> deleteProduct(StoreProduct product) async {
     try {
-      if (product is! StoreProduct) {
-        return const ErrorState(
-          'يجب أن يكون المنتج مضاف لديك بالفعل حتى تتمكن من حذفه',
-        );
-      }
       final hasPermission =
           _permissionService.can(PermissionTask.deleteProduct);
       if (!hasPermission) {
@@ -205,6 +200,13 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       );
       await productRepo.deleteProduct(productKey);
 
+      final copiedProducts = {...state.products};
+
+      final productKeyInMap =
+          product.globalProduct.barcode ?? product.globalProduct.id!;
+      copiedProducts.remove(productKeyInMap);
+
+      state = state.copyWith(products: copiedProducts);
       return const SuccessState(null);
     } on AppException catch (e) {
       return ErrorState(e.message);

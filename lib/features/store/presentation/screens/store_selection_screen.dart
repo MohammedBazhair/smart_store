@@ -46,7 +46,6 @@ class StoreSelectionScreen extends ConsumerWidget {
               pinned: true,
               floating: true,
               backgroundColor: AppTheme.primaryColor,
-              actionsPadding: EdgeInsets.symmetric(horizontal: 5),
               actions: [
                 SignOutButton(),
               ],

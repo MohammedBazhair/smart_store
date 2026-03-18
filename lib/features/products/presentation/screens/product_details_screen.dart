@@ -52,14 +52,21 @@ class ProductDetailsBody extends ConsumerWidget {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      shrinkWrap: true,
-      children: [
-        ProductHeaderInfo(product: product!),
-        const SizedBox(height: 10),
-        ProductInfoSection(product: product!),
-      ],
+    return RefreshIndicator(
+      onRefresh: () async{
+        final productId = product?.globalProduct.id;
+        if (productId == null) return;
+        await ref.refresh(productByIdProvider(productId).future);
+      },
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        shrinkWrap: true,
+        children: [
+          ProductHeaderInfo(product: product!),
+          const SizedBox(height: 10),
+          ProductInfoSection(product: product!),
+        ],
+      ),
     );
   }
 }

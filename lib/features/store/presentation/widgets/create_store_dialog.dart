@@ -93,27 +93,9 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
                     RegExp(r'[a-zA-Z\u0621-\u063A\u0641-\u064A\s]'),
                   ),
                 ],
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'اسم المتجر',
-                  prefixIcon:
-                      const Icon(Icons.store, color: AppTheme.primaryColor),
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 15,
-                    horizontal: 20,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(
-                      color: Colors.grey.shade300,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: AppTheme.primaryColor,
-                      width: 2,
-                    ),
-                  ),
+                  prefixIcon: Icon(Icons.store, color: AppTheme.primaryColor),
                 ),
                 onFieldSubmitted: (value) => _submit(),
                 validator: (value) {

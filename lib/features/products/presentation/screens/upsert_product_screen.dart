@@ -25,6 +25,7 @@ import '../widgets/form_fields/product_notes_field.dart';
 import '../widgets/form_fields/product_price_field.dart';
 import '../widgets/form_fields/product_quantity_field.dart';
 import '../widgets/pick_date/show_expiry_date_picker.dart';
+import '../widgets/product_details/delete_product_dialog.dart';
 import '../widgets/save_product_button.dart';
 
 /// شاشة إضافة منتج جديد
@@ -241,14 +242,11 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
         actions: [
           if (isEditingProduct)
             IconButton(
-              onPressed: () {
-                ref
-                    .read(productControllerProvider.notifier)
-                    .deleteProduct(widget.product!);
-              },
+              onPressed:()=> showDeleteProductDialog(context),
               icon: const Icon(Icons.delete),
             ),
         ],
+        
       ),
       body: GestureDetector(
         onTap: FocusScope.of(context).unfocus,

@@ -494,7 +494,10 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     bool skipLocalTracking = false,
   ]) async {
     await db.update(
-      updated: {'is_deleted': true, 'updated_at': DateTime.now().toUtc()},
+      updated: {
+        'is_deleted': true.toInt,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
       filterWhere: productKey.toMap(),
       table: 'store_products',
     );

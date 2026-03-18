@@ -123,6 +123,7 @@ class AppTheme {
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
+        actionsPadding: EdgeInsets.symmetric(horizontal: 5),
       ),
       cardTheme: CardThemeData(
         shadowColor: const Color.fromARGB(141, 255, 255, 255),
