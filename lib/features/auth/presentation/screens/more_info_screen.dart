@@ -6,10 +6,11 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/common/field_label.dart';
-import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
+import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../user/presentation/controllers/user_state.dart';
 import '../../../user/presentation/screens/account_status_screen.dart';
+import '../widgets/custom_button.dart';
 import '../widgets/custom_fullname_field.dart';
 import '../widgets/custom_phone_field.dart';
 
@@ -136,14 +137,11 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                           builder: (context, ref, child) {
                             final isLoading =
                                 ref.watch(_isLoadingProvider.notifier).state;
-                            return AbsorbPointer(
-                              absorbing: isLoading,
-                              child: ElevatedButton(
-                                onPressed: onSubmit,
-                                child: isLoading
-                                    ? const LoadingWidget()
-                                    : const Text('التالي'),
-                              ),
+                            return CustomButton(
+                              onPressed:isLoading? null: onSubmit,
+                              child: isLoading
+                                  ? const ThreeDotsLoading()
+                                  : const Text('التالي'),
                             );
                           },
                         ),

@@ -3,6 +3,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../settings/domain/entities/currence_code.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../data/models/store_member_key.dart';
@@ -81,6 +82,8 @@ class StoreController extends Notifier<StoreEventState> {
 
       await repo.addStoreMember(member);
 
+      await ref.read(audioControllerProvider.notifier).playScannerBeep();
+
       state = AddStoreMemberEvent(state: state.state, member: member);
       return null;
     } on AppException catch (e) {
@@ -143,6 +146,8 @@ class StoreController extends Notifier<StoreEventState> {
       };
 
       Future.delayed(const Duration(seconds: 1), () {
+        ref.read(audioControllerProvider.notifier).playSuccessResult();
+
         state = CreateStoreEvent(
           state: state.state.copyWith(myStores: copiedStores),
           storeName: storeName,
@@ -159,6 +164,8 @@ class StoreController extends Notifier<StoreEventState> {
   }
 
   Future<void> selectStore(String storeId) async {
+    await ref.read(audioControllerProvider.notifier).playButtonClick();
+
     final cache = ref.read(localCacheServiceProvider);
     await cache.setString(key: AppConstants.lastStoreIdKey, value: storeId);
     state =

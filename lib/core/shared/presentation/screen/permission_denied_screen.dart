@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../errors/result.dart';
+import '../../../../features/auth/presentation/widgets/custom_button.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
 import '../theme/app_theme.dart';
@@ -40,7 +41,7 @@ class PermissionDeniedScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 32),
-            ElevatedButton(
+            CustomButton(
               onPressed: () async {
                 final result = await PermissionsService.requestNotification();
 

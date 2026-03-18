@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
+import '../../../../features/audio/presentation/controller/audio_provider.dart';
 import '../../../../features/store/presentation/controller/store_provider.dart';
 import '../../../../features/store/presentation/controller/store_state.dart';
 import '../../../../features/store/presentation/screens/store_selection_screen.dart';
@@ -37,6 +38,7 @@ class AuthGate extends ConsumerWidget {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(audioControllerProvider.notifier).playLogoIntro();
       final screen = switch (profile.accountStatus) {
         AccountStatus.active => const DashboardScreen(),
         AccountStatus.frozen => AccountStatusScreen(profile: profile),
@@ -46,7 +48,6 @@ class AuthGate extends ConsumerWidget {
       context.pushAndRemoveUntilTo(screen);
     });
 
-      return const SplashScreen();
-
+    return const SplashScreen();
   }
 }

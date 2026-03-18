@@ -1,13 +1,11 @@
 import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-
 import '../../../../core/constants/log.dart';
 import '../../../../core/shared/domain/entities/permission.dart';
 import '../../../../core/shared/domain/services/permission_service.dart';
 import '../../../../core/shared/providers/core_providers.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../domain/barcode_scan_result.dart';
 import 'barcode_scanner_state.dart';
@@ -58,11 +56,12 @@ class BarcodeScannerController extends Notifier<BarcodeScannerState> {
     _debounce = Timer(const Duration(milliseconds: 700), () async {
       state = state.copyWith(isProcessing: true);
       try {
-        await HapticFeedback.mediumImpact();
 
         final product = await ref
             .read(productControllerProvider.notifier)
             .getProductByBarcode(barcode);
+
+        await ref.read(audioControllerProvider.notifier).playScannerBeep();
 
         final result = BarcodeScanResult(
           barcode: barcode,

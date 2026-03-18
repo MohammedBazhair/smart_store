@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../store/presentation/screens/store_selection_screen.dart';
 
 class ChangeStoreSelectionCard extends StatelessWidget {
@@ -19,10 +21,20 @@ class ChangeStoreSelectionCard extends StatelessWidget {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: () => context.pushTo(const StoreSelectionScreen()),
-              icon: const Icon(Icons.store),
-              label: const Text('تغيير'),
+            Consumer(
+              builder: (_, ref, __) {
+                return ElevatedButton.icon(
+                  onPressed: () {
+                    ref
+                        .read(audioControllerProvider.notifier)
+                        .playButtonClick();
+
+                    context.pushTo(const StoreSelectionScreen());
+                  },
+                  icon: const Icon(Icons.store),
+                  label: const Text('تغيير'),
+                );
+              },
             ),
           ],
         ),

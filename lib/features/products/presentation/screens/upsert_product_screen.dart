@@ -8,6 +8,7 @@ import '../../../../core/constants/log.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
+import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../settings/domain/entities/currence_code.dart';
 import '../../../store/presentation/controller/store_provider.dart';
@@ -299,8 +300,8 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
                       ),
                     ),
                     if (!isEditingProduct)
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
+                      CustomButton(
+                        buttonStyle: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey.shade500,
                           shadowColor: const Color(0x6D607D8B),
                         ),

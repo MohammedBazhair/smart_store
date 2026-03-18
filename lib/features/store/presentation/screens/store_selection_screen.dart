@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/providers/core_providers.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../auth/presentation/widgets/sign_out_button.dart';
 import '../../../products/presentation/screens/init_screen.dart';
 import '../../../user/domain/entities/status_config.dart';
@@ -335,22 +336,30 @@ class _EmptyStoresView extends StatelessWidget {
           SizedBox(
             width: 220,
             height: 50,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 0,
-              ),
-              onPressed: () => showCreateStoreDialog(context),
-              icon: const Icon(Icons.add, size: 20),
-              label: const Text(
-                'إنشاء متجر جديد',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            child: Consumer(
+              builder: (_,  ref, __) {
+                return ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                                 ref.read(audioControllerProvider.notifier).playButtonClick();
+            
+                            showCreateStoreDialog(context);
+                          },
+                          icon: const Icon(Icons.add, size: 20),
+                          label: const Text(
+                            'إنشاء متجر جديد',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+              },
             ),
           ),
         ],

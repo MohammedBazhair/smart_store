@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store_member.dart';
 import '../controller/store_provider.dart';
@@ -117,12 +118,20 @@ void showMembersSheet(
                 child: SizedBox(
                   width: double.infinity,
                   height: 50,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.person_add),
-                    label: const Text('إضافة عضو'),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      showAddMemberDialog(context);
+                  child: Consumer(
+                    builder: (_, ref, __) {
+                      return ElevatedButton.icon(
+                        icon: const Icon(Icons.person_add),
+                        label: const Text('إضافة عضو'),
+                        onPressed: () {
+                          ref
+                              .read(audioControllerProvider.notifier)
+                              .playButtonClick();
+
+                          Navigator.pop(context);
+                          showAddMemberDialog(context);
+                        },
+                      );
                     },
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
+import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../auth/presentation/widgets/custom_phone_field.dart';
 import '../controller/store_provider.dart';
 
@@ -76,7 +77,7 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
               spacing: 15,
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: CustomButton(
                     onPressed: _isLoading
                         ? null
                         : () async {
@@ -101,7 +102,7 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
                               _isLoading = false;
                             });
                           },
-                    style: ElevatedButton.styleFrom(
+                    buttonStyle: ElevatedButton.styleFrom(
                       elevation: 5,
                     ),
                     child: _isLoading

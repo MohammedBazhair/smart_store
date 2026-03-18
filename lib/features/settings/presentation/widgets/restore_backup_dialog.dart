@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../auth/presentation/widgets/custom_button.dart';
 
 class RestoreBackupDialog extends StatelessWidget {
   const RestoreBackupDialog({super.key});
@@ -16,9 +17,9 @@ class RestoreBackupDialog extends StatelessWidget {
           onPressed: () => Navigator.pop(context, false),
           child: const Text('إلغاء'),
         ),
-        ElevatedButton(
+        CustomButton(
           onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
+          buttonStyle: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.errorColor,
           ),
           child: const Text('استعادة'),

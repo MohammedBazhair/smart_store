@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/auth_state.dart';
 
@@ -26,6 +27,8 @@ class SignGoogleButton extends ConsumerWidget {
           elevation: 1,
         ),
         onPressed: () async {
+              await ref.read(audioControllerProvider.notifier).playButtonClick();
+
           await ref.read(authControllerProvider.notifier).loginWithGoogle();
         },
         label: isLoading

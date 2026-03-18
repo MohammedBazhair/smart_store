@@ -1,17 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 
-class CustomButton extends StatelessWidget {
-
-  const CustomButton({super.key, required this.text, required this.onPressed});
-  final String text;
-  final VoidCallback onPressed;
+class CustomButton extends ConsumerWidget {
+  const CustomButton({
+    super.key,
+    required this.child,
+    required this.onPressed,
+    this.buttonStyle,
+    this.textStyle,
+  });
+  final Widget child;
+  final VoidCallback? onPressed;
+  final ButtonStyle? buttonStyle;
+  final TextStyle? textStyle;
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 55,
-      child: ElevatedButton(onPressed: onPressed, child: Text(text)),
+  Widget build(BuildContext context, ref) {
+    return ElevatedButton(
+      style: buttonStyle,
+      onPressed: onPressed != null
+          ? () {
+              ref.read(audioControllerProvider.notifier).playButtonClick();
+              onPressed?.call();
+            }
+          : null,
+      child: child,
     );
   }
 }

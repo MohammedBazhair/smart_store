@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../domain/alert.dart';
@@ -91,6 +92,8 @@ class AlertCard extends ConsumerWidget {
             alert.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
           ),
           onPressed: () async {
+    await ref.read(audioControllerProvider.notifier).playButtonClick();
+
             final controller = ref.read(alertControllerProvider.notifier);
             await controller.markAsRead(alert.id!);
           },

@@ -5,10 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/common/field_label.dart';
-import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
+import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../handle_auth_listeners.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/auth_state.dart';
+import '../widgets/custom_button.dart';
 import '../widgets/custom_email_field.dart';
 import '../widgets/custom_password_field.dart';
 import '../widgets/sign_google_button.dart';
@@ -143,14 +144,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         builder: (context, ref, child) {
                           final isLoading = ref.watch(authControllerProvider)
                               is AuthLoadingState;
-                          return AbsorbPointer(
-                            absorbing: isLoading,
-                            child: ElevatedButton(
-                              onPressed: onSubmit,
-                              child: isLoading
-                                  ? const LoadingWidget()
-                                  : const Text('تسجيل الدخول'),
-                            ),
+                          return CustomButton(
+                            onPressed:isLoading?null: onSubmit,
+                            child: isLoading
+                                ? const ThreeDotsLoading()
+                                : const Text('تسجيل الدخول'),
                           );
                         },
                       ),

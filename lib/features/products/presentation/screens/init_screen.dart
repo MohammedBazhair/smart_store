@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/screen/dashboard_screen.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../controllers/download_provider.dart';
 import '../controllers/product_provider.dart';
@@ -278,9 +279,9 @@ class _ErrorContent extends StatelessWidget {
           const SizedBox(height: 40),
 
           // زر إعادة المحاولة
-          ElevatedButton(
+          CustomButton(
             onPressed: onRetry,
-            style: ElevatedButton.styleFrom(
+            buttonStyle: ElevatedButton.styleFrom(
               backgroundColor: primary,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
               shape: RoundedRectangleBorder(

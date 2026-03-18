@@ -6,6 +6,7 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../errors/result.dart';
+import '../../../auth/presentation/widgets/custom_button.dart';
 import '../controllers/barcode_provider.dart';
 
 class ErrorScannerWidget extends ConsumerWidget {
@@ -51,7 +52,7 @@ class ErrorScannerWidget extends ConsumerWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16),
           ),
-          ElevatedButton(
+          CustomButton(
             onPressed: () async {
               final controller = ref.read(barcodeControllerProvider.notifier).scannerController;
               switch (error.errorCode) {

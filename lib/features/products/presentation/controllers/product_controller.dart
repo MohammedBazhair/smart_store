@@ -8,6 +8,7 @@ import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
+import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/models/store_product_key.dart';
 import '../../domain/entities/category.dart';
@@ -114,6 +115,8 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     copiedProducts[key!] = storeProduct;
 
     state = state.copyWith(products: copiedProducts);
+    await ref.read(audioControllerProvider.notifier).playScannerBeep();
+
     return const SuccessState(null);
   }
 

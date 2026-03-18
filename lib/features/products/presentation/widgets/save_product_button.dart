@@ -5,6 +5,7 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/shared/presentation/widgets/common/conditional_builder.dart';
 import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
+import '../../../auth/presentation/widgets/custom_button.dart';
 
 class SaveProductButton extends ConsumerWidget {
   const SaveProductButton({
@@ -18,9 +19,9 @@ class SaveProductButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final isLoading = ref.watch(isLoadingProvider(IsLoading.saveProduct));
-    return ElevatedButton(
+    return CustomButton(
       onPressed: isLoading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
+      buttonStyle: ElevatedButton.styleFrom(
         padding: const EdgeInsets.all(0),
       ),
       child: ConditionalBuilder(

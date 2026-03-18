@@ -7,6 +7,7 @@ import '../../../../../core/shared/presentation/screen/dashboard_screen.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../../errors/result.dart';
+import '../../../../auth/presentation/widgets/custom_button.dart';
 import '../../controllers/product_provider.dart';
 
 final _loadingProvider = StateProvider((ref) => false);
@@ -78,35 +79,38 @@ class DeleteProductDialog extends ConsumerWidget {
               spacing: 15,
               children: [
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed:isLoading? null: () async {
-                      if (product == null) return;
-                      ref.read(_loadingProvider.notifier).state = true;
-                      final result = await ref
-                          .read(productControllerProvider.notifier)
-                          .deleteProduct(product);
+                  child: CustomButton(
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            if (product == null) return;
+                            ref.read(_loadingProvider.notifier).state = true;
+                            final result = await ref
+                                .read(productControllerProvider.notifier)
+                                .deleteProduct(product);
 
-                      ref.read(_loadingProvider.notifier).state = false;
+                            ref.read(_loadingProvider.notifier).state = false;
 
-                      if (result is ErrorState<void>) {
-                        context.showSnakbar(
-                          result.message,
-                          type: SnackBarType.error,
-                        );
-                        return context.pop();
-                      }
+                            if (result is ErrorState<void>) {
+                              context.showSnakbar(
+                                result.message,
+                                type: SnackBarType.error,
+                              );
+                              return context.pop();
+                            }
 
-                      if (result is SuccessState<void>) {
-                        context.showSnakbar(
-                          'تم حذف المنتج بنجاح',
-                          type: SnackBarType.success,
-                        );
+                            if (result is SuccessState<void>) {
+                              context.showSnakbar(
+                                'تم حذف المنتج بنجاح',
+                                type: SnackBarType.success,
+                              );
 
-                        await context
-                            .pushAndRemoveUntilTo(const DashboardScreen());
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
+                              await context.pushAndRemoveUntilTo(
+                                const DashboardScreen(),
+                              );
+                            }
+                          },
+                    buttonStyle: ElevatedButton.styleFrom(
                       elevation: 5,
                       backgroundColor: Colors.red.shade400,
                       shadowColor: const Color.fromARGB(110, 255, 136, 134),

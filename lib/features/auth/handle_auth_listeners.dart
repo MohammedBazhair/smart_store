@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/enums.dart';
 import '../../core/extensions/extensions.dart';
 import '../../core/shared/providers/core_providers.dart';
+import '../audio/presentation/controller/audio_provider.dart';
 import '../user/presentation/screens/account_status_screen.dart';
 import 'presentation/controllers/auth_state.dart';
 import 'presentation/screens/more_info_screen.dart';
@@ -21,6 +22,8 @@ Future<void> handlgeAuthListener({
       break;
 
     case AuthSuccessfullState():
+    await ref.read(audioControllerProvider.notifier).playSuccessResult();
+
       final profile =
           await ref.read(userControllerProvider.notifier).loadProfile();
       if (profile?.isDataComplete ?? false) {
@@ -36,6 +39,7 @@ Future<void> handlgeAuthListener({
     case AuthGoogleLoadingState():
       break;
     case AuthResetPasswordSuccessfullState(:final email):
+
       context.showSnakbar(
         'تم ارسال رمز اعادة تعيين كلمة المرور الى بريدك الالكتروني',
         type: SnackBarType.success,

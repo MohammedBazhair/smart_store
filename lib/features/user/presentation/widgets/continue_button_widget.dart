@@ -5,6 +5,7 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/send_messages_utils.dart';
+import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../store/presentation/screens/store_selection_screen.dart';
 import '../../domain/entities/status_config.dart';
 
@@ -21,7 +22,7 @@ class ContinueButtonWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final isLoading = ref.watch(appSyncLoadingProvider);
-    return ElevatedButton(
+    return CustomButton(
       onPressed: isLoading
           ? null
           : () async {
@@ -50,7 +51,7 @@ class ContinueButtonWidget extends ConsumerWidget {
                 );
               }
             },
-      style: ElevatedButton.styleFrom(
+      buttonStyle: ElevatedButton.styleFrom(
         backgroundColor: config.primaryColor,
         foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 56),

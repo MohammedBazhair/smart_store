@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/extensions/extensions.dart';
+import '../../../../auth/presentation/widgets/custom_button.dart';
 import '../../../domain/entities/expiry_date_picker.dart';
 import '../../controllers/product_provider.dart';
 import 'picker_button.dart';
@@ -50,8 +51,8 @@ Future<DateTime?> showExpiryDatePicker(BuildContext context, WidgetRef ref) {
                 ),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
+              CustomButton(
+                buttonStyle: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                   backgroundColor: const Color(0xFF01B7C1),
                 ),
