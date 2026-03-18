@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
+import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../domain/entities/product_details.dart';
 import '../../../domain/entities/store_product.dart';
@@ -29,7 +28,6 @@ class ProductInfoSection extends StatelessWidget {
                 icon: Icons.attach_money,
                 label: 'السعر',
                 value: product.price.toString(),
-                secondaryValue: product.currency.label,
                 detailsType: ProductDetailsType.price,
                 iconColor: const Color(0xFF0FA4AF),
               ),
@@ -78,7 +76,7 @@ class ProductInfoSection extends StatelessWidget {
                 child: ProductInfoCard(
                   icon: Icons.calendar_today,
                   label: 'تاريخ الانتهاء',
-                  value: DateFormat('yyyy-MM-dd').format(product.expiryDate!),
+                  value: product.expiryDate!.formattedDate,
                   detailsType: ProductDetailsType.expiryDate,
                   iconColor: const Color(0xFFF97316),
                 ),
@@ -94,6 +92,28 @@ class ProductInfoSection extends StatelessWidget {
               ),
             ],
           ),
+        Row(
+          spacing: 10,
+          children: [
+            Expanded(
+              child: ProductInfoCard(
+                icon: Icons.paid_sharp,
+                label: 'العملة',
+                value: product.currency.label,
+                detailsType: ProductDetailsType.currency,
+                iconColor: const Color(0xFF0F67AF),
+              ),
+            ),
+            Expanded(
+              child: ProductInfoCard(
+                icon: Icons.manage_history,
+                label: 'اخر تحديث',
+                value: product.updatedAt.formattedDate,
+                iconColor: const Color(0xFFF166BC),
+              ),
+            ),
+          ],
+        ),
         if (product.notes.isNotEmpty)
           ProductInfoCard(
             icon: Icons.note,

@@ -15,7 +15,6 @@ class BaseProductInfoCard extends ConsumerWidget {
     required this.value,
     required this.detailsType,
     required this.iconColor,
-    this.secondaryValue,
   });
 
   final IconData icon;
@@ -23,7 +22,6 @@ class BaseProductInfoCard extends ConsumerWidget {
   final String value;
   final ProductDetailsType detailsType;
   final Color iconColor;
-  final String? secondaryValue;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -57,26 +55,19 @@ class BaseProductInfoCard extends ConsumerWidget {
             ),
           ],
         ),
-        subtitle: Text.rich(
-          TextSpan(
-            text: value,
+        subtitle: Padding(
+          padding: const EdgeInsetsDirectional.only(start: 2, top: 5),
+          child: Text(
+            value,
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
               height: 1.8,
             ),
-            children: [
-              const TextSpan(text: '  '),
-              TextSpan(
-                text: secondaryValue,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: AppTheme.textSecondary,
-                ),
-              ),
-            ],
           ),
         ),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       ),
     );
   }
@@ -88,14 +79,14 @@ class ProductInfoCard extends ConsumerWidget {
     required this.icon,
     required this.label,
     required this.value,
-    required this.detailsType,
+    this.detailsType,
     required this.iconColor,
   });
 
   final IconData icon;
   final String label;
   final String value;
-  final ProductDetailsType detailsType;
+  final ProductDetailsType? detailsType;
   final Color iconColor;
 
   @override
@@ -137,10 +128,13 @@ class ProductInfoCard extends ConsumerWidget {
         ),
         subtitle: Text(
           value,
+          maxLines: 1,
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
             height: 1.8,
+            overflow: TextOverflow.ellipsis,
+            letterSpacing: 0.6,
           ),
         ),
       ),

@@ -31,7 +31,10 @@ class DateTimeUtils {
     if (days < 0) {
       months--;
 
-      days += DateTime(expiryDate.year, expiryDate.month, 0).day;
+      final daysInPreviousMonth =
+          DateTime(expiryDate.year, expiryDate.month, 0).day;
+
+      days += daysInPreviousMonth;
     }
 
     if (months < 0) {
@@ -39,11 +42,15 @@ class DateTimeUtils {
       months += 12;
     }
 
-    if (years > 0) {
-      return months > 0 ? '$years سنة و $months شهر' : '$years سنة';
-    }
+    final parts = <String>[];
 
-    return months > 0 ? '$months شهر و $days يوم' : '$days يوم';
+    if (years > 0) parts.add('$years سنة');
+
+    if (months > 0) parts.add('$months شهر');
+
+    if (years == 0 && days > 0) parts.add('$days يوم');
+
+    return parts.join(' و ');
   }
 
   /// التحقق من انتهاء المنتج

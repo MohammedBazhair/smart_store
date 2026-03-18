@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../constants/enums.dart';
 
@@ -66,21 +67,7 @@ extension FilesSizes on num {
 
 extension DateFormating on DateTime {
   String get formattedDate {
-    final months = [
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-    return '$day ${months[month - 1]} $year';
+return    DateFormat('yyyy/MM/dd').format(this);
   }
 }
 
