@@ -7,7 +7,6 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
-import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../backup/presentation/backup_controller.dart';
 import '../controllers/settings_provider.dart';
@@ -18,7 +17,6 @@ class BackupSettingsCard extends ConsumerWidget {
   });
 
   Future<void> _createBackup(WidgetRef ref, BuildContext context) async {
-        await ref.read(audioControllerProvider.notifier).playButtonClick();
 
     ref.read(isLoadingProvider(IsLoading.backup).notifier).update((i) => true);
 

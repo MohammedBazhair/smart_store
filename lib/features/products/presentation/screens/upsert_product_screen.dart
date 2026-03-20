@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -156,13 +155,14 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
   }
 
   Future<void> _scanBarcode() async {
-    await HapticFeedback.selectionClick();
-
-    final barcode = await context.pushTo<String?>(
-      const BarcodeScannerScreen(
+    final barcode = await showModalBottomSheet(
+      context: context,
+      builder: (context) => const BarcodeScannerScreen(
         isPopRequired: true,
       ),
     );
+
+    Logger.debugLog(message: barcode);
 
     _barcodeController.text = barcode ?? _barcodeController.text;
   }
@@ -243,11 +243,10 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
         actions: [
           if (isEditingProduct)
             IconButton(
-              onPressed:()=> showDeleteProductDialog(context),
+              onPressed: () => showDeleteProductDialog(context),
               icon: const Icon(Icons.delete),
             ),
         ],
-        
       ),
       body: GestureDetector(
         onTap: FocusScope.of(context).unfocus,

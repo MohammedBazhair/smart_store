@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/providers/core_providers.dart';
-import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../auth/presentation/widgets/sign_out_button.dart';
 import '../../../products/presentation/screens/init_screen.dart';
 import '../../../user/domain/entities/status_config.dart';
@@ -346,7 +345,6 @@ class _EmptyStoresView extends StatelessWidget {
                             elevation: 0,
                           ),
                           onPressed: () {
-                                 ref.read(audioControllerProvider.notifier).playButtonClick();
             
                             showCreateStoreDialog(context);
                           },

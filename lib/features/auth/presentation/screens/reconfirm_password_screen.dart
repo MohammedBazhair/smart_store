@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../audio/presentation/controller/audio_provider.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/auth_state.dart';
 import '../widgets/custom_button.dart';
@@ -33,7 +32,6 @@ class _ReconfirmPasswordScreenState
   }
 
   Future<void> _reconfirmPassword() async {
-    await ref.read(audioControllerProvider.notifier).playButtonClick();
     final isValidForm = _formKey.currentState?.validate() ?? false;
     if (!isValidForm) return;
     final newPassword = _passwordController.text;

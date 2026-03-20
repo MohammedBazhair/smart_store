@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../audio/presentation/controller/audio_provider.dart';
 
 class CustomButton extends ConsumerWidget {
   const CustomButton({
@@ -19,12 +18,7 @@ class CustomButton extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     return ElevatedButton(
       style: buttonStyle,
-      onPressed: onPressed != null
-          ? () {
-              ref.read(audioControllerProvider.notifier).playButtonClick();
-              onPressed?.call();
-            }
-          : null,
+      onPressed:onPressed,
       child: child,
     );
   }

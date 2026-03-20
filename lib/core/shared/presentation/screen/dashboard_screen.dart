@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../errors/result.dart';
 import '../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../features/alerts/presentation/controllers/notification_cache.dart';
-import '../../../../features/audio/presentation/controller/audio_provider.dart';
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/products/presentation/screens/product_details_screen.dart';
@@ -77,7 +76,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              ref.read(audioControllerProvider.notifier).playButtonClick();
 
               context.pushTo(const SettingsScreen());
             },
@@ -89,7 +87,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       floatingActionButton: FloatingActionButton.extended(
         elevation: 2.5,
         onPressed: () {
-          ref.read(audioControllerProvider.notifier).playButtonClick();
 
           context.pushTo(const BarcodeScannerScreen());
         },

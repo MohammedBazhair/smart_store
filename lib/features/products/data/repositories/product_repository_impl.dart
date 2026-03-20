@@ -168,6 +168,8 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
+
+
   @override
   Future<Result<StoreProduct>> addProduct(StoreProduct product) async {
     final barcode = product.globalProduct.barcode ?? '';

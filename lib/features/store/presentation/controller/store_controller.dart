@@ -164,8 +164,6 @@ class StoreController extends Notifier<StoreEventState> {
   }
 
   Future<void> selectStore(String storeId) async {
-    await ref.read(audioControllerProvider.notifier).playButtonClick();
-
     final cache = ref.read(localCacheServiceProvider);
     await cache.setString(key: AppConstants.lastStoreIdKey, value: storeId);
     state =

@@ -16,20 +16,14 @@ class AudioController extends Notifier<void> {
   }
 
   Future<void> playScannerBeep() {
-    return playSound('assets/sounds/store_scanner_beep.mp3');
+    return playSound('sounds/store_scanner_beep.mp3');
   }
 
   Future<void> playSuccessResult() {
-    return playSound('assets/sounds/correct.mp3');
+    return playSound('sounds/correct.mp3');
   }
 
-  Future<void> playButtonClick() {
-    return playSound('assets/sounds/button_click.mp3');
-  }
 
-  Future<void> playLogoIntro() {
-    return playSound('assets/sounds/logo_intro.mp3');
-  }
 
   Future<Duration> getSoundDuration(String? path) async {
     try {

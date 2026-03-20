@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/shared/presentation/widgets/common/conditional_builder.dart';
 import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../core/shared/providers/core_providers.dart';
-import '../../../audio/presentation/controller/audio_provider.dart';
 
 class SyncCard extends StatelessWidget {
   const SyncCard({super.key});
@@ -28,9 +27,6 @@ class SyncCard extends StatelessWidget {
                   onPressed: isLoading
                       ? null
                       : () async {
-                            await ref
-                              .read(audioControllerProvider.notifier)
-                              .playButtonClick();
 
                           try {
                             ref.read(appSyncLoadingProvider.notifier).state =

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
-import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
 import '../controller/store_provider.dart';
 
@@ -36,7 +35,6 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
   }
 
   Future<void> _submit() async {
-    await ref.read(audioControllerProvider.notifier).playButtonClick();
 
     setState(() {
       _error = null;

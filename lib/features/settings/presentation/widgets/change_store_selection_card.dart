@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
-import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../store/presentation/screens/store_selection_screen.dart';
 
 class ChangeStoreSelectionCard extends StatelessWidget {
@@ -25,9 +24,6 @@ class ChangeStoreSelectionCard extends StatelessWidget {
               builder: (_, ref, __) {
                 return ElevatedButton.icon(
                   onPressed: () {
-                    ref
-                        .read(audioControllerProvider.notifier)
-                        .playButtonClick();
 
                     context.pushTo(const StoreSelectionScreen());
                   },

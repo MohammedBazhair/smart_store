@@ -149,6 +149,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           '*, global_products(*, categories(*))',
         )
         .eq('store_id', storeId)
+        .eq('is_deleted', false.toInt)
         .lte('expiry_date', today);
 
     return response.map(StoreProductModel.fromRemote).toList();
@@ -167,10 +168,20 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
           '*, global_products(*, categories(*))',
         )
         .eq('store_id', storeId)
+        .eq('is_deleted', false.toInt)
         .gte('expiry_date', now.toIso8601String())
         .lte('expiry_date', near.toIso8601String());
 
     return response.map(StoreProductModel.fromRemote).toList();
+  }
+
+  Future<bool> _isProductSoftDeleted(StoreProductKey key) async {
+    final result = await _client.readRowsWhere(
+      table: 'store_products',
+      filters: {...key.toMap(), 'is_deleted': true.toInt},
+    );
+
+    return result.firstOrNull?.isEmpty ?? false;
   }
 
   @override
@@ -184,10 +195,25 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       onConflict: 'id',
     );
 
-    await _client.insertRow(
-      map: product.toMap(),
-      table: 'store_products',
+    final key = StoreProductKey(
+      storeId: product.storeId,
+      productId: product.globalProduct.id!,
     );
+
+    if (await _isProductSoftDeleted(key)) {
+      await _client.update(
+        updated: product.toMap()
+          ..remove('product_id')
+          ..remove('store_id'),
+        whereFilter: key.toMap(),
+        table: 'store_products',
+      );
+    } else {
+      await _client.insertRow(
+        map: product.toMap(),
+        table: 'store_products',
+      );
+    }
 
     return product;
   }
@@ -214,8 +240,8 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   @override
   Future<void> updateGlobalProduct(GlobalProductModel product) async {
-    final updated=product.toMap();
-    updated.remove('id'); 
+    final updated = product.toMap();
+    updated.remove('id');
     await _client.update(
       updated: updated,
       table: 'global_products',
@@ -260,7 +286,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
       onConflict: 'store_id, product_id',
     );
   }
-  
+
   @override
   Future<void> deleteStoreProduct(StoreProductKey productKey) {
     return _client.update(

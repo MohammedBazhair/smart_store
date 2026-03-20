@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../products/presentation/screens/upsert_product_screen.dart';
@@ -21,20 +20,25 @@ class BarcodeScannerScreen extends StatelessWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    final controller = ref.read(barcodeControllerProvider.notifier);
+    await controller.stop();
+
+    final result = await controller.processBarcode(barcode, isPopRequired);
     if (isPopRequired) {
-      Navigator.pop(context, barcode);
+      if (context.mounted) Navigator.pop(context, barcode);
       return;
     }
-    final controller = ref.read(barcodeControllerProvider.notifier);
 
-    final result = await controller.processBarcode(barcode);
+    if (result == null) {
+      await controller.start();
 
-    if (result == null) return;
+      return;
+    }
 
     if (result.isStoreProduct) {
-      await controller.stop();
       await showProductPriceDialog(context: context, scanResult: result);
       await controller.start();
+
       return;
     }
 
@@ -50,16 +54,19 @@ class BarcodeScannerScreen extends StatelessWidget {
         product: result.product,
       ),
     );
+    await controller.start();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'امسح الباركود',
-        ),
-      ),
+      appBar: isPopRequired
+          ? null
+          : AppBar(
+              title: const Text(
+                'امسح الباركود',
+              ),
+            ),
       body: Stack(
         children: [
           Consumer(

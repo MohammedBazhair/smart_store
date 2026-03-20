@@ -337,12 +337,26 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     return product;
   }
 
+  Future<bool> _isProductSoftDeleted(StoreProductKey key) async {
+    final result = await db.readRowsWhere(
+      table: 'store_products',
+      filters: {...key.toMap(), 'is_deleted': true.toInt},
+    );
+
+    return result.firstOrNull?.isEmpty ?? false;
+  }
+
   @override
   Future<StoreProductModel> addStoreProduct(
     StoreProductModel product, [
     bool skipLocalTracking = false,
   ]) async {
     bool isAddedToGlobal = false;
+    SyncOperation operation = SyncOperation.insert;
+      final storeProductKey = StoreProductKey(
+      storeId: product.storeId,
+      productId: product.globalProduct.id!,
+    );
     try {
       await db.transaction((txn) async {
         final globalProductModel =
@@ -356,11 +370,23 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
         isAddedToGlobal = id != 0;
 
-        await txn.insert(
-          'store_products',
-          product.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.ignore,
-        );
+       
+        if (await _isProductSoftDeleted(storeProductKey)) {
+          operation = SyncOperation.update;
+          await txn.update(
+            'store_products',
+            product.toMap()
+              ..remove('store_id')
+              ..remove('key'),
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          );
+        } else {
+          await txn.insert(
+            'store_products',
+            product.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.ignore,
+          );
+        }
       });
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
@@ -377,14 +403,11 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
     if (isAddedToGlobal) await _sync.addChange(globalProductChange);
 
-    final storeProductKey = StoreProductKey(
-      storeId: product.storeId,
-      productId: product.globalProduct.id!,
-    );
+  
     final storeProductChange = SyncChangeModel(
       tableName: 'store_products',
       recordId: storeProductKey.toJson(),
-      operation: SyncOperation.insert,
+      operation: operation,
       updatedAt: DateTime.now().toUtc(),
     );
 
