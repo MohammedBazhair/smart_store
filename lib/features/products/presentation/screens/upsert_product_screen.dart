@@ -132,7 +132,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
       storeId: storeId,
       quantity: int.tryParse(_quantityController.text),
       expiryDate: DateTime.tryParse(_expiryDateController.text),
-      notes: _notesController.text,
+      notes: _notesController.text.trim(),
       updatedAt: now,
       currency: _selectedCurrency,
       price: double.tryParse(_priceController.text) ?? 0,

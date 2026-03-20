@@ -337,15 +337,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     return product;
   }
 
-  Future<bool> _isProductSoftDeleted(StoreProductKey key) async {
-    final result = await db.readRowsWhere(
-      table: 'store_products',
-      filters: {...key.toMap(), 'is_deleted': true.toInt},
-    );
-
-    return result.firstOrNull?.isEmpty ?? false;
-  }
-
   @override
   Future<StoreProductModel> addStoreProduct(
     StoreProductModel product, [
@@ -353,12 +344,23 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   ]) async {
     bool isAddedToGlobal = false;
     SyncOperation operation = SyncOperation.insert;
-      final storeProductKey = StoreProductKey(
+    final storeProductKey = StoreProductKey(
       storeId: product.storeId,
       productId: product.globalProduct.id!,
     );
     try {
       await db.transaction((txn) async {
+        Future<bool> _isProductSoftDeleted(StoreProductKey key) async {
+          final result = await txn.rawQuery(
+            '''
+    SELECT product_id FROM store_products WHERE store_id = ? AND product_id = ? AND is_deleted = ?
+    ''',
+            [key.storeId, key.productId, true.toInt],
+          );
+          Logger.debugLog(message: 'result: $result');
+          return result.isNotEmpty;
+        }
+
         final globalProductModel =
             GlobalProductModel.fromEntity(product.globalProduct);
 
@@ -370,7 +372,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
         isAddedToGlobal = id != 0;
 
-       
         if (await _isProductSoftDeleted(storeProductKey)) {
           operation = SyncOperation.update;
           await txn.update(
@@ -403,7 +404,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
     if (isAddedToGlobal) await _sync.addChange(globalProductChange);
 
-  
     final storeProductChange = SyncChangeModel(
       tableName: 'store_products',
       recordId: storeProductKey.toJson(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/constants/log.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../domain/entities/product_details.dart';
@@ -15,6 +16,7 @@ class ProductInfoSection extends StatelessWidget {
         date_utils.DateTimeUtils.timeUntilExpiry(product.expiryDate);
     final isExpired = date_utils.DateTimeUtils.isExpired(product.expiryDate);
     const spacing = 10.0;
+    Logger.debugLog(message: '(${product.notes.trim()})');
 
     return Column(
       spacing: spacing,

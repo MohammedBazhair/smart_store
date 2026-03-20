@@ -64,7 +64,11 @@ class DateTimeUtils {
     final days = daysUntilExpiry(expiryDate);
 
     if (days == null) return false;
-    return days >= 0 && days <= daysThreshold;
+
+    if (daysThreshold == 0)   return days <= 0;
+    
+
+    return days > 0 && days <= daysThreshold;
   }
 
   /// تنسيق التاريخ للعرض

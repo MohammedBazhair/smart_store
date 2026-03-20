@@ -115,7 +115,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     copiedProducts[key!] = storeProduct;
 
     state = state.copyWith(products: copiedProducts);
-    await ref.read(audioControllerProvider.notifier).playScannerBeep();
+    await ref.read(audioControllerProvider.notifier).playSuccessResult();
 
     return const SuccessState(null);
   }
