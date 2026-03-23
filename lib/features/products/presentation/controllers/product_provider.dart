@@ -78,5 +78,6 @@ final productByIdProvider = FutureProvider.family<StoreProduct?, String>(
 /// Provider للـ ProductController
 final productControllerProvider =
     NotifierProvider<ProductManagementController, ProductManagementState>(() {
+      
   return ProductManagementController();
 });

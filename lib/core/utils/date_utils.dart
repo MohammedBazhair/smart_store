@@ -50,7 +50,7 @@ class DateTimeUtils {
 
     if (years == 0 && days > 0) parts.add('$days يوم');
 
-    return parts.join(' و ');
+    return 'باقي ${parts.join(' و ')}';
   }
 
   /// التحقق من انتهاء المنتج
@@ -65,8 +65,7 @@ class DateTimeUtils {
 
     if (days == null) return false;
 
-    if (daysThreshold == 0)   return days <= 0;
-    
+    if (daysThreshold == 0) return days <= 0;
 
     return days > 0 && days <= daysThreshold;
   }

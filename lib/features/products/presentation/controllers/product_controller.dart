@@ -14,23 +14,25 @@ import '../../data/models/store_product_key.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/store_product.dart';
+import '../../domain/repositories/product_repository.dart';
 import 'product_provider.dart';
 import 'product_state.dart';
 
 class ProductManagementController extends Notifier<ProductManagementState> {
-  late final PermissionService _permissionService;
+  PermissionService get _permissionService =>
+      ref.read(permissionServiceProvider);
+
+  ProductRepository get productRepo => ref.read(productRepositoryProvider);
 
   @override
   ProductManagementState build() {
-    _permissionService = ref.read(permissionServiceProvider);
     return const ProductManagementState();
   }
 
   Future<void> initialize() async {
-    final repo = ref.read(productRepositoryProvider);
     final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
 
-    await repo.syncAllProducts(storeId);
+    await productRepo.syncAllProducts(storeId);
 
     final categories = await getCategories();
     final products = await getStoreProducts();
@@ -38,10 +40,10 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     Logger.debugLog(message: products.toString());
 
     final expiredProducts = storeId != null
-        ? await repo.getExpiredProducts(storeId)
+        ? await productRepo.getExpiredProducts(storeId)
         : <StoreProduct>[];
     final nearbyExpiredProducts = storeId != null
-        ? await repo.getNearExpiryProducts(storeId, 30)
+        ? await productRepo.getNearExpiryProducts(storeId, 30)
         : <StoreProduct>[];
 
     state = state.copyWith(
@@ -53,8 +55,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   }
 
   Future<List<Category>> getCategories() async {
-    final categories =
-        await ref.read(productRepositoryProvider).getAllCategories();
+    final categories = await productRepo.getAllCategories();
     categories.sort((a, b) => a.name.compareTo(b.name));
     return categories;
   }
@@ -72,8 +73,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
       if (storeId == null) return {};
 
-      final products =
-          await ref.read(productRepositoryProvider).getStoreProducts(storeId);
+      final products = await productRepo.getStoreProducts(storeId);
 
       return products;
     } catch (e, st) {
@@ -96,9 +96,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       return const ErrorState('هذا المنتج مكرر وموجود مسبقا');
     }
 
-    final productRepository = ref.read(productRepositoryProvider);
-
-    final result = await productRepository.addProduct(product);
+    final result = await productRepo.addProduct(product);
 
     if (result is ErrorState<StoreProduct>) {
       return const ErrorState('فشلت عملية إنشاء المنتج');
@@ -124,13 +122,11 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     required StoreProduct oldProduct,
     required StoreProduct newProduct,
   }) async {
-    final repository = ref.read(productRepositoryProvider);
-
     if (!_permissionService.can(PermissionTask.updateProduct)) {
       return const ErrorState('لا تمتلك صلاحية تعديل بيانات المنتجات');
     }
 
-    final result = await repository.updateProduct(newProduct);
+    final result = await productRepo.updateProduct(newProduct);
 
     if (result is ErrorState<void>) return result;
 
@@ -159,8 +155,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final storeProduct = state.products[barcode];
     if (storeProduct != null) return storeProduct;
 
-    final productRepo = ref.read(productRepositoryProvider);
-
     // التحقق من وجود المنتج
     final globalProduct = await productRepo.getGlobalProductByBarcode(
       barcode,
@@ -171,7 +165,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
   Future<StoreProduct?> getProductById(String productId) async {
     try {
-      final productRepo = ref.read(productRepositoryProvider);
       final storeId = ref.watch(
         storeControllerProvider.select((s) => s.state.selectedStoreId),
       );
@@ -194,7 +187,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       if (!hasPermission) {
         throw const PermissionsException('لا توجد لديك صلاحية حذف المنتجات');
       }
-      final productRepo = ref.read(productRepositoryProvider);
       final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
       final productKey = StoreProductKey(
@@ -203,13 +195,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       );
       await productRepo.deleteProduct(productKey);
 
-      final copiedProducts = {...state.products};
-
-      final productKeyInMap =
-          product.globalProduct.barcode ?? product.globalProduct.id!;
-      copiedProducts.remove(productKeyInMap);
-
-      state = state.copyWith(products: copiedProducts);
+      await initialize();
       return const SuccessState(null);
     } on AppException catch (e) {
       return ErrorState(e.message);

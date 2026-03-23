@@ -83,6 +83,7 @@ class _PickerButtonState extends ConsumerState<PickerButton> {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: AppTheme.primaryColor,
           ),
         ),
         Expanded(

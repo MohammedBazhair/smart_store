@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/extensions/extensions.dart';
+import '../../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../../core/utils/date_utils.dart';
 import '../../../../auth/presentation/widgets/custom_button.dart';
 import '../../../domain/entities/expiry_date_picker.dart';
 import '../../controllers/product_provider.dart';
@@ -9,6 +11,23 @@ import 'picker_button.dart';
 
 Future<DateTime?> showExpiryDatePicker(BuildContext context, WidgetRef ref) {
   final now = DateTime.now();
+
+  void setDate() {
+    final state = ref.read(expiryDateControllerProvider);
+    final day = state.selectedDay ?? 1;
+    final month = state.selectedMonth ?? 1;
+    final year = state.selectedYear ?? now.year;
+    final datePicker = ExpiryDatePicker(
+      selectedDay: day,
+      selectedMonth: month,
+      selectedYear: year,
+    );
+    ref
+        .read(
+          expiryDateControllerProvider.notifier,
+        )
+        .setDatePicker(datePicker);
+  }
 
   return showModalBottomSheet<DateTime>(
     context: context,
@@ -25,7 +44,26 @@ Future<DateTime?> showExpiryDatePicker(BuildContext context, WidgetRef ref) {
             children: [
               const Text(
                 'تاريخ الانتهاء',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Consumer(
+                builder: (__, ref, _) {
+                  final date =
+                      ref.watch(expiryDateControllerProvider).selectedDate;
+                  return date != null
+                      ? Text(
+                          DateTimeUtils.timeUntilExpiry(date).toString(),
+                          style: const TextStyle(
+                            fontSize: 15,
+                          ),
+                        )
+                      : const SizedBox.shrink();
+                },
               ),
               const SizedBox(height: 20),
               const SizedBox(
@@ -57,20 +95,7 @@ Future<DateTime?> showExpiryDatePicker(BuildContext context, WidgetRef ref) {
                   backgroundColor: const Color(0xFF01B7C1),
                 ),
                 onPressed: () {
-                  final state = ref.read(expiryDateControllerProvider);
-                  final day = state.selectedDay ?? 1;
-                  final month = state.selectedMonth ?? 1;
-                  final year = state.selectedYear ?? now.year;
-                  final datePicker = ExpiryDatePicker(
-                    selectedDay: day,
-                    selectedMonth: month,
-                    selectedYear: year,
-                  );
-                  ref
-                      .read(
-                        expiryDateControllerProvider.notifier,
-                      )
-                      .setDatePicker(datePicker);
+                  setDate();
                   context.pop();
                 },
                 child: const Text(
