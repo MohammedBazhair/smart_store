@@ -15,7 +15,7 @@ Future<void> scheduleWorkManagerAlert(
     daysBeforeExpire: daysBefore,
   );
   await Workmanager().registerOneOffTask(
-    '${product.globalProduct.id}',
+    '${product.globalProduct.id}_$daysBefore',
     BackgroundTask.addProductAlert.name,
     initialDelay: delay,
     inputData: alertParams.toMap(),

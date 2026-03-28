@@ -29,8 +29,8 @@ class AlertService {
   final AlertController alertController;
   final NotificationService _notifications;
 
-  Future<void> initialize() async {
-    await PermissionsService.requestNotification();
+  Future<void> initialize([bool requestPermissions = true]) async {
+    if (requestPermissions) await PermissionsService.requestNotification();
     await _notifications.initialize();
   }
 
@@ -59,7 +59,7 @@ class AlertService {
         daysBeforeExpiry: days,
       );
 
-      if (isAlertDuplicated ||!isNearExpired) continue;
+      if (isAlertDuplicated || !isNearExpired) continue;
 
       await _scheduleAlert(
         product: product,
@@ -69,12 +69,11 @@ class AlertService {
     }
   }
 
-  Future<void> _showNotification({
+  Future<void> showNotification({
     required StoreProduct product,
     required int daysBefore,
-    required Priority importance,
   }) async {
-    final payload = product.globalProduct.id?.toString();
+    final payload = product.globalProduct.id;
 
     await _notifications.show(
       id: AlertUtils.notificationId(product, daysBefore),
@@ -87,8 +86,19 @@ class AlertService {
     await alertController.addAlert(
       product: product,
       daysBeforeExpiry: daysBefore,
-      importance: importance,
+      importance: _getPriorityFrom(daysBefore),
     );
+  }
+
+  Priority _getPriorityFrom(int daysBefore) {
+    final alerts = {
+      30: Priority.high,
+      15: Priority.high,
+      7: Priority.max,
+      0: Priority.max,
+    };
+
+    return alerts[daysBefore] ?? Priority.defaultPriority;
   }
 
   Future<void> _scheduleAlert({
@@ -101,10 +111,9 @@ class AlertService {
 
     if (alertDate.isBefore(DateTime.now())) {
       // إذا كان التاريخ في الماضي، أرسل التنبيه فورًا
-      await _showNotification(
+      await showNotification(
         product: product,
         daysBefore: daysBefore,
-        importance: importance,
       );
       return;
     }

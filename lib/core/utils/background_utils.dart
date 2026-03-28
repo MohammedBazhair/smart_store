@@ -5,6 +5,7 @@ import '../../errors/result.dart';
 import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/domain/alert.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
+import '../../features/products/domain/entities/store_product.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
 import '../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../features/store/presentation/controller/store_provider.dart';
@@ -23,7 +24,7 @@ class BackgroundUtils {
 
   Future<Result<int>> addAlertInBackground(
     AlertBackgroundParams params,
-  ) {
+  ) async {
     final product = params.product;
     final repository = container.read(alertRepositoryProvider);
     final alert = Alert(
@@ -35,7 +36,30 @@ class BackgroundUtils {
       expiryDate: product.expiryDate,
       productName: product.globalProduct.name,
     );
-    return repository.addAlert(alert);
+    final result = await repository.addAlert(alert);
+
+    // When the app is terminated, this Workmanager task is what fires at the due
+    // time. We must show a local notification here as well.
+    final productId = product.globalProduct.id;
+    if (productId != null) {
+      await _showExpiryLocalNotification(
+        product: product,
+        daysBefore: params.daysBeforeExpire,
+      );
+    }
+
+    return result;
+  }
+
+  Future<void> _showExpiryLocalNotification({
+    required StoreProduct product,
+    required int daysBefore,
+  }) async {
+    final service = container.read(alertServiceProvider);
+
+    await service.initialize(false);
+
+    await service.showNotification(product: product, daysBefore: daysBefore);
   }
 
   Future<void> dailyExpiryCheck() async {
@@ -71,7 +95,6 @@ class BackgroundUtils {
 
     await settingsRepo.getExchangeRates();
     final profile = await userRepo.syncAllProfiles();
-
 
     await storesRepo.syncAll(profile.phone!);
     await productRepo.syncAllProducts();

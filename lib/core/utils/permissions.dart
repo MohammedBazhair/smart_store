@@ -1,4 +1,7 @@
+import 'dart:io' show Platform;
+
 import 'package:app_settings/app_settings.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -39,5 +42,45 @@ class PermissionsService {
     } catch (e) {
       return ErrorState(e.toString());
     }
+  }
+
+  /// Android: whether the app is exempt from battery optimization (best-effort).
+  /// Other platforms: always true (no equivalent flow).
+  static Future<bool> isIgnoringBatteryOptimizations() async {
+    if (kIsWeb || !Platform.isAndroid) return true;
+    final status = await Permission.ignoreBatteryOptimizations.status;
+    return status.isGranted;
+  }
+
+  /// Android: shows the system dialog to allow ignoring battery optimizations.
+  static Future<Result<bool>> requestIgnoreBatteryOptimizations() async {
+    try {
+      if (kIsWeb || !Platform.isAndroid) {
+        return const SuccessState(true);
+      }
+
+      final status = await Permission.ignoreBatteryOptimizations.request();
+      if (status.isGranted) {
+        return const SuccessState(true);
+      }
+
+      if (status.isPermanentlyDenied) {
+        await AppSettings.openAppSettings(
+          type: AppSettingsType.batteryOptimization,
+        );
+      }
+
+      return const SuccessState(false);
+    } catch (e) {
+      return ErrorState(e.toString());
+    }
+  }
+
+  /// Android: opens the battery optimization / related settings screen.
+  static Future<void> openBatteryOptimizationSettings() async {
+    if (kIsWeb || !Platform.isAndroid) return;
+    await AppSettings.openAppSettings(
+      type: AppSettingsType.batteryOptimization,
+    );
   }
 }

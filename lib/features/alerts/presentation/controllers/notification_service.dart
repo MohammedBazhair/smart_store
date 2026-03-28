@@ -84,7 +84,6 @@ class NotificationService {
      scheduledDate: tz.TZDateTime.from(date, tz.local),
     notificationDetails:   notificationDetails,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
       payload: payload,
     );
   }
