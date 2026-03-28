@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/extensions/extensions.dart';
@@ -140,11 +140,15 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     }
     return RefreshIndicator(
       onRefresh: () async {
-        ref.read(appSyncLoadingProvider.notifier).state = true;
-
-        await ref.refresh(appSyncProvider.future);
-        ref.read(appSyncLoadingProvider.notifier).state = false;
-        await ref.read(productControllerProvider.notifier).loadStoreProducts();
+        final container = ref.container;
+        container.read(appSyncLoadingProvider.notifier).state = true;
+        try {
+          await container.refresh(appSyncProvider.future);
+        } finally {
+          container.read(appSyncLoadingProvider.notifier).state = false;
+        }
+        if (!mounted) return;
+        await container.read(productControllerProvider.notifier).loadStoreProducts();
       },
       child: ProductsList(
         products: products,
