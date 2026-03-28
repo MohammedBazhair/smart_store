@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../errors/result.dart';
 import '../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../features/alerts/presentation/controllers/notification_cache.dart';
+import '../../../../features/alerts/presentation/screens/alerts_screen.dart';
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/products/presentation/screens/product_details_screen.dart';
@@ -12,7 +13,7 @@ import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
 import '../widgets/dashboard/dashboard_near_expiry_section.dart';
 import '../widgets/dashboard/dashboard_quick_actions.dart';
-import '../widgets/dashboard/dashboard_stats_grid.dart';
+import '../widgets/dashboard/dashboard_stats_section.dart';
 import 'permission_denied_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -72,11 +73,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('لوحة التحكم'),
+        leading: IconButton(
+          tooltip: 'التنبيهات',
+          icon: const Icon(Icons.notifications_rounded),
+          onPressed: () {
+            final allAlerts =
+                ref.read(alertControllerProvider).allAlerts.values;
+
+            context.pushTo(
+              AlertsScreen(
+                title: 'التنبيهات',
+                alerts: allAlerts.toList(),
+              ),
+            );
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-
               context.pushTo(const SettingsScreen());
             },
           ),
@@ -84,14 +99,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       body: const DashboardBody(),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'مسح الباركود',
+        shape: const CircleBorder(),
         elevation: 2.5,
         onPressed: () {
-
           context.pushTo(const BarcodeScannerScreen());
         },
-        icon: const Icon(Icons.qr_code_scanner),
-        label: const Text('مسح الباركود'),
+        child: const Icon(Icons.qr_code_scanner),
       ),
     );
   }
@@ -115,9 +130,9 @@ class DashboardBody extends ConsumerWidget {
         padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 24,
+          spacing: 30,
           children: [
-            DashboardStatsGrid(),
+            DashboardStatsSection(),
             DashboardQuickActions(),
             DashboardNearExpirySection(),
           ],

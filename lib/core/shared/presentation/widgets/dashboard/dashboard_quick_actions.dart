@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
-import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
+import '../../../../../features/cashier/presentation/screens/pos_screen.dart';
 import '../../../../../features/products/presentation/screens/upsert_product_screen.dart';
 import '../../../../extensions/extensions.dart';
 import '../../theme/app_theme.dart';
@@ -21,39 +18,29 @@ class DashboardQuickActions extends StatelessWidget {
           'إجراءات سريعة',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-        Row(
-          spacing: 12,
+        GridView.count(
+          crossAxisCount: 2,
+          childAspectRatio: 1.5,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           children: [
-            Expanded(
-              child: DashboardQuickActionCard(
-                title: 'إضافة منتج',
-                icon: Icons.add_circle_outline,
-                color: AppTheme.primaryColor,
-                onTap: () {
-                  context.pushTo(const UpesertProductScreen());
-                },
-              ),
+            DashboardQuickActionCard(
+              title: 'المحاسب',
+              icon: Icons.point_of_sale_outlined,
+              color: Colors.green,
+              onTap: () {
+                context.pushTo(const PosScreen());
+              },
             ),
-            Expanded(
-              child: Consumer(
-                builder: (_, ref, __) {
-                  final allAlerts =
-                      ref.watch(alertControllerProvider).allAlerts.values;
-                  return DashboardQuickActionCard(
-                    title: 'التنبيهات',
-                    icon: Icons.notifications_outlined,
-                    color: AppTheme.warningColor,
-                    onTap: () {
-                      context.pushTo(
-                        AlertsScreen(
-                          title: 'التنبيهات',
-                          alerts: allAlerts.toList(),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+            DashboardQuickActionCard(
+              title: 'إضافة منتج',
+              icon: Icons.add_circle_outline,
+              color: AppTheme.primaryColor,
+              onTap: () {
+                context.pushTo(const UpesertProductScreen());
+              },
             ),
           ],
         ),

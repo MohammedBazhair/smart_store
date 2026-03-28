@@ -15,14 +15,6 @@ class AlertsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: title != null ? Text(title!) : const Text('التنبيهات'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.read(alertControllerProvider.notifier).loadAlerts();
-            },
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
