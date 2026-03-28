@@ -186,8 +186,10 @@ final appSyncLoadingProvider = StateProvider.autoDispose<bool>((ref) => false);
 
 final permissionServiceProvider = Provider((ref) {
   final accountStatus = ref.watch(userControllerProvider).profile.accountStatus;
-  final member = ref.watch(storeControllerProvider.notifier).meAsCurrentMember;
+
+  ref.watch(storeControllerProvider);
+  final member = ref.read(storeControllerProvider.notifier).meAsCurrentMember;
   final role = member?.role ?? Role.guest;
-  
+
   return PermissionService(role: role, accountStatus: accountStatus);
 });

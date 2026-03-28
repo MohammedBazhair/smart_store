@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/settings.dart';
@@ -41,12 +42,8 @@ class NotificationsSettingsCard extends StatelessWidget {
                 onChanged(settings.copyWith(enableNotifications: value));
               },
             ),
-            if (settings.enableNotifications &&
-                !kIsWeb &&
-                Platform.isAndroid) ...[
-              const Divider(height: 32),
+            if (!kIsWeb && Platform.isAndroid)
               const _AndroidBatteryOptimizationSection(),
-            ],
           ],
         ),
       ),
@@ -66,7 +63,7 @@ class _AndroidBatteryOptimizationSectionState
     extends State<_AndroidBatteryOptimizationSection>
     with WidgetsBindingObserver {
   bool _loading = true;
-  bool _ignored = false;
+  bool _isBatteryOptimizationIgnored = false;
 
   @override
   void initState() {
@@ -93,13 +90,14 @@ class _AndroidBatteryOptimizationSectionState
     final ignored = await PermissionsService.isIgnoringBatteryOptimizations();
     if (!mounted) return;
     setState(() {
-      _ignored = ignored;
+      _isBatteryOptimizationIgnored = ignored;
       _loading = false;
     });
   }
 
-  Future<void> _onRequest() async {
-    final result = await PermissionsService.requestIgnoreBatteryOptimizations();
+  Future<void> _enableExemption() async {
+    final result =
+        await PermissionsService.enableBatteryOptimizationExemption();
     if (!mounted) return;
 
     if (result is ErrorState<bool>) {
@@ -114,15 +112,33 @@ class _AndroidBatteryOptimizationSectionState
     final granted = result is SuccessState<bool> ? result.data : false;
     context.showSnakbar(
       granted
-          ? 'تم السماح بالتشغيل الموثوق في الخلفية'
-          : 'يمكنك المحاولة لاحقًا أو فتح إعدادات البطارية أدناه',
+          ? 'تم تفعيل التشغيل في الخلفية'
+          : 'لم يتم التغيير. يمكنك تعديل الإعداد من الإعدادات',
       type: granted ? SnackBarType.success : SnackBarType.error,
     );
   }
 
-  Future<void> _onOpenSettings() async {
-    await PermissionsService.openBatteryOptimizationSettings();
+  Future<void> _disableExemption() async {
+    final result =
+        await PermissionsService.disableBatteryOptimizationExemption();
+    if (!mounted) return;
+
+    if (result is ErrorState<bool>) {
+      context.showSnakbar(result.message, type: SnackBarType.error);
+      await _refresh();
+      return;
+    }
+
     await _refresh();
+    if (!mounted) return;
+
+    final notGranted = result is SuccessState<bool> ? result.data : false;
+    context.showSnakbar(
+      notGranted
+          ? 'تم إلغاء استثناء البطارية (قد تتأخر الإشعارات)'
+          : 'لم يتم التغيير. يمكنك تعديل الإعداد من إعدادات النظام',
+      type: notGranted ? SnackBarType.success : SnackBarType.error,
+    );
   }
 
   @override
@@ -130,64 +146,18 @@ class _AndroidBatteryOptimizationSectionState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          'التشغيل في الخلفية',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'لضمان وصول تنبيهات الصلاحية في الوقت، يُفضّل استثناء التطبيق من «تحسين البطارية».',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-        ),
-        const SizedBox(height: 16),
         if (_loading)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          )
-        else ...[
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(
-              _ignored ? Icons.battery_charging_full : Icons.battery_saver,
-              color: _ignored
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            title: Text(
-              _ignored ? 'التطبيق مستثنى من تحسين البطارية' : 'قيود البطارية مفعّلة',
-            ),
-            subtitle: Text(
-              _ignored
-                  ? 'يمكن للتنبيهات العمل بموثوقية أكبر في الخلفية'
-                  : 'اضغط للسماح أو افتح الإعدادات يدويًا',
-            ),
+          const LoadingWidget()
+        else
+          SwitchListTile(
+            value: _isBatteryOptimizationIgnored,
+            title: const Text('السماح للإشعارات بالعمل في الخلفية'),
+            secondary:
+                NotificationIcon(isEnabled: _isBatteryOptimizationIgnored),
+            onChanged: (value) {
+              value ? _enableExemption() : _disableExemption();
+            },
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton(
-                  onPressed: _ignored ? null : _onRequest,
-                  child: const Text('السماح بالتشغيل الموثوق'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: _onOpenSettings,
-            child: const Text('فتح إعدادات البطارية / التطبيق'),
-          ),
-        ],
       ],
     );
   }

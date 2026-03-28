@@ -107,7 +107,7 @@ class DatabaseHelper {
         store_id TEXT NOT NULL,
         product_id TEXT NOT NULL,
         price REAL NOT NULL,
-        quantity INTEGER NOT NULL,
+        quantity INTEGER NULL,
         currency TEXT NOT NULL,
         expiry_date TEXT,
         notes TEXT NOT NULL DEFAULT '',

@@ -14,25 +14,28 @@ class InitScreen extends ConsumerWidget {
   const InitScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(initDataFromNetProvider, (previous, next) {
+      next.whenOrNull(
+        data: (_) {
+          if (previous is AsyncData) return;
+          Future(() async {
+            await ref.read(storeControllerProvider.notifier).loadMyStores();
+            await ref.read(productControllerProvider.notifier).initialize();
+            if (!context.mounted) return;
+            await context.pushAndRemoveUntilTo(const DashboardScreen());
+          });
+        },
+      );
+    });
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
             const _AnimatedBackground(),
             ref.watch(initDataFromNetProvider).when(
-                  data: (data) {
-                    Future.microtask(() async {
-                      await ref
-                          .read(productControllerProvider.notifier)
-                          .initialize();
-                      await ref.read(storeControllerProvider.notifier).loadMyStores();
-                      
-                      await context
-                          .pushAndRemoveUntilTo(const DashboardScreen());
-                    });
-                    return const _LoadingContent();
-                  },
+                  data: (_) => const _LoadingContent(),
                   error: (_, __) => _ErrorContent(
                     onRetry: () => ref.refresh(initDataFromNetProvider),
                   ),

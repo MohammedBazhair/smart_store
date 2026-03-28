@@ -18,7 +18,7 @@ class PermissionsService {
       if (status.isPermanentlyDenied) {
         await AppSettings.openAppSettings(type: AppSettingsType.camera);
       }
-      
+
       return const SuccessState(false);
     } on MissingPluginException catch (e) {
       final result = await openAppSettings();
@@ -53,7 +53,7 @@ class PermissionsService {
   }
 
   /// Android: shows the system dialog to allow ignoring battery optimizations.
-  static Future<Result<bool>> requestIgnoreBatteryOptimizations() async {
+  static Future<Result<bool>> enableBatteryOptimizationExemption() async {
     try {
       if (kIsWeb || !Platform.isAndroid) {
         return const SuccessState(true);
@@ -68,6 +68,24 @@ class PermissionsService {
         await AppSettings.openAppSettings(
           type: AppSettingsType.batteryOptimization,
         );
+      }
+
+      return  SuccessState(status.isGranted);
+    } catch (e) {
+      return ErrorState(e.toString());
+    }
+  }
+
+  static Future<Result<bool>> disableBatteryOptimizationExemption() async {
+    try {
+      if (kIsWeb || !Platform.isAndroid) {
+        return const SuccessState(true);
+      }
+      await PermissionsService.openBatteryOptimizationSettings();
+
+      final status = await Permission.ignoreBatteryOptimizations.status;
+      if (!status.isGranted) {
+        return const SuccessState(true);
       }
 
       return const SuccessState(false);
