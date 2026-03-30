@@ -30,8 +30,8 @@ import '../widgets/product_details/delete_product_dialog.dart';
 import '../widgets/save_product_button.dart';
 
 /// شاشة إضافة منتج جديد
-class UpesertProductScreen extends ConsumerStatefulWidget {
-  const UpesertProductScreen({
+class UpsertProductScreen extends ConsumerStatefulWidget {
+  const UpsertProductScreen({
     super.key,
     this.barcode,
     this.product,
@@ -44,10 +44,10 @@ class UpesertProductScreen extends ConsumerStatefulWidget {
   final bool isEditing;
 
   @override
-  ConsumerState<UpesertProductScreen> createState() => _AddProductScreenState();
+  ConsumerState<UpsertProductScreen> createState() => _UpsertProductScreenState();
 }
 
-class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
+class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController();
@@ -57,7 +57,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
   final _expiryDateController = TextEditingController();
 
   Category _selectedCategory = Category.undefined();
-  CurrencyCode _selectedCurrency = CurrencyCode.theDefault;
+  late CurrencyCode _selectedCurrency;
 
   bool get isEditingProduct => widget.isEditing;
 
@@ -65,6 +65,9 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
   void initState() {
     super.initState();
     _barcodeController.text = widget.barcode ?? '';
+
+    _selectedCurrency = ref.read(settingsControllerProvider).value?.defaultCurrency ??
+        CurrencyCode.theDefault;
 
     _initializeFields();
     _requestFocusAfterEdit();
@@ -89,14 +92,20 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
       _nameController.text = product.globalProduct.name;
       _barcodeController.text = product.globalProduct.barcode ?? '';
       _quantityController.text = product.quantity?.toString() ?? '';
-      _priceController.text = product.price.toString();
+
+      // تحويل السعر من العملة الأساسية (YER) إلى العملة المختارة للعرض
+      final  (:currency,:price)= ref.read(settingsControllerProvider.notifier).convert(
+            price: product.price,
+            from: CurrencyCode.theDefault,
+          );
+      _priceController.text = price.formatDouble;
+
       _notesController.text = product.notes;
 
       _expiryDateController.text = product.expiryDate != null
           ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
           : '';
       _selectedCategory = product.globalProduct.category;
-      _selectedCurrency = CurrencyCode.theDefault;
     } else if (product is GlobalProduct) {
       _nameController.text = product.name;
 
@@ -137,7 +146,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
       price: price,
       from: _selectedCurrency,
       to: CurrencyCode.theDefault,
-    );
+    ).price;
     
     return StoreProduct(
       storeId: storeId,

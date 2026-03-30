@@ -49,7 +49,7 @@ class BarcodeScannerScreen extends StatelessWidget {
 
     if (!context.mounted) return;
     await context.pushTo(
-      UpesertProductScreen(
+      UpsertProductScreen(
         barcode: barcode,
         product: result.product,
       ),

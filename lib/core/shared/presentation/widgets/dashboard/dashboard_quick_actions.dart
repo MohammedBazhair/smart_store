@@ -39,7 +39,7 @@ class DashboardQuickActions extends StatelessWidget {
               icon: Icons.add_circle_outline,
               color: AppTheme.primaryColor,
               onTap: () {
-                context.pushTo(const UpesertProductScreen());
+                context.pushTo(const UpsertProductScreen());
               },
             ),
           ],

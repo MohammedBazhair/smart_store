@@ -9,7 +9,7 @@ import '../../../settings/domain/entities/currence_code.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
 import 'scanner_trigger_button.dart';
 
-class PosSummaryFooter extends StatelessWidget {
+class PosSummaryFooter extends ConsumerWidget {
   const PosSummaryFooter({
     super.key,
     required this.totalPrice,
@@ -21,7 +21,15 @@ class PosSummaryFooter extends StatelessWidget {
   final VoidCallback onCheckout;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final result = ref.read(settingsControllerProvider.notifier).convert(
+          price: totalPrice,
+          from: CurrencyCode.theDefault,
+        );
+
+    final convertedTotalPrice = result.price;
+    final currency = result.currency;
+    
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -59,7 +67,7 @@ class PosSummaryFooter extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        totalPrice.formatDouble,
+                        convertedTotalPrice.formatDouble,
                         maxLines: 1,
                         style: const TextStyle(
                           fontSize: 20,
@@ -67,22 +75,13 @@ class PosSummaryFooter extends StatelessWidget {
                           color: AppTheme.primaryColor,
                         ),
                       ),
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final currency = ref
-                                  .watch(settingsControllerProvider)
-                                  .value
-                                  ?.defaultCurrency ??
-                              CurrencyCode.theDefault;
-                          return Text(
-                            currency.label,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppTheme.textSecondary,
-                            ),
-                          );
-                        },
+                      Text(
+                        currency.label,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
                     ],
                   ),

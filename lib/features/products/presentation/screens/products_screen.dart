@@ -127,7 +127,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.pushTo(const UpesertProductScreen()),
+        onPressed: () => context.pushTo(const UpsertProductScreen()),
         icon: const Icon(Icons.add),
         label: const Text('إضافة منتج'),
       ),

@@ -1,19 +1,43 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../../core/utils/date_utils.dart' as date_utils;
+import '../../../../settings/domain/entities/currence_code.dart';
+import '../../../../settings/presentation/controllers/settings_provider.dart';
 import '../../../domain/entities/store_product.dart';
 
-class ProductMetaColumn extends StatelessWidget {
+class ProductMetaColumn extends ConsumerWidget {
   const ProductMetaColumn(this.product, {super.key});
 
   final StoreProduct product;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final (:price, :currency) =
+        ref.read(settingsControllerProvider.notifier).convert(
+              price: product.price,
+              from: CurrencyCode.theDefault,
+            );
+
+    final priceText = '${price.formatDouble} ${currency.label}';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          spacing: 4,
+          children: [
+            const Icon(
+              Icons.attach_money,
+              size: 14,
+              color: AppTheme.textSecondary,
+            ),
+            Text(
+              'السعر: $priceText',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
         if (product.quantity != null)
           Row(
             spacing: 4,
@@ -39,7 +63,7 @@ class ProductMetaColumn extends StatelessWidget {
                 color: AppTheme.textSecondary,
               ),
               Text(
-                date_utils.DateTimeUtils.formatDate(product.expiryDate!),
+                product.expiryDate!.formattedDate,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],

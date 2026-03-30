@@ -31,7 +31,7 @@ class BaseProductInfoCard extends ConsumerWidget {
           final product = ref.read(currentProductProvider);
 
           context.pushTo(
-            UpesertProductScreen(
+            UpsertProductScreen(
               product: product,
               detailsType: detailsType,
               isEditing: true,
@@ -99,7 +99,7 @@ class ProductInfoCard extends ConsumerWidget {
           final product = ref.read(currentProductProvider);
 
           context.pushTo(
-            UpesertProductScreen(
+            UpsertProductScreen(
               product: product,
               detailsType: detailsType,
               isEditing: true,

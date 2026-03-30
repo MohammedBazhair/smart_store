@@ -1,28 +1,25 @@
 import '../../../products/domain/entities/store_product.dart';
-import '../../../settings/domain/entities/exchange_rate.dart';
 
 class CartItem {
   CartItem({
     required this.product,
     required this.quantity,
-    required this.baseExchangeRate,
+    required this.price,
   });
   final StoreProduct product;
   final int quantity;
-  final ExchangeRate baseExchangeRate;
-
-  double get price => (product.price * baseExchangeRate.rateToBase).toDouble();
+  final num price;
   double get subtotal => (product.price * quantity).toDouble();
 
   CartItem copyWith({
     StoreProduct? product,
     int? quantity,
-    ExchangeRate? baseExchangeRate,
+    num? price,
   }) {
     return CartItem(
       product: product ?? this.product,
       quantity: quantity ?? this.quantity,
-      baseExchangeRate: baseExchangeRate ?? this.baseExchangeRate,
+      price: price ?? this.price,
     );
   }
 

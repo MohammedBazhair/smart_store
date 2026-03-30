@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../settings/domain/entities/currence_code.dart';
+import '../../../settings/presentation/controllers/settings_provider.dart';
 import '../controllers/pos_controller.dart';
 import '../widgets/pos_summary_footer.dart';
 import '../widgets/pos_table.dart';
@@ -89,6 +91,14 @@ class CheckoutScreen extends ConsumerWidget {
     final cartItems = ref.read(posControllerProvider).cartItems;
     final total = ref.read(posControllerProvider).totalPrice;
 
+    final result = ref.read(settingsControllerProvider.notifier).convert(
+          price: total,
+          from: CurrencyCode.theDefault,
+        );
+
+    final convertedTotal = result.price;
+    final displayCurrency = result.currency;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -100,18 +110,30 @@ class CheckoutScreen extends ConsumerWidget {
             children: [
               const Divider(),
               ...cartItems.values.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${item.product.globalProduct.name} x${item.quantity}',
-                      ),
-                      Text('${item.subtotal}'),
-                    ],
-                  ),
-                ),
+                (item) {
+                  final convertedSubtotal = ref
+                      .read(settingsControllerProvider.notifier)
+                      .convert(
+                        price: item.subtotal,
+                        from: CurrencyCode.theDefault,
+                      )
+                      .price;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${item.product.globalProduct.name} x${item.quantity}',
+                        ),
+                        Text(
+                          '${convertedSubtotal.formatDouble} ${displayCurrency.label}',
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
               const Divider(),
               Row(
@@ -122,7 +144,7 @@ class CheckoutScreen extends ConsumerWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '$total',
+                    '${convertedTotal.formatDouble} ${displayCurrency.label}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],

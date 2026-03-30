@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../domain/entities/cart_item.dart';
 import 'pos_item_row.dart';
 
-class PosTable extends StatelessWidget {
+class PosTable extends ConsumerWidget {
   const PosTable({super.key, required this.cartItems});
   final List<CartItem> cartItems;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
     return DataTable(
       columnSpacing: 24,
       headingRowColor: MaterialStatePropertyAll(Colors.grey.shade100),
@@ -67,7 +69,7 @@ class PosTable extends StatelessWidget {
               ),
               DataCell(QuantitySelector(item: item)),
               DataCell(
-                Text(item.product.price.formatDouble),
+                Text(item.price.formatDouble),
               ),
               DataCell(
                 Text(
@@ -82,3 +84,4 @@ class PosTable extends StatelessWidget {
     );
   }
 }
+

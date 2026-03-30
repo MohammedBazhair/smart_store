@@ -1,23 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../../core/constants/log.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../../settings/domain/entities/currence_code.dart';
+import '../../../../settings/presentation/controllers/settings_provider.dart';
 import '../../../domain/entities/product_details.dart';
 import '../../../domain/entities/store_product.dart';
 import 'product_info_card.dart';
 
-class ProductInfoSection extends StatelessWidget {
+class ProductInfoSection extends ConsumerWidget {
   const ProductInfoSection({super.key, required this.product});
   final StoreProduct product;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final remainingTimeFormatted =
         date_utils.DateTimeUtils.timeUntilExpiry(product.expiryDate);
     final isExpired = date_utils.DateTimeUtils.isExpired(product.expiryDate);
     const spacing = 10.0;
     Logger.debugLog(message: '(${product.notes.trim()})');
+
+    final (:price, :currency) =
+        ref.read(settingsControllerProvider.notifier).convert(
+              from: CurrencyCode.theDefault,
+              price: product.price,
+            );
 
     return Column(
       spacing: spacing,
@@ -30,7 +39,7 @@ class ProductInfoSection extends StatelessWidget {
               child: BaseProductInfoCard(
                 icon: Icons.attach_money,
                 label: 'السعر',
-                value: product.price.toString(),
+                value: price.formatDouble,
                 detailsType: ProductDetailsType.price,
                 iconColor: const Color(0xFF0FA4AF),
               ),
@@ -102,7 +111,7 @@ class ProductInfoSection extends StatelessWidget {
               child: ProductInfoCard(
                 icon: Icons.paid_sharp,
                 label: 'العملة',
-                value: CurrencyCode.theDefault.label,
+                value: currency.label,
                 detailsType: ProductDetailsType.currency,
                 iconColor: const Color(0xFF0F67AF),
               ),

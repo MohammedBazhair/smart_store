@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../domain/entities/product_expiry_status.dart';
 
 class ExpiryRow extends StatelessWidget {
@@ -22,7 +22,7 @@ class ExpiryRow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          date_utils.DateTimeUtils.formatDate(date),
+          date.formattedDate,
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const Spacer(),

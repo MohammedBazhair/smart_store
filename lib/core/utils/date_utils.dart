@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 
 class DateTimeUtils {
   DateTimeUtils._();
@@ -70,8 +69,5 @@ class DateTimeUtils {
     return days > 0 && days <= daysThreshold;
   }
 
-  /// تنسيق التاريخ للعرض
-  static String formatDate(DateTime date) {
-    return DateFormat('yyyy-MM-dd', 'en').format(date);
-  }
+
 }

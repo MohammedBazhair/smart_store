@@ -68,23 +68,31 @@ class SettingsController extends AsyncNotifier<Settings> {
     }
   }
 
-  double convert({
+  ({double price, CurrencyCode currency}) convert({
     required num price,
     required CurrencyCode from,
-    required CurrencyCode to,
+    CurrencyCode? to,
   }) {
+    final toCurrency =
+        to ?? state.value?.defaultCurrency ?? CurrencyCode.theDefault;
     try {
       final ratesState = state.value?.exchageRates;
       if (ratesState == null) throw Exception('No exchange rates found');
 
-      if (from == to) return price.toDouble();
+      if (from == toCurrency) {
+        return (price: price.toDouble(), currency: toCurrency);
+      }
       final rateFrom = ratesState.firstWhere((rate) => rate.currency == from);
-      final rateTo = ratesState.firstWhere((rate) => rate.currency == to);
+      final rateTo =
+          ratesState.firstWhere((rate) => rate.currency == toCurrency);
+
+      // تحويل السعر من العملة المصدر إلى العملة الأساسية (YER)
+// حيث أن rateToBase يمثل قيمة العملة مقابل الريال اليمني
       final inBase = price * rateFrom.rateToBase;
-      return inBase / rateTo.rateToBase;
+      return (price: inBase / rateTo.rateToBase, currency: toCurrency);
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
-      return price.toDouble();
+      return (price: price.toDouble(), currency: toCurrency);
     }
   }
 }
