@@ -16,27 +16,28 @@ class ScannerTriggerButton extends ConsumerWidget {
   final bool showIconOnly;
 
   Future<void> _openScanner(BuildContext context, WidgetRef ref) async {
-    final barcode = await showModalBottomSheet<String?>(
-      context: context,
-      builder: (context) => const BarcodeScannerScreen(isPopRequired: true),
-    );
+    while (true) {
+      final barcode = await showModalBottomSheet<String?>(
+        context: context,
+        builder: (context) => const BarcodeScannerScreen(isPopRequired: true),
+      );
 
-    if (barcode != null) {
+      if (barcode == null || !context.mounted) break;
+
       final posNotifier = ref.read(posControllerProvider.notifier);
       final product = await posNotifier.findProductByBarcode(barcode);
 
       if (product != null) {
         posNotifier.addToCart(product);
-        // Optionally reopen scanner for "one after another" scanning
-        // or just let them click scan again. The user said "one after another",
-        // so maybe a continuous mode is better. But let's start with this.
+        // Delay to allow the bottom sheet to close and native resources to release
+        await Future.delayed(const Duration(seconds: 2));
+        continue;
       } else {
-        if (context.mounted) {
-          context.showSnakbar(
-            'المنتج غير موجود في المستودع',
-            type: SnackBarType.error,
-          );
-        }
+        context.showSnakbar(
+          'المنتج غير موجود في المستودع',
+          type: SnackBarType.error,
+        );
+        break;
       }
     }
   }
@@ -54,7 +55,9 @@ class ScannerTriggerButton extends ConsumerWidget {
                 Text('مسح ضوئي للباركود'),
               ],
             ),
-      onPressed: () => _openScanner(context, ref),
+      onPressed: () {
+        _openScanner(context, ref);
+      },
     );
   }
 }

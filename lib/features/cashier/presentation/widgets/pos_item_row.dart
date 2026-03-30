@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../../domain/entities/cart_item.dart';
 import '../controllers/pos_controller.dart';
 
@@ -30,9 +31,37 @@ class PosItemRow extends ConsumerWidget {
   }
 }
 
+final lastOffsetProvider =
+    StateProvider.family.autoDispose<double, String>((ref, id) => 0);
+
 class QuantitySelector extends ConsumerWidget {
   const QuantitySelector({super.key, required this.item});
   final CartItem item;
+
+  void onLongMovingPressing(
+    LongPressMoveUpdateDetails details,
+    WidgetRef ref,
+  ) {
+    final controller = ref.read(posControllerProvider.notifier);
+    final lastOffset = ref.read(lastOffsetProvider(item.product.globalProduct.id!));
+    final current = details.offsetFromOrigin.dy;
+    const step = 10; // 30 PX
+    final diff = current - lastOffset;
+
+    if (diff.abs() >= step) {
+      final change = diff ~/ step;
+      final newQuantity = item.quantity + change;
+      controller.updateQuantity(
+        item.product.globalProduct.id!,
+        newQuantity.clamp(1, 999),
+      );
+      ref.read(lastOffsetProvider(item.product.globalProduct.id!).notifier).state = current;
+    }
+  }
+
+  void onLongPressStart(LongPressStartDetails details, WidgetRef ref) {
+    ref.read(lastOffsetProvider(item.product.globalProduct.id!).notifier).state = 0;
+  }
 
   @override
   Widget build(BuildContext context, ref) {
@@ -46,6 +75,9 @@ class QuantitySelector extends ConsumerWidget {
             item.product.globalProduct.id!,
             item.quantity - 1,
           ),
+          onLongPressStart: (details) => onLongPressStart(details, ref),
+          onLongPressMoveUpdate: (details) =>
+              onLongMovingPressing(details, ref),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -63,6 +95,9 @@ class QuantitySelector extends ConsumerWidget {
             item.product.globalProduct.id!,
             item.quantity + 1,
           ),
+          onLongPressStart: (details) => onLongPressStart(details, ref),
+          onLongPressMoveUpdate: (details) =>
+              onLongMovingPressing(details, ref),
         ),
       ],
     );
@@ -70,14 +105,22 @@ class QuantitySelector extends ConsumerWidget {
 }
 
 class _QuantityButton extends StatelessWidget {
-  const _QuantityButton({required this.icon, required this.onPressed});
+  const _QuantityButton({
+    required this.icon,
+    required this.onPressed,
+    required this.onLongPressMoveUpdate,
+    required this.onLongPressStart,
+  });
   final IconData icon;
   final VoidCallback onPressed;
-
+  final void Function(LongPressMoveUpdateDetails) onLongPressMoveUpdate;
+  final void Function(LongPressStartDetails) onLongPressStart;
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onPressed,
+      onLongPressStart: onLongPressStart,
+      onLongPressMoveUpdate: onLongPressMoveUpdate,
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.withOpacity(0.3)),

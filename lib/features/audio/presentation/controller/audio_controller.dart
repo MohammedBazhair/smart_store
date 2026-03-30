@@ -14,6 +14,10 @@ class AudioController extends Notifier<void> {
   Future<void> playSound(String assetPath) {
     return _repository.play(assetPath);
   }
+  
+  Future<void> playClick() {
+    return playSound('sounds/click.mp3');
+  }
 
   Future<void> playScannerBeep() {
     return playSound('sounds/store_scanner_beep.mp3');

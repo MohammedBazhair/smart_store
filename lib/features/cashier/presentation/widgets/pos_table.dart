@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../features/settings/domain/entities/currence_code.dart';
+import '../../../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../domain/entities/cart_item.dart';
 import 'pos_item_row.dart';
 
@@ -12,7 +14,6 @@ class PosTable extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return DataTable(
       columnSpacing: 24,
       headingRowColor: MaterialStatePropertyAll(Colors.grey.shade100),
@@ -56,6 +57,22 @@ class PosTable extends ConsumerWidget {
         (index) {
           final item = cartItems[index];
 
+          final unitPrice = ref
+              .read(settingsControllerProvider.notifier)
+              .convert(
+                price: item.price, // in YER
+                from: CurrencyCode.theDefault,
+              )
+              .price;
+
+          final subtotal = ref
+              .read(settingsControllerProvider.notifier)
+              .convert(
+                price: item.subtotal, // in YER
+                from: CurrencyCode.theDefault,
+              )
+              .price;
+
           return DataRow(
             cells: [
               DataCell(
@@ -67,13 +84,16 @@ class PosTable extends ConsumerWidget {
                   ),
                 ),
               ),
-              DataCell(QuantitySelector(item: item)),
               DataCell(
-                Text(item.price.formatDouble),
+                QuantitySelector(item: item),
+             
+              ),
+              DataCell(
+                Text(unitPrice.formatDouble),
               ),
               DataCell(
                 Text(
-                  item.subtotal.formatDouble,
+                  subtotal.formatDouble,
                   style: const TextStyle(color: AppTheme.primaryColor),
                 ),
               ),
@@ -84,4 +104,3 @@ class PosTable extends ConsumerWidget {
     );
   }
 }
-

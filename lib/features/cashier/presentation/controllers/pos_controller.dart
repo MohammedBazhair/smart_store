@@ -4,7 +4,6 @@ import '../../../../errors/result.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
-import '../../../settings/domain/entities/currence_code.dart';
 import '../../../settings/domain/entities/exchange_rate.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
 import '../../domain/entities/cart_item.dart';
@@ -25,27 +24,16 @@ class PosController extends Notifier<PosState> {
     copiedCart.update(
       product.id!,
       (item) => item.copyWith(quantity: item.quantity + quantity),
-      ifAbsent: () {
-        final price = ref
-            .read(settingsControllerProvider.notifier)
-            .convert(
-              price: product.price,
-              from: CurrencyCode.theDefault,
-            )
-            .price;
-        return CartItem(product: product, quantity: quantity, price: price);
-      },
+      ifAbsent: () =>
+          CartItem(product: product, quantity: quantity, price: product.price),
     );
 
     state = state.copyWith(cartItems: copiedCart);
   }
 
   void updateQuantity(String productId, int quantity) {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-
+                      ref.read(audioControllerProvider.notifier).playClick();
+    
     final copiedCart = {...state.cartItems};
     copiedCart.update(
       productId,

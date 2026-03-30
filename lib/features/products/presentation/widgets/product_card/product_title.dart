@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/shared/presentation/theme/app_theme.dart';
+
 class ProductTitle extends StatelessWidget {
   const ProductTitle(this.name, {super.key});
 
@@ -11,7 +13,11 @@ class ProductTitle extends StatelessWidget {
       name,
       maxLines: 1,
       overflow: TextOverflow.fade,
-      style: Theme.of(context).textTheme.titleLarge,
+      style: const TextStyle(
+        color: AppTheme.primaryColor,
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 }

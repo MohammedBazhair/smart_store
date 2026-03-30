@@ -8,8 +8,8 @@ class CartItem {
   });
   final StoreProduct product;
   final int quantity;
-  final num price;
-  double get subtotal => (product.price * quantity).toDouble();
+  final num price; // Always in base currency (YER)
+  double get subtotal => (price * quantity).toDouble();
 
   CartItem copyWith({
     StoreProduct? product,
