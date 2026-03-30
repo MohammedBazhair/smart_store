@@ -25,98 +25,46 @@ class PosItemRow extends ConsumerWidget {
       onDismissed: (_) {
         notifier.removeFromCart(item.product.globalProduct.id!);
       },
-      child: Column(
-        children: [
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              children: [
-                // 🏷️ Product Name
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.product.globalProduct.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        'باركود: ${item.product.globalProduct.barcode ?? 'بدون'}',
-                        style:
-                            const TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ),
+      child: const Text('data'),
+    );
+  }
+}
 
-                // 🔢 Quantity Selector
-                Expanded(
-                  flex: 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _QuantityButton(
-                        icon: Icons.remove,
-                        onPressed: () => notifier.updateQuantity(
-                          item.product.globalProduct.id!,
-                          item.quantity - 1,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: Text(
-                          '${item.quantity}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      _QuantityButton(
-                        icon: Icons.add,
-                        onPressed: () => notifier.updateQuantity(
-                          item.product.globalProduct.id!,
-                          item.quantity + 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+class QuantitySelector extends ConsumerWidget {
+  const QuantitySelector({super.key, required this.item});
+  final CartItem item;
 
-                // 💵 Price (Unit)
-                Expanded(
-                  child: Text(
-                    '${item.product.price}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                ),
-
-                // 💰 Total for item
-                Expanded(
-                  child: Text(
-                    '${item.subtotal}',
-                    textAlign: TextAlign.end,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                ),
-              ],
+  @override
+  Widget build(BuildContext context, ref) {
+    final controller = ref.read(posControllerProvider.notifier);
+    return Row(
+      spacing: 2,
+      children: [
+        _QuantityButton(
+          icon: Icons.remove,
+          onPressed: () => controller.updateQuantity(
+            item.product.globalProduct.id!,
+            item.quantity - 1,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: Text(
+            '${item.quantity}',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const Divider(height: 1),
-        ],
-      ),
+        ),
+        _QuantityButton(
+          icon: Icons.add,
+          onPressed: () => controller.updateQuantity(
+            item.product.globalProduct.id!,
+            item.quantity + 1,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -128,17 +76,14 @@ class _QuantityButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: InkWell(
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Icon(icon, size: 18),
+    return InkWell(
+      onTap: onPressed,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(4),
         ),
+        child: Icon(icon, size: 18),
       ),
     );
   }

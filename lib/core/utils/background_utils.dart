@@ -73,6 +73,7 @@ class BackgroundUtils {
     if (products.isEmpty) return;
 
     final alertService = container.read(alertServiceProvider);
+    await alertService.initialize(false);
 
     final futures = products.map((p) {
       if (p.expiryDate == null) return Future.value();
@@ -98,5 +99,7 @@ class BackgroundUtils {
 
     await storesRepo.syncAll(profile.phone!);
     await productRepo.syncAllProducts();
+
+    await dailyExpiryCheck();
   }
 }

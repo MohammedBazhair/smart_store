@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/log.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
+import '../../../../settings/domain/entities/currence_code.dart';
 import '../../../domain/entities/product_details.dart';
 import '../../../domain/entities/store_product.dart';
 import 'product_info_card.dart';
@@ -101,7 +102,7 @@ class ProductInfoSection extends StatelessWidget {
               child: ProductInfoCard(
                 icon: Icons.paid_sharp,
                 label: 'العملة',
-                value: product.currency.label,
+                value: CurrencyCode.theDefault.label,
                 detailsType: ProductDetailsType.currency,
                 iconColor: const Color(0xFF0F67AF),
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../products/domain/entities/store_product.dart';
+import '../../../../settings/domain/entities/currence_code.dart';
 
 class AnimatedPrice extends StatefulWidget {
   const AnimatedPrice(this.product, {super.key});
@@ -89,7 +90,7 @@ class _AnimatedPriceState extends State<AnimatedPrice>
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      widget.product.currency.label,
+                      CurrencyCode.theDefault.label,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppTheme.primaryColor,
                           ),

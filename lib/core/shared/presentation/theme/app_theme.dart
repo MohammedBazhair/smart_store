@@ -161,7 +161,7 @@ class AppTheme {
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           shadowColor: AppTheme.primaryColor.withOpacity(0.35),
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.all(12),
           fixedSize: const Size.fromHeight(50),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

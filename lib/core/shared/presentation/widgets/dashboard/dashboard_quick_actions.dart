@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../features/cashier/presentation/screens/pos_screen.dart';
+import '../../../../../features/cashier/presentation/screens/checkout_screen.dart';
 import '../../../../../features/products/presentation/screens/upsert_product_screen.dart';
 import '../../../../extensions/extensions.dart';
 import '../../theme/app_theme.dart';
@@ -31,7 +31,7 @@ class DashboardQuickActions extends StatelessWidget {
               icon: Icons.point_of_sale_outlined,
               color: Colors.green,
               onTap: () {
-                context.pushTo(const PosScreen());
+                context.pushTo(const CheckoutScreen());
               },
             ),
             DashboardQuickActionCard(

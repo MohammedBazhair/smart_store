@@ -44,12 +44,12 @@ class SettingsController extends AsyncNotifier<Settings> {
         currency: currency,
         storeId: storeId,
       );
-      
+
       final settings = state.requireValue.copyWith(defaultCurrency: currency);
       await updateSettings(settings);
       return const SuccessState(true);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return const ErrorState('حصلت مشكلة أثناء تحديث العملة حاول مرة اخرى');
     }
   }
@@ -65,6 +65,26 @@ class SettingsController extends AsyncNotifier<Settings> {
       return result;
     } catch (e) {
       return ErrorState(e.toString());
+    }
+  }
+
+  double convert({
+    required num price,
+    required CurrencyCode from,
+    required CurrencyCode to,
+  }) {
+    try {
+      final ratesState = state.value?.exchageRates;
+      if (ratesState == null) throw Exception('No exchange rates found');
+
+      if (from == to) return price.toDouble();
+      final rateFrom = ratesState.firstWhere((rate) => rate.currency == from);
+      final rateTo = ratesState.firstWhere((rate) => rate.currency == to);
+      final inBase = price * rateFrom.rateToBase;
+      return inBase / rateTo.rateToBase;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      return price.toDouble();
     }
   }
 }

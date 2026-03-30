@@ -108,14 +108,12 @@ class DatabaseHelper {
         product_id TEXT NOT NULL,
         price REAL NOT NULL,
         quantity INTEGER NULL,
-        currency TEXT NOT NULL,
         expiry_date TEXT,
         notes TEXT NOT NULL DEFAULT '',
         updated_at TEXT NOT NULL,
         is_deleted INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (product_id) REFERENCES global_products(id),
         FOREIGN KEY (store_id) REFERENCES stores(id),
-        FOREIGN KEY (currency) REFERENCES exchange_rates(currency) ON UPDATE CASCADE,
         PRIMARY KEY (store_id, product_id)
       );
     ''');

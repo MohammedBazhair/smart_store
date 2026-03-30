@@ -110,7 +110,7 @@ class AlertRepositoryImpl implements AlertRepository {
     final db = await _dbHelper.database;
     final result = await db.query(
       'alerts',
-      where: 'product_id = ? AND expiry_date = ? AND days_before_expiry = ?',
+      where: 'product_id = ? AND DATE(expiry_date) = DATE(?) AND days_before_expiry = ?',
       whereArgs: [productId, expiryDate.toIso8601String(), daysBeforeExpiry],
     );
 

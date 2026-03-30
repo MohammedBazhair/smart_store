@@ -1,4 +1,3 @@
-import '../../../settings/domain/entities/currence_code.dart';
 import 'product.dart';
 import 'sub_entities/global_product.dart';
 
@@ -9,7 +8,6 @@ class StoreProduct extends Product {
     required this.price,
     required this.expiryDate,
     required this.quantity,
-    required this.currency,
     required this.notes,
     required this.updatedAt,
     this.isDeleted = false,
@@ -24,7 +22,6 @@ class StoreProduct extends Product {
       expiryDate: date,
       notes: 'mhjhjh',
       updatedAt: date,
-      currency: CurrencyCode.YER,
       price: 1500,
     );
   }
@@ -34,12 +31,12 @@ class StoreProduct extends Product {
   final num price;
   final DateTime? expiryDate;
   final int? quantity;
-  final CurrencyCode currency;
   final String notes;
   final DateTime updatedAt;
   final bool isDeleted;
 
   String get quantityText => quantity?.toString() ?? 'غير محددة';
+  String? get id => globalProduct.id;
 
   static final fakeProducts = List.generate(8, (_) => StoreProduct.fake());
 
@@ -49,7 +46,6 @@ class StoreProduct extends Product {
     num? price,
     DateTime? expiryDate,
     int? quantity,
-    CurrencyCode? currency,
     String? notes,
     DateTime? updatedAt,
     bool? isDeleted,
@@ -60,7 +56,6 @@ class StoreProduct extends Product {
       price: price ?? this.price,
       expiryDate: expiryDate ?? this.expiryDate,
       quantity: quantity ?? this.quantity,
-      currency: currency ?? this.currency,
       notes: notes ?? this.notes,
       updatedAt: updatedAt ?? this.updatedAt,
       isDeleted: isDeleted ?? this.isDeleted,
@@ -69,6 +64,6 @@ class StoreProduct extends Product {
 
   @override
   String toString() {
-    return 'StoreProduct(storeId: $storeId, globalProduct: $globalProduct, price: $price, expiryDate: $expiryDate, quantity: $quantity, currency: $currency, notes: $notes, updatedAt: $updatedAt, isDeleted: $isDeleted)';
+    return 'StoreProduct(storeId: $storeId, globalProduct: $globalProduct, price: $price, expiryDate: $expiryDate, quantity: $quantity, notes: $notes, updatedAt: $updatedAt, isDeleted: $isDeleted)';
   }
 }

@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../controllers/pos_controller.dart';
-import '../widgets/pos_item_row.dart';
 import '../widgets/pos_summary_footer.dart';
-import '../widgets/pos_table_header.dart';
+import '../widgets/pos_table.dart';
+import '../widgets/scanner_trigger_button.dart';
 
-class PosScreen extends ConsumerWidget {
-  const PosScreen({super.key});
+class CheckoutScreen extends ConsumerWidget {
+  const CheckoutScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,101 +31,22 @@ class PosScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Scanner Trigger
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+      body: state.cartItems.isEmpty
+          ? const _BuildEmptyState()
+          : Column(
+              children: [
+                Expanded(
+                  child: PosTable(cartItems: state.cartItems.values.toList()),
                 ),
-              ),
-              onPressed: () => _openScanner(context, ref),
-              icon: const Icon(Icons.qr_code_scanner),
-              label: const Text(
-                'مسح منتج جديد',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-
-          const PosTableHeader(),
-
-          Expanded(
-            child: state.cartItems.isEmpty
-                ? _buildEmptyState(context)
-                : ListView.builder(
-                    itemCount: state.cartItems.length,
-                    itemBuilder: (context, index) {
-                      return PosItemRow(item: state.cartItems[index]);
-                    },
+                if (state.cartItems.isNotEmpty)
+                  PosSummaryFooter(
+                    totalPrice: state.totalPrice,
+                    isLoading: state.isLoading,
+                    onCheckout: () => _handleCheckout(context, ref),
                   ),
-          ),
-
-          if (state.cartItems.isNotEmpty)
-            PosSummaryFooter(
-              totalPrice: state.totalPrice,
-              isLoading: state.isLoading,
-              onCheckout: () => _handleCheckout(context, ref),
+              ],
             ),
-        ],
-      ),
     );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.shopping_cart_outlined,
-            size: 80,
-            color: Colors.grey.withOpacity(0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'السلة فارغة، ابدأ بمسح المنتجات',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _openScanner(BuildContext context, WidgetRef ref) async {
-    // We use the existing BarcodeScannerScreen with isPopRequired: true
-    // In a real app, we might want a continuous scanner, but for now this works.
-    final barcode = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const BarcodeScannerScreen(isPopRequired: true),
-      ),
-    );
-
-    if (barcode != null) {
-      final posNotifier = ref.read(posControllerProvider.notifier);
-      final product = await posNotifier.findProductByBarcode(barcode);
-
-      if (product != null) {
-        posNotifier.addToCart(product);
-        // Optionally reopen scanner for "one after another" scanning
-        // or just let them click scan again. The user said "one after another",
-        // so maybe a continuous mode is better. But let's start with this.
-      } else {
-        if (context.mounted) {
-          context.showSnakbar(
-            'المنتج غير موجود في المستودع',
-            type: SnackBarType.error,
-          );
-        }
-      }
-    }
   }
 
   void _showClearConfirmation(BuildContext context, PosController notifier) {
@@ -178,7 +99,7 @@ class PosScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Divider(),
-              ...cartItems.map(
+              ...cartItems.values.map(
                 (item) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Row(
@@ -217,6 +138,48 @@ class PosScreen extends ConsumerWidget {
               onPressed: () => Navigator.pop(context),
               child: const Text('إغلاق'),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BuildEmptyState extends StatelessWidget {
+  const _BuildEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 22,
+        children: [
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: AppTheme.primaryColor.withOpacity(0.08),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 50,
+              color: AppTheme.primaryColor.withOpacity(0.8),
+            ),
+          ),
+          const Text(
+            'لا توجد منتجات بعد',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.primaryColor,
+            ),
+          ),
+          const ScannerTriggerButton(),
+          const Text(
+            'ابدأ بمسح المنتجات لإضافتها إلى السلة',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppTheme.textSecondary),
           ),
         ],
       ),

@@ -10,6 +10,7 @@ import '../../../../errors/result.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../settings/domain/entities/currence_code.dart';
+import '../../../settings/presentation/controllers/settings_provider.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
@@ -95,7 +96,7 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
           ? DateFormat('yyyy-MM-dd').format(product.expiryDate!)
           : '';
       _selectedCategory = product.globalProduct.category;
-      _selectedCurrency = product.currency;
+      _selectedCurrency = CurrencyCode.theDefault;
     } else if (product is GlobalProduct) {
       _nameController.text = product.name;
 
@@ -128,14 +129,23 @@ class _AddProductScreenState extends ConsumerState<UpesertProductScreen> {
       createdAt: oldProduct?.globalProduct.createdAt ?? now,
       updatedAt: now,
     );
+
+
+    final price = double.tryParse(_priceController.text) ?? 0;
+    
+    final priceInBaseCurrency = ref.read(settingsControllerProvider.notifier).convert(
+      price: price,
+      from: _selectedCurrency,
+      to: CurrencyCode.theDefault,
+    );
+    
     return StoreProduct(
       storeId: storeId,
       quantity: int.tryParse(_quantityController.text),
       expiryDate: DateTime.tryParse(_expiryDateController.text),
       notes: _notesController.text.trim(),
       updatedAt: now,
-      currency: _selectedCurrency,
-      price: double.tryParse(_priceController.text) ?? 0,
+      price: priceInBaseCurrency,
       globalProduct: globalProduct,
     );
   }

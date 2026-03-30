@@ -56,9 +56,9 @@ extension RoutesNavigators on BuildContext {
   }
 }
 
-extension Number on double {
-  String formatDouble() =>
-      this == truncateToDouble() ? toStringAsFixed(0) : toString();
+extension Number on num {
+  String get formatDouble =>
+      this == truncateToDouble() ? toStringAsFixed(0) : toStringAsFixed(2);
 }
 
 extension FilesSizes on num {
@@ -67,7 +67,7 @@ extension FilesSizes on num {
 
 extension DateFormating on DateTime {
   String get formattedDate {
-return    DateFormat('yyyy/MM/dd').format(this);
+    return DateFormat('yyyy/MM/dd').format(this);
   }
 }
 

@@ -1,4 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
+import '../../../auth/presentation/widgets/custom_button.dart';
+import '../../../settings/domain/entities/currence_code.dart';
+import '../../../settings/presentation/controllers/settings_provider.dart';
+import 'scanner_trigger_button.dart';
 
 class PosSummaryFooter extends StatelessWidget {
   const PosSummaryFooter({
@@ -19,9 +28,10 @@ class PosSummaryFooter extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 8,
+            spreadRadius: 1,
+            offset: const Offset(0, -1),
           ),
         ],
         borderRadius: const BorderRadius.only(
@@ -31,51 +41,87 @@ class PosSummaryFooter extends StatelessWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        spacing: 25,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 12,
             children: [
               const Text(
-                'المبلغ الإجمالي:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                'المبلغ \nالإجمالي:',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
               ),
-              Text(
-                '$totalPrice',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        totalPrice.formatDouble,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final currency = ref
+                                  .watch(settingsControllerProvider)
+                                  .value
+                                  ?.defaultCurrency ??
+                              CurrencyCode.theDefault;
+                          return Text(
+                            currency.label,
+                            maxLines: 1,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppTheme.textSecondary,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: isLoading ? null : onCheckout,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.shopping_bag_outlined),
-                      SizedBox(width: 8),
-                      Text(
-                        'إتمام عملية الشراء',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+          SizedBox(
+            height: 50,
+            child: Row(
+              spacing: 20,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: CustomButton(
+                    onPressed: isLoading ? null : onCheckout,
+                    buttonStyle: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.successColor,
+                    ),
+                    child: isLoading
+                        ? const ThreeDotsLoading(dotColor: Colors.white)
+                        : const Text(
+                            'شراء المنتجات',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
+                ),
+                const Expanded(
+                  child: ScannerTriggerButton(
+                    showIconOnly: true,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

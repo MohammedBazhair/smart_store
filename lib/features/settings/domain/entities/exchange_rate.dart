@@ -8,13 +8,22 @@ class ExchangeRate extends Equatable {
     required this.rateToBase,
     required this.updatedAt,
   });
+
+  factory ExchangeRate.defaultRate() => ExchangeRate(
+        currency: CurrencyCode.YER,
+        rateToBase: 1,
+        updatedAt: DateTime.now(),
+      );
+
   final CurrencyCode currency;
   final int rateToBase;
   final DateTime updatedAt;
 
+
   @override
-  String toString() => 'ExchangeRate(currency: $currency, rateToBase: $rateToBase, updatedAt: $updatedAt)';
-  
+  String toString() =>
+      'ExchangeRate(currency: $currency, rateToBase: $rateToBase, updatedAt: $updatedAt)';
+
   @override
-  List<Object?> get props => [rateToBase, updatedAt];
+  List<Object?> get props => [rateToBase,  currency];
 }

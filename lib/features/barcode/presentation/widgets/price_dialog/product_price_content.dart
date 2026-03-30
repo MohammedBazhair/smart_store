@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../../products/domain/entities/store_product.dart';
+import '../../../../settings/domain/entities/currence_code.dart';
 import '../../../../settings/presentation/controllers/settings_provider.dart';
 import 'animated_price.dart';
 import 'converted_price_text.dart';
@@ -23,7 +24,7 @@ class ProductPriceContent extends ConsumerWidget {
     return asyncSettings.when(
       data: (settings) {
         final defaultCurrency = settings.defaultCurrency;
-        final _shouldShowConvertedPrice = product.currency != defaultCurrency;
+        final _shouldShowConvertedPrice = defaultCurrency != CurrencyCode.theDefault;
 
         final textTheme = Theme.of(context).textTheme;
 
