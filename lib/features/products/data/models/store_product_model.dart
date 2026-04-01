@@ -42,13 +42,13 @@ class StoreProductModel extends StoreProduct {
 
   factory StoreProductModel.fromLocal(Map<String, dynamic> map) {
     return StoreProductModel(
-      storeId: map['store_id'],
-      price: map['price'] as num,
-      quantity: map['quantity'],
-      expiryDate: DateTime.tryParse(map['expiry_date']??''),
-      notes: map['notes'],
+      storeId: map['store_id']?.toString() ?? '',
+      price: map['price'] as num? ?? 0,
+      quantity: map['quantity'] as int?,
+      expiryDate: DateTime.tryParse(map['expiry_date']?.toString() ?? ''),
+      notes: map['notes']?.toString() ?? '',
       globalProduct: GlobalProductModel.fromLocal(map),
-      updatedAt: DateTime.parse(map['updated_at']),
+      updatedAt: DateTime.tryParse(map['updated_at']?.toString() ?? '') ?? DateTime.now(),
       isDeleted: map['is_deleted'] == 1,
     );
   }

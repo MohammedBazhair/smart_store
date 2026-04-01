@@ -30,7 +30,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   }
 
   Future<void> initialize() async {
-    final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
+    final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
     await productRepo.syncAllProducts(storeId);
 
@@ -69,7 +69,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   Future<ProductsByIdentifier> getStoreProducts() async {
     try {
       if (!_permissionService.can(PermissionTask.viewStoreProducts)) return {};
-      final storeId = ref.watch(storeControllerProvider).state.selectedStoreId;
+      final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
       if (storeId == null) return {};
 
@@ -165,7 +165,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
   Future<StoreProduct?> getProductById(String productId) async {
     try {
-      final storeId = ref.watch(
+      final storeId = ref.read(
         storeControllerProvider.select((s) => s.state.selectedStoreId),
       );
 

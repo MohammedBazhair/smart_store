@@ -8,7 +8,10 @@ class Category extends Equatable {
   }
 
   factory Category.fromLocal(Map<String, dynamic> map) {
-    return Category(id: map['category_id'], name: map['category_name']);
+    return Category(
+      id: map['category_id'] as int? ?? 1,
+      name: map['category_name']?.toString() ?? 'غير مصنف',
+    );
   }
 
   factory Category.undefined() {

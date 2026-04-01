@@ -40,12 +40,17 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<List<Category>> getAllCategories() async {
     try {
       final hasConnection = await _connectivity.hasConnection();
-      final result = hasConnection
-          ? await _remoteDatabase.fetchAllCategories()
-          : await _localDatabase.fetchAllCategories();
+      if (hasConnection) {
+        try {
+          final result = await _remoteDatabase.fetchAllCategories();
+          await _localDatabase.setAllCategories(result);
+          return result;
+        } catch (e, st) {
+          Logger.debugLog(error: e, stackTrace: st);
+        }
+      }
 
-      await _localDatabase.setAllCategories(result);
-      return result;
+      return await _localDatabase.fetchAllCategories();
     } catch (e) {
       return [];
     }
@@ -55,14 +60,19 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<List<GlobalProduct>> getGlobalProducts() async {
     try {
       final hasConnection = await _connectivity.hasConnection();
-      final products = hasConnection
-          ? await _remoteDatabase.fetchGlobalProducts(includeDeleted: false)
-          : await _localDatabase.fetchGlobalProducts(includeDeleted: false);
-
       if (hasConnection) {
-        await _localDatabase.setGlobalProducts(products);
+        try {
+          final products = await _remoteDatabase.fetchGlobalProducts(
+            includeDeleted: false,
+          );
+          await _localDatabase.setGlobalProducts(products);
+          return products;
+        } catch (e, st) {
+          Logger.debugLog(error: e, stackTrace: st);
+        }
       }
-      return products;
+
+      return await _localDatabase.fetchGlobalProducts(includeDeleted: false);
     } catch (e) {
       return [];
     }
@@ -72,13 +82,20 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<GlobalProduct?> getGlobalProductByBarcode(
     String barcode,
   ) async {
-    final hasConnection = await _connectivity.hasConnection();
+    try {
+      final hasConnection = await _connectivity.hasConnection();
+      if (hasConnection) {
+        try {
+          return await _remoteDatabase.fetchGlobalProductByBarcode(barcode);
+        } catch (e, st) {
+          Logger.debugLog(error: e, stackTrace: st);
+        }
+      }
 
-    final product = hasConnection
-        ? await _remoteDatabase.fetchGlobalProductByBarcode(barcode)
-        : await _localDatabase.getGlobalProductByBarcode(barcode);
-
-    return product;
+      return await _localDatabase.getGlobalProductByBarcode(barcode);
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
@@ -86,24 +103,38 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       final hasConnection = await _connectivity.hasConnection();
 
-      final products = hasConnection
-          ? await _remoteDatabase.fetchStoreProducts(
-              storeId: storeId,
-              includeDeleted: false,
-            )
-          : await _localDatabase.fetchStoreProducts(
-              storeId: storeId,
-              includeDeleted: false,
-            );
-
       if (hasConnection) {
-        await _localDatabase.setStoreProducts(products.values.toList());
+        try {
+          final products = await _remoteDatabase.fetchStoreProducts(
+            storeId: storeId,
+            includeDeleted: false,
+          );
+
+          await _localDatabase.setStoreProducts(products.values.toList());
+
+          final globalProducts = products.values
+              .map((e) => GlobalProductModel.fromEntity(e.globalProduct))
+              .toList();
+          await _localDatabase.setGlobalProducts(globalProducts);
+
+          final categories = products.values
+              .map((e) => e.globalProduct.category)
+              .toSet()
+              .toList();
+          await _localDatabase.setAllCategories(categories);
+
+          return products;
+        } catch (e, st) {
+          Logger.debugLog(error: e, stackTrace: st);
+        }
       }
 
-      return products;
+      return await _localDatabase.fetchStoreProducts(
+        storeId: storeId,
+        includeDeleted: false,
+      );
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
-
       return {};
     }
   }
@@ -112,11 +143,14 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<StoreProduct?> getStoreProductById(StoreProductKey key) async {
     try {
       final hasConnection = await _connectivity.hasConnection();
-      final result = hasConnection
-          ? await _remoteDatabase.fetchStoreProductById(key)
-          : await _localDatabase.fetchStoreProductById(key);
-
-      return result;
+      if (hasConnection) {
+        try {
+          return await _remoteDatabase.fetchStoreProductById(key);
+        } catch (e, st) {
+          Logger.debugLog(error: e, stackTrace: st);
+        }
+      }
+      return await _localDatabase.fetchStoreProductById(key);
     } catch (e) {
       return null;
     }
@@ -140,11 +174,15 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       final hasConnection = await _connectivity.hasConnection();
 
-      final result = hasConnection
-          ? await _remoteDatabase.fetchExpiredStoreProducts(storeId)
-          : await _localDatabase.fetchExpiredStoreProducts(storeId);
+      if (hasConnection) {
+        try {
+          return await _remoteDatabase.fetchExpiredStoreProducts(storeId);
+        } catch (e, st) {
+          Logger.debugLog(error: e, stackTrace: st);
+        }
+      }
 
-      return result;
+      return await _localDatabase.fetchExpiredStoreProducts(storeId);
     } catch (e) {
       return [];
     }
@@ -157,12 +195,17 @@ class ProductRepositoryImpl implements ProductRepository {
   ) async {
     try {
       final hasConnection = await _connectivity.hasConnection();
-
-      final result = hasConnection
-          ? await _remoteDatabase.fetchNearExpiryStoreProducts(storeId, days)
-          : await _localDatabase.fetchNearExpiryStoreProducts(storeId, days);
-
-      return result;
+      if (hasConnection) {
+        try {
+          return await _remoteDatabase.fetchNearExpiryStoreProducts(
+            storeId,
+            days,
+          );
+        } catch (e, st) {
+          Logger.debugLog(error: e, stackTrace: st);
+        }
+      }
+      return await _localDatabase.fetchNearExpiryStoreProducts(storeId, days);
     } catch (e) {
       return [];
     }

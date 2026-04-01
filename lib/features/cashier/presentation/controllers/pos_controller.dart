@@ -16,7 +16,7 @@ class PosController extends Notifier<PosState> {
   }
 
   ExchangeRate get baseExchangeRate =>
-      ref.watch(settingsControllerProvider).value?.defaultExchangeRate ??
+      ref.read(settingsControllerProvider).value?.defaultExchangeRate ??
       ExchangeRate.defaultRate();
 
   void addToCart(StoreProduct product, {int quantity = 1}) {
@@ -85,6 +85,8 @@ class PosController extends Notifier<PosState> {
       await ref.read(audioControllerProvider.notifier).playSuccessResult();
 
       await ref.read(productControllerProvider.notifier).loadStoreProducts();
+
+      clearCart();
 
       return true;
     } catch (e, st) {
