@@ -16,7 +16,7 @@ class ProductsList extends StatelessWidget {
     return ListView.builder(
       itemCount: products.length,
       itemBuilder: (context, index) {
-        return AnimatedProductCard(
+        return ProductCard(
           product: products[index],
         );
       },

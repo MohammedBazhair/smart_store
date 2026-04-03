@@ -7,13 +7,14 @@ import '../../../../settings/domain/entities/currence_code.dart';
 import '../../../../settings/presentation/controllers/settings_provider.dart';
 import '../../../domain/entities/product_expiry_status.dart';
 import '../../../domain/entities/store_product.dart';
+import '../../controllers/product_provider.dart';
 import '../../screens/product_details_screen.dart';
 import 'product_meta_column.dart';
 import 'product_title.dart';
 import 'status_icon.dart';
 
-class AnimatedProductCard extends ConsumerWidget {
-  const AnimatedProductCard({
+class ProductCard extends ConsumerWidget {
+  const ProductCard({
     super.key,
     required this.product,
   });
@@ -34,8 +35,12 @@ class AnimatedProductCard extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
-        onTap: () => context
-            .pushTo(ProductDetailsScreen(productId: product.globalProduct.id!)),
+        onTap: () {
+          ref.read(currentProductProvider.notifier).state = product;
+          context.pushTo(
+            ProductDetailsScreen(productId: product.globalProduct.id!),
+          );
+        },
         leading: StatusIcon(status ?? ProductExpiryStatus.valid()),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

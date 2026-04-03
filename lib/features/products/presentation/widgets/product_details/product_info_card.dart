@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/constants/log.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../domain/entities/product_details.dart';
@@ -29,7 +30,7 @@ class BaseProductInfoCard extends ConsumerWidget {
       child: ListTile(
         onTap: () {
           final product = ref.read(currentProductProvider);
-
+          Logger.debugLog(message:  product.toString());
           context.pushTo(
             UpsertProductScreen(
               product: product,

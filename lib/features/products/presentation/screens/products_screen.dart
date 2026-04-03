@@ -42,15 +42,12 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     final query = ref.watch(productQueryProvider);
     final productsSearchAsync = ref.watch(productSearchProvider);
 
-    final List<StoreProduct> products = ref.watch(
-      productControllerProvider.select(
-        (s) => switch (widget.listType) {
-          ProductListType.all => s.products.values.toList(),
-          ProductListType.expired => s.expiredProducts,
-          ProductListType.nearExpiry => s.nearbyExpiredProducts,
-        },
-      ),
-    );
+    final state = ref.watch(productControllerProvider);
+    final List<StoreProduct> products = switch (widget.listType) {
+      ProductListType.all => state.products.values.toList(),
+      ProductListType.expired => state.expiredProducts,
+      ProductListType.nearExpiry => state.nearbyExpiredProducts,
+    };
 
     return Scaffold(
       appBar: AppBar(
