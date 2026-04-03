@@ -104,7 +104,14 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
   @override
   Future<List<Category>> fetchAllCategories() async {
-    final maps = await db.readRows(table: 'categories');
+    final maps = await db.rawQuery(
+      query: '''
+      SELECT c.category_id     AS category_id,
+             c.category_name   AS category_name,
+             c.updated_at      AS category_updated_at
+      FROM categories c''',
+    );
+
     return maps.map(Category.fromLocal).toList();
   }
 
@@ -162,7 +169,8 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           gp.is_deleted     AS product_is_deleted,
 
           c.category_id     AS category_id,
-          c.category_name   AS category_name
+          c.category_name   AS category_name,
+          c.updated_at      AS category_updated_at
 
         FROM global_products as gp
         LEFT JOIN categories as c ON gp.category_id = c.category_id

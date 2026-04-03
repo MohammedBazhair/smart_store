@@ -33,6 +33,7 @@ class CheckoutScreen extends ConsumerWidget {
           ),
         ],
       ),
+    
       body: state.cartItems.isEmpty
           ? const _BuildEmptyState()
           : Column(

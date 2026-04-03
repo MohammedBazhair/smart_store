@@ -16,13 +16,16 @@ class ScannerTriggerButton extends ConsumerWidget {
   final bool showIconOnly;
 
   Future<void> _openScanner(BuildContext context, WidgetRef ref) async {
+    final navigator = Navigator.of(context);
+    
     while (true) {
+      if (!navigator.mounted) break;
       final barcode = await showModalBottomSheet<String?>(
-        context: context,
+        context: navigator.context,
         builder: (context) => const BarcodeScannerScreen(isPopRequired: true),
       );
 
-      if (barcode == null || !context.mounted) break;
+      if (barcode == null || !navigator.mounted) break;
 
       final posNotifier = ref.read(posControllerProvider.notifier);
       final product = await posNotifier.findProductByBarcode(barcode);
@@ -33,10 +36,11 @@ class ScannerTriggerButton extends ConsumerWidget {
         await Future.delayed(const Duration(seconds: 2));
         continue;
       } else {
-        context.showSnakbar(
-          'المنتج غير موجود في المستودع',
-          type: SnackBarType.error,
-        );
+          navigator.context.showSnakbar(
+            'المنتج غير موجود في المستودع',
+            type: SnackBarType.error,
+          );
+        
         break;
       }
     }

@@ -12,14 +12,16 @@ import '../widgets/products_widgets/products_empty_state.dart';
 import '../widgets/products_widgets/products_list.dart';
 import 'upsert_product_screen.dart';
 
+enum ProductListType { all, expired, nearExpiry }
+
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({
     super.key,
-    required this.products,
+    this.listType = ProductListType.all,
     this.title,
   });
 
-  final List<StoreProduct> products;
+  final ProductListType listType;
   final String? title;
 
   @override
@@ -39,6 +41,16 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   Widget build(BuildContext context) {
     final query = ref.watch(productQueryProvider);
     final productsSearchAsync = ref.watch(productSearchProvider);
+
+    final List<StoreProduct> products = ref.watch(
+      productControllerProvider.select(
+        (s) => switch (widget.listType) {
+          ProductListType.all => s.products.values.toList(),
+          ProductListType.expired => s.expiredProducts,
+          ProductListType.nearExpiry => s.nearbyExpiredProducts,
+        },
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -97,7 +109,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
                 Expanded(
                   child: !query.hasQuery
-                      ? _buildProductsBody(widget.products, query)
+                      ? _buildProductsBody(products, query)
                       : productsSearchAsync.when(
                           data: (filteredProducts) {
                             return _buildProductsBody(filteredProducts, query);
@@ -148,7 +160,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           container.read(appSyncLoadingProvider.notifier).state = false;
         }
         if (!mounted) return;
-        await container.read(productControllerProvider.notifier).loadStoreProducts();
+        await container
+            .read(productControllerProvider.notifier)
+            .loadStoreProducts();
       },
       child: ProductsList(
         products: products,

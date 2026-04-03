@@ -182,7 +182,7 @@ final appSyncProvider = FutureProvider((ref) async {
   }
 });
 
-final appSyncLoadingProvider = StateProvider.autoDispose<bool>((ref) => false);
+final appSyncLoadingProvider = StateProvider<bool>((ref) => false);
 
 final permissionServiceProvider = Provider((ref) {
   final accountStatus = ref.watch(userControllerProvider).profile.accountStatus;

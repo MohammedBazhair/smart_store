@@ -30,8 +30,8 @@ class DashboardNearExpirySection extends ConsumerWidget {
             TextButton(
               onPressed: () {
                 context.pushTo(
-                  ProductsScreen(
-                    products: nearExpiryProducts,
+                  const ProductsScreen(
+                    listType: ProductListType.nearExpiry,
                     title: 'المنتجات قريبة الانتهاء',
                   ),
                 );

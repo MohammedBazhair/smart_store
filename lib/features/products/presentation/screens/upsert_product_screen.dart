@@ -44,7 +44,8 @@ class UpsertProductScreen extends ConsumerStatefulWidget {
   final bool isEditing;
 
   @override
-  ConsumerState<UpsertProductScreen> createState() => _UpsertProductScreenState();
+  ConsumerState<UpsertProductScreen> createState() =>
+      _UpsertProductScreenState();
 }
 
 class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
@@ -66,8 +67,9 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
     super.initState();
     _barcodeController.text = widget.barcode ?? '';
 
-    _selectedCurrency = ref.read(settingsControllerProvider).value?.defaultCurrency ??
-        CurrencyCode.theDefault;
+    _selectedCurrency =
+        ref.read(settingsControllerProvider).value?.defaultCurrency ??
+            CurrencyCode.theDefault;
 
     _initializeFields();
     _requestFocusAfterEdit();
@@ -94,10 +96,11 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
       _quantityController.text = product.quantity?.toString() ?? '';
 
       // تحويل السعر من العملة الأساسية (YER) إلى العملة المختارة للعرض
-      final  (:currency,:price)= ref.read(settingsControllerProvider.notifier).convert(
-            price: product.price,
-            from: CurrencyCode.theDefault,
-          );
+      final (:currency, :price) =
+          ref.read(settingsControllerProvider.notifier).convert(
+                price: product.price,
+                from: CurrencyCode.theDefault,
+              );
       _priceController.text = price.formatDouble;
 
       _notesController.text = product.notes;
@@ -139,15 +142,17 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
       updatedAt: now,
     );
 
-
     final price = double.tryParse(_priceController.text) ?? 0;
-    
-    final priceInBaseCurrency = ref.read(settingsControllerProvider.notifier).convert(
-      price: price,
-      from: _selectedCurrency,
-      to: CurrencyCode.theDefault,
-    ).price;
-    
+
+    final priceInBaseCurrency = ref
+        .read(settingsControllerProvider.notifier)
+        .convert(
+          price: price,
+          from: _selectedCurrency,
+          to: CurrencyCode.theDefault,
+        )
+        .price;
+
     return StoreProduct(
       storeId: storeId,
       quantity: int.tryParse(_quantityController.text),
@@ -236,6 +241,7 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
     if (result is SuccessState<void>) {
       context.showSnakbar('تم تعديل المنتج بنجاح', type: SnackBarType.success);
       ref.invalidate(productByIdProvider(updatedProduct.globalProduct.id!));
+
       Navigator.pop(context);
     } else if (result is ErrorState<void>) {
       context.showSnakbar(result.message, type: SnackBarType.error);

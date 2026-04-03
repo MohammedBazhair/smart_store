@@ -32,8 +32,8 @@ class PosController extends Notifier<PosState> {
   }
 
   void updateQuantity(String productId, int quantity) {
-                      ref.read(audioControllerProvider.notifier).playClick();
-    
+    ref.read(audioControllerProvider.notifier).playClick();
+
     final copiedCart = {...state.cartItems};
     copiedCart.update(
       productId,
@@ -85,7 +85,13 @@ class PosController extends Notifier<PosState> {
       await ref.read(audioControllerProvider.notifier).playSuccessResult();
 
       await ref.read(productControllerProvider.notifier).loadStoreProducts();
-      ref.invalidate(productByIdProvider);
+
+      final ids = state.cartItems.keys;
+      final futures =
+          ids.map((id) => ref.refresh(productByIdProvider(id).future));
+
+      // ignore: unawaited_futures
+      Future.wait(futures);
 
       return true;
     } catch (e, st) {

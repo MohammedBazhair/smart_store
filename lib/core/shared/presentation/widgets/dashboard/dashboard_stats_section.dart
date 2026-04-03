@@ -30,7 +30,7 @@ class DashboardStatsSection extends StatelessWidget {
                   productControllerProvider.select((s) => s.products),
                 )
                 .values;
-    
+
             return StatCard(
               title: 'إجمالي المنتجات',
               value: products.length.toString(),
@@ -38,9 +38,7 @@ class DashboardStatsSection extends StatelessWidget {
               color: AppTheme.primaryColor,
               onTap: () {
                 context.pushTo(
-                  ProductsScreen(
-                    products: products.toList(),
-                  ),
+                  const ProductsScreen(),
                 );
               },
             );
@@ -51,7 +49,7 @@ class DashboardStatsSection extends StatelessWidget {
             final expiredProducts = ref.watch(
               productControllerProvider.select((s) => s.expiredProducts),
             );
-    
+
             return StatCard(
               title: 'منتهية الصلاحية',
               value: expiredProducts.length.toString(),
@@ -59,8 +57,8 @@ class DashboardStatsSection extends StatelessWidget {
               color: AppTheme.expiredColor,
               onTap: () {
                 context.pushTo(
-                  ProductsScreen(
-                    products: expiredProducts,
+                  const ProductsScreen(
+                    listType: ProductListType.expired,
                     title: 'المنتجات منهية الصلاحية',
                   ),
                 );
@@ -73,7 +71,7 @@ class DashboardStatsSection extends StatelessWidget {
             final newAlerts = ref.watch(
               alertControllerProvider.select((s) => s.newAlerts),
             );
-    
+
             return StatCard(
               title: 'تنبيهات جديدة',
               value: newAlerts.length.toString(),
@@ -93,18 +91,17 @@ class DashboardStatsSection extends StatelessWidget {
         Consumer(
           builder: (_, ref, __) {
             final nearExpiryProducts = ref.watch(
-              productControllerProvider
-                  .select((s) => s.nearbyExpiredProducts),
+              productControllerProvider.select((s) => s.nearbyExpiredProducts),
             );
-    
+
             return StatCard(
               title: 'قريبة من الانتهاء',
               value: nearExpiryProducts.length.toString(),
               icon: Icons.warning,
               color: AppTheme.nearExpiryColor,
               onTap: () => context.pushTo(
-                ProductsScreen(
-                  products: nearExpiryProducts,
+                const ProductsScreen(
+                  listType: ProductListType.nearExpiry,
                   title: 'المنتجات قريبة الانتهاء',
                 ),
               ),
