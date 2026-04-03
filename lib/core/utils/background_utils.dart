@@ -98,6 +98,7 @@ class BackgroundUtils {
     final profile = await userRepo.syncAllProfiles();
 
     await storesRepo.syncAll(profile.phone!);
+    await productRepo.syncAllCategories();
     await productRepo.syncAllProducts();
 
     await dailyExpiryCheck();

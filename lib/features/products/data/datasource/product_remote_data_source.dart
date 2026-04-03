@@ -9,7 +9,7 @@ import '../models/store_product_key.dart';
 import '../models/store_product_model.dart';
 
 abstract class ProductRemoteDataSource {
-  Future<List<Category>> fetchAllCategories();
+  Future<List<Category>> fetchAllCategories([SyncStateModel? lastSynced]);
 
   Future<List<GlobalProductModel>> fetchGlobalProducts({
     SyncStateModel? lastSynced,
@@ -46,9 +46,17 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   final RemoteDatabaseService _client;
 
   @override
-  Future<List<Category>> fetchAllCategories() async {
-    final response = await _client.readRows(table: 'categories');
-    return response.map(Category.fromRemote).toList();
+  Future<List<Category>> fetchAllCategories([
+    SyncStateModel? lastSynced,
+  ]) async {
+    final response = _client.client.from('categories').select();
+
+    final lastDate = lastSynced?.lastSynced.toIso8601String();
+    final results =
+        lastDate != null ? response.gt('updated_at', lastDate) : response;
+
+    final rows = await results;
+    return rows.map(Category.fromRemote).toList();
   }
 
   @override

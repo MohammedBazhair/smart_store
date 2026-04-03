@@ -49,7 +49,8 @@ class DatabaseHelper {
     await db.execute('''
     CREATE TABLE categories (
       category_id INTEGER PRIMARY KEY,
-      category_name TEXT NOT NULL
+      category_name TEXT NOT NULL,
+      updated_at TEXT NOT NULL
     );
     ''');
 

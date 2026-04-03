@@ -85,8 +85,7 @@ class PosController extends Notifier<PosState> {
       await ref.read(audioControllerProvider.notifier).playSuccessResult();
 
       await ref.read(productControllerProvider.notifier).loadStoreProducts();
-
-      clearCart();
+      ref.invalidate(productByIdProvider);
 
       return true;
     } catch (e, st) {

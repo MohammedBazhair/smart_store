@@ -77,7 +77,7 @@ class CheckoutScreen extends ConsumerWidget {
   Future<void> _handleCheckout(BuildContext context, WidgetRef ref) async {
     final success = await ref.read(posControllerProvider.notifier).checkout();
     if (success && context.mounted) {
-      _showInvoiceDialog(context, ref);
+      await _showInvoiceDialog(context, ref);
       ref.read(posControllerProvider.notifier).clearCart();
     } else if (!success && context.mounted) {
       final error = ref.read(posControllerProvider).errorMessage;
@@ -87,7 +87,7 @@ class CheckoutScreen extends ConsumerWidget {
     }
   }
 
-  void _showInvoiceDialog(BuildContext context, WidgetRef ref) {
+  Future<void> _showInvoiceDialog(BuildContext context, WidgetRef ref) {
     final cartItems = ref.read(posControllerProvider).cartItems;
     final total = ref.read(posControllerProvider).totalPrice;
 
@@ -99,8 +99,9 @@ class CheckoutScreen extends ConsumerWidget {
     final convertedTotal = result.price;
     final displayCurrency = result.currency;
 
-    showDialog(
+    return showDialog<void>(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Center(child: Text('فاتورة مبيعات')),
         content: SizedBox(

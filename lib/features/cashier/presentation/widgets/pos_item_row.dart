@@ -43,7 +43,8 @@ class QuantitySelector extends ConsumerWidget {
     WidgetRef ref,
   ) {
     final controller = ref.read(posControllerProvider.notifier);
-    final lastOffset = ref.read(lastOffsetProvider(item.product.globalProduct.id!));
+    final lastOffset =
+        ref.read(lastOffsetProvider(item.product.globalProduct.id!));
     final current = details.offsetFromOrigin.dy;
     const step = 10; // 30 PX
     final diff = current - lastOffset;
@@ -55,19 +56,24 @@ class QuantitySelector extends ConsumerWidget {
         item.product.globalProduct.id!,
         newQuantity.clamp(1, 999),
       );
-      ref.read(lastOffsetProvider(item.product.globalProduct.id!).notifier).state = current;
+      ref
+          .read(lastOffsetProvider(item.product.globalProduct.id!).notifier)
+          .state = current;
     }
   }
 
   void onLongPressStart(LongPressStartDetails details, WidgetRef ref) {
-    ref.read(lastOffsetProvider(item.product.globalProduct.id!).notifier).state = 0;
+    ref
+        .read(lastOffsetProvider(item.product.globalProduct.id!).notifier)
+        .state = 0;
   }
 
   @override
   Widget build(BuildContext context, ref) {
     final controller = ref.read(posControllerProvider.notifier);
     return Row(
-      spacing: 2,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      spacing: 3,
       children: [
         _QuantityButton(
           icon: Icons.remove,
@@ -79,13 +85,16 @@ class QuantitySelector extends ConsumerWidget {
           onLongPressMoveUpdate: (details) =>
               onLongMovingPressing(details, ref),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: Text(
-            '${item.quantity}',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+        Expanded(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '${item.quantity}',
+              overflow: TextOverflow.clip,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),

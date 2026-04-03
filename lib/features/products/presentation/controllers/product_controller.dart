@@ -32,6 +32,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   Future<void> initialize() async {
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
+    await productRepo.syncAllCategories();
     await productRepo.syncAllProducts(storeId);
 
     final categories = await getCategories();

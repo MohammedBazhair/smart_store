@@ -80,7 +80,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           sp.product_id     AS product_id,
           sp.price          AS price,
           sp.quantity       AS quantity,
-          sp.currency       AS currency,
           sp.expiry_date    AS expiry_date,
           sp.notes          AS notes,
           sp.updated_at     AS updated_at,
@@ -95,7 +94,8 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           gp.is_deleted     AS product_is_deleted,
 
           c.category_id     AS category_id,
-          c.category_name   AS category_name
+          c.category_name   AS category_name,
+          c.updated_at      AS category_updated_at
         
         FROM store_products sp
         LEFT JOIN global_products gp ON sp.product_id = gp.id
@@ -379,6 +379,8 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
             product.toMap()
               ..remove('store_id')
               ..remove('key'),
+            where: 'store_id = ? AND product_id = ?',
+            whereArgs: [storeProductKey.storeId, storeProductKey.productId],
             conflictAlgorithm: ConflictAlgorithm.ignore,
           );
         } else {
