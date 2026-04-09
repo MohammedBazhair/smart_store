@@ -13,7 +13,6 @@ class WrapperBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 30,
       padding: const EdgeInsets.symmetric(
         vertical: 3,
         horizontal: 20,

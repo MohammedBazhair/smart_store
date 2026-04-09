@@ -7,6 +7,7 @@ extension ShowSnackbar on BuildContext {
   void showSnakbar(
     String msg, {
     required SnackBarType type,
+    SnackBarAction? action,
   }) {
     if (!mounted) return;
     ScaffoldMessenger.of(this).showSnackBar(
@@ -20,6 +21,7 @@ extension ShowSnackbar on BuildContext {
           ),
         ),
         duration: type.duration,
+        action: action,
         backgroundColor: type.backgroundColor,
       ),
     );

@@ -6,7 +6,8 @@ import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../features/settings/domain/entities/currence_code.dart';
 import '../../../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../domain/entities/cart_item.dart';
-import 'pos_item_row.dart';
+import 'dismissible_item.dart';
+import 'quantity_selector.dart';
 
 class PosTable extends ConsumerWidget {
   const PosTable({super.key, required this.cartItems});
@@ -15,15 +16,17 @@ class PosTable extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DataTable(
-      columnSpacing: 24,
+      columnSpacing: 0,
       headingRowColor: MaterialStatePropertyAll(Colors.grey.shade100),
       headingRowHeight: 30,
       dataRowHeight: 40,
+      showBottomBorder: true,
+      showCheckboxColumn: false,
       headingTextStyle:
           const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
       dataTextStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       border: TableBorder.all(color: Colors.grey.shade200),
-      horizontalMargin: 16,
+      horizontalMargin: 0,
       columns: const [
         DataColumn(
           columnWidth: FlexColumnWidth(1.5),
@@ -76,25 +79,60 @@ class PosTable extends ConsumerWidget {
           return DataRow(
             cells: [
               DataCell(
-                Text(
-                  item.product.globalProduct.name,
-                  style: const TextStyle(
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.bold,
+                DismissibleItem(
+                  item: item,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    height: double.infinity,
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    child: Baseline(
+                      baseline: 8,
+                      baselineType: TextBaseline.alphabetic,
+                      child: Text(
+                        item.product.globalProduct.name,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          letterSpacing: 0.1,
+                          color: AppTheme.primaryColor,
+                          fontSize: 11,
+                          height: 1.3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
               DataCell(
-                QuantitySelector(item: item),
-             
+                SizedBox.expand(
+                  child: QuantitySelector(item: item),
+                ),
               ),
               DataCell(
-                Text(unitPrice.formatDouble),
+                SizedBox.expand(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      unitPrice.formatDouble,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ),
               ),
               DataCell(
-                Text(
-                  subtotal.formatDouble,
-                  style: const TextStyle(color: AppTheme.primaryColor),
+                SizedBox.expand(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      subtotal.formatDouble,
+                      style: const TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],

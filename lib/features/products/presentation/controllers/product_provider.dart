@@ -5,7 +5,7 @@ import '../../../../core/shared/providers/core_providers.dart';
 import '../../data/datasource/product_local_data_source.dart';
 import '../../data/datasource/product_remote_data_source.dart';
 import '../../data/repositories/product_repository_impl.dart';
-import '../../domain/entities/expiry_date_picker.dart';
+import '../../domain/entities/expiry_date.dart';
 import '../../domain/entities/product_details.dart';
 import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
@@ -42,7 +42,6 @@ final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
   (ref) => const ProductQuery(),
 );
 
-
 final productSearchProvider = AsyncNotifierProvider.autoDispose<
     ProductSearchNotifier, List<StoreProduct>>(
   ProductSearchNotifier.new,
@@ -63,7 +62,7 @@ final focusNodesProvider =
 final currentProductProvider = StateProvider<StoreProduct?>((ref) => null);
 
 final expiryDateControllerProvider =
-    StateNotifierProvider<ExpiryDateController, ExpiryDatePicker>(
+    StateNotifierProvider<ExpiryDateController, ExpiryDateState>(
   (ref) => ExpiryDateController(),
 );
 
@@ -78,6 +77,5 @@ final productByIdProvider = FutureProvider.family<StoreProduct?, String>(
 /// Provider للـ ProductController
 final productControllerProvider =
     NotifierProvider<ProductManagementController, ProductManagementState>(() {
-      
   return ProductManagementController();
 });

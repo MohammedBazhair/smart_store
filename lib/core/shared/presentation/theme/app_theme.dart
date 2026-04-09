@@ -207,6 +207,27 @@ class AppTheme {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppTheme.primaryColor,
+        shape: CircleBorder(),
+        elevation: 2,
+        focusElevation: 5,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: primaryColor,
+        contentTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        actionTextColor: Colors.white,
+        behavior: SnackBarBehavior.floating,
+        actionBackgroundColor: Colors.white.withOpacity(0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        insetPadding: const EdgeInsets.all(12),
+      ),
     );
   }
 }

@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../domain/entities/expiry_date_picker.dart';
+import '../../../domain/entities/expiry_date.dart';
 import '../../controllers/product_provider.dart';
 
-class PickerButton extends ConsumerStatefulWidget {
-  const PickerButton({
+class ExpiryDateWheelPicker extends ConsumerStatefulWidget {
+  const ExpiryDateWheelPicker({
     super.key,
     required this.type,
   });
 
-  final ExpiryDatePickerType type;
+  final ExpiryDateFieldType type;
 
   @override
-  ConsumerState<PickerButton> createState() => _PickerButtonState();
+  ConsumerState<ExpiryDateWheelPicker> createState() =>
+      _ExpiryDateWheelPickerState();
 }
 
-class _PickerButtonState extends ConsumerState<PickerButton> {
+class _ExpiryDateWheelPickerState extends ConsumerState<ExpiryDateWheelPicker> {
   late FixedExtentScrollController _controller;
 
   @override

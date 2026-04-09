@@ -5,9 +5,9 @@ import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../core/utils/date_utils.dart';
 import '../../../../auth/presentation/widgets/custom_button.dart';
-import '../../../domain/entities/expiry_date_picker.dart';
+import '../../../domain/entities/expiry_date.dart';
 import '../../controllers/product_provider.dart';
-import 'picker_button.dart';
+import 'expiry_date_wheel_picker.dart';
 
 Future<DateTime?> showExpiryDatePicker(BuildContext context, WidgetRef ref) {
   final now = DateTime.now();
@@ -17,7 +17,7 @@ Future<DateTime?> showExpiryDatePicker(BuildContext context, WidgetRef ref) {
     final day = state.selectedDay ?? 1;
     final month = state.selectedMonth ?? 1;
     final year = state.selectedYear ?? now.year;
-    final datePicker = ExpiryDatePicker(
+    final datePicker = ExpiryDateState(
       selectedDay: day,
       selectedMonth: month,
       selectedYear: year,
@@ -71,18 +71,18 @@ Future<DateTime?> showExpiryDatePicker(BuildContext context, WidgetRef ref) {
                 child: Row(
                   children: [
                     Expanded(
-                      child: PickerButton(
-                        type: ExpiryDatePickerType.day,
+                      child: ExpiryDateWheelPicker(
+                        type: ExpiryDateFieldType.day,
                       ),
                     ),
                     Expanded(
-                      child: PickerButton(
-                        type: ExpiryDatePickerType.month,
+                      child: ExpiryDateWheelPicker(
+                        type: ExpiryDateFieldType.month,
                       ),
                     ),
                     Expanded(
-                      child: PickerButton(
-                        type: ExpiryDatePickerType.year,
+                      child: ExpiryDateWheelPicker(
+                        type: ExpiryDateFieldType.year,
                       ),
                     ),
                   ],

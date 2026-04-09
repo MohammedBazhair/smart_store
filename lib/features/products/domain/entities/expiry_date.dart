@@ -1,14 +1,14 @@
-enum ExpiryDatePickerType {
+enum ExpiryDateFieldType {
   day(label: 'يوم'),
   month(label: 'شهر'),
   year(label: 'سنة');
 
-  const ExpiryDatePickerType({required this.label});
+  const ExpiryDateFieldType({required this.label});
   final String label;
 }
 
-class ExpiryDatePicker {
-  ExpiryDatePicker({
+class ExpiryDateState {
+  ExpiryDateState({
     this.selectedDay,
     this.selectedMonth,
     this.selectedYear,
@@ -19,7 +19,7 @@ class ExpiryDatePicker {
   final int? selectedMonth;
   final int? selectedYear;
 
-  final Map<ExpiryDatePickerType, List<int>> rangeValues;
+  final Map<ExpiryDateFieldType, List<int>> rangeValues;
 
   DateTime? get selectedDate {
     if (selectedDay == null || selectedMonth == null || selectedYear == null) {
@@ -28,44 +28,44 @@ class ExpiryDatePicker {
     return DateTime(selectedYear!, selectedMonth!, selectedDay!);
   }
 
-  List<int> getRange(ExpiryDatePickerType type) {
+  List<int> getRange(ExpiryDateFieldType type) {
     return rangeValues[type] ?? [];
   }
 
-  int getDefaultValue(ExpiryDatePickerType type) {
+  int getDefaultValue(ExpiryDateFieldType type) {
     final range = rangeValues[type] ?? [];
     if (range.isEmpty) {
       // Fallback if ranges aren't initialized yet
-      if (type == ExpiryDatePickerType.year) return DateTime.now().year;
+      if (type == ExpiryDateFieldType.year) return DateTime.now().year;
       return 1;
     }
 
     final middleIndex = range.length ~/ 2;
     final middleValue = range[middleIndex];
     switch (type) {
-      case ExpiryDatePickerType.day:
+      case ExpiryDateFieldType.day:
         return selectedDay ?? middleValue;
-      case ExpiryDatePickerType.month:
+      case ExpiryDateFieldType.month:
         return selectedMonth ?? middleValue;
-      case ExpiryDatePickerType.year:
+      case ExpiryDateFieldType.year:
         return selectedYear ?? middleValue;
     }
   }
 
-  int getInitialIndex(ExpiryDatePickerType type) {
+  int getInitialIndex(ExpiryDateFieldType type) {
     final defaultValue = getDefaultValue(type);
     final items = getRange(type);
     final initialIndex = items.indexOf(defaultValue);
     return initialIndex != -1 ? initialIndex : 0;
   }
 
-  ExpiryDatePicker copyWith({
+  ExpiryDateState copyWith({
     int? selectedDay,
     int? selectedMonth,
     int? selectedYear,
-    Map<ExpiryDatePickerType, List<int>>? rangeValues,
+    Map<ExpiryDateFieldType, List<int>>? rangeValues,
   }) {
-    return ExpiryDatePicker(
+    return ExpiryDateState(
       selectedDay: selectedDay ?? this.selectedDay,
       selectedMonth: selectedMonth ?? this.selectedMonth,
       selectedYear: selectedYear ?? this.selectedYear,

@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/legacy.dart';
 
-import '../../domain/entities/expiry_date_picker.dart';
+import '../../domain/entities/expiry_date.dart';
 
-class ExpiryDateController extends StateNotifier<ExpiryDatePicker> {
-  ExpiryDateController() : super(ExpiryDatePicker()) {
+class ExpiryDateController extends StateNotifier<ExpiryDateState> {
+  ExpiryDateController() : super(ExpiryDateState()) {
     _setRanges();
   }
 
@@ -24,9 +24,9 @@ class ExpiryDateController extends StateNotifier<ExpiryDatePicker> {
     final now = DateTime.now();
     state = state.copyWith(
       rangeValues: {
-        ExpiryDatePickerType.day: List.generate(maxDays, (index) => index + 1),
-        ExpiryDatePickerType.month: List.generate(12, (index) => index + 1),
-        ExpiryDatePickerType.year:
+        ExpiryDateFieldType.day: List.generate(maxDays, (index) => index + 1),
+        ExpiryDateFieldType.month: List.generate(12, (index) => index + 1),
+        ExpiryDateFieldType.year:
             List.generate(30, (index) => index + now.year),
       },
     );
@@ -45,7 +45,7 @@ class ExpiryDateController extends StateNotifier<ExpiryDatePicker> {
     _setRanges();
   }
 
-  void setDatePicker(ExpiryDatePicker datePicker) {
+  void setDatePicker(ExpiryDateState datePicker) {
     state = state.copyWith(
       selectedDay: datePicker.selectedDay,
       selectedMonth: datePicker.selectedMonth,
@@ -53,16 +53,16 @@ class ExpiryDateController extends StateNotifier<ExpiryDatePicker> {
     );
   }
 
-  void changeDate(ExpiryDatePickerType typp, int value) {
+  void changeDate(ExpiryDateFieldType typp, int value) {
     switch (typp) {
-      case ExpiryDatePickerType.day:
+      case ExpiryDateFieldType.day:
         state = state.copyWith(selectedDay: value);
-      case ExpiryDatePickerType.month:
+      case ExpiryDateFieldType.month:
         final ranges = state.rangeValues;
         final maxDays = _maxDays(value);
         final daysItems = List.generate(maxDays, (index) => index + 1);
-        final copiedRanges = Map<ExpiryDatePickerType, List<int>>.from(ranges);
-        copiedRanges[ExpiryDatePickerType.day] = daysItems;
+        final copiedRanges = Map<ExpiryDateFieldType, List<int>>.from(ranges);
+        copiedRanges[ExpiryDateFieldType.day] = daysItems;
         final defaultDay = daysItems.contains(state.selectedDay)
             ? state.selectedDay
             : daysItems.first;
@@ -71,13 +71,13 @@ class ExpiryDateController extends StateNotifier<ExpiryDatePicker> {
           rangeValues: copiedRanges,
           selectedDay: defaultDay,
         );
-      case ExpiryDatePickerType.year:
+      case ExpiryDateFieldType.year:
         state = state.copyWith(selectedYear: value);
     }
   }
 
   void reset() {
-    state = ExpiryDatePicker();
+    state = ExpiryDateState();
     _setRanges();
   }
 }
