@@ -111,6 +111,3 @@ class PosController extends Notifier<PosState> {
   }
 }
 
-final posControllerProvider = NotifierProvider<PosController, PosState>(() {
-  return PosController();
-});

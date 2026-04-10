@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../domain/entities/cart_item.dart';
-import '../controllers/pos_controller.dart';
+import '../controllers/pos_providers.dart';
 
 class DismissibleItem extends ConsumerWidget {
   const DismissibleItem({super.key, required this.item, required this.child});

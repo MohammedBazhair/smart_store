@@ -5,7 +5,7 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
-import '../controllers/pos_controller.dart';
+import '../controllers/pos_providers.dart';
 
 class ScannerTriggerButton extends ConsumerWidget {
   const ScannerTriggerButton({

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../../core/extensions/extensions.dart';
-import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../auth/presentation/widgets/custom_button.dart';
-import '../controllers/pos_providers.dart';
-import 'quantity_wheel_selector.dart';
+import '../../../../../../core/extensions/extensions.dart';
+import '../../../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../auth/presentation/widgets/custom_button.dart';
+import '../../controllers/pos_providers.dart';
+import '../quantity_wheel_selector.dart';
 
 Future<void> showQuantitySelector(BuildContext context) {
   return showDialog(
