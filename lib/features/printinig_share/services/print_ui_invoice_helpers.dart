@@ -3,41 +3,39 @@ import 'package:pdf/widgets.dart' as pw;
 class PrintUiInvoiceHelpers {
   PrintUiInvoiceHelpers._();
 
-  static pw.Widget headerCell(
-    String text, {
-    int flex = 1,
-    pw.TextAlign align = pw.TextAlign.left,
-  }) {
-    return pw.Expanded(
-      flex: flex,
+  // 🧾 Header Cell
+  static pw.Widget header(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(4),
       child: pw.Text(
         text,
-        textAlign: align,
-        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+        textAlign: pw.TextAlign.center,
+        style: pw.TextStyle(
+          fontSize: 5,
+          fontWeight: pw.FontWeight.bold,
+        ),
       ),
     );
   }
 
-  static pw.Widget cell(
-    String text, {
-    int flex = 1,
-    pw.TextAlign align = pw.TextAlign.left,
-  }) {
-    return pw.Expanded(
-      flex: flex,
+  // 📦 Table Cell
+  static pw.Widget cell(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 4),
       child: pw.Text(
         text,
-        textAlign: align,
-        style: const pw.TextStyle(fontSize: 12),
+        textAlign: pw.TextAlign.center,
+        style: const pw.TextStyle(fontSize: 7),
       ),
     );
   }
 
+  // 💰 Total Row
   static pw.Widget totalRow(
     String title,
     String value, {
     bool isBold = false,
-    double size = 12,
+    double size = 10,
   }) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -45,30 +43,37 @@ class PrintUiInvoiceHelpers {
         pw.Text(
           title,
           style: pw.TextStyle(
-            fontWeight: isBold ? pw.FontWeight.bold : null,
             fontSize: size,
+            fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
           ),
         ),
         pw.Text(
           value,
           style: pw.TextStyle(
-            fontWeight: isBold ? pw.FontWeight.bold : null,
             fontSize: size,
+            fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
           ),
         ),
       ],
     );
   }
 
-  static pw.Row buildInfoRow(String title, String value) {
+  // ℹ️ Info Row
+  static pw.Widget buildInfoRow(String title, String value) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
         pw.Text(
           title,
-          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+          style: pw.TextStyle(
+            fontSize: 7,
+            fontWeight: pw.FontWeight.bold,
+          ),
         ),
-        pw.Text(value, style: const pw.TextStyle(fontSize: 12)),
+        pw.Text(
+          value,
+          style: const pw.TextStyle(fontSize: 7),
+        ),
       ],
     );
   }

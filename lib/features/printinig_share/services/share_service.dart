@@ -15,8 +15,12 @@ class ShareService {
     final pdf = await PdfService().createPdf(invoice);
     final bytes = await pdf.save();
     final dir = await getTemporaryDirectory();
-    final fileName = 'فاتورة - ${invoice.title}${invoice.time}';
+    final fileName = '${invoice.title} - ${invoice.storeName} - ${invoice.date}'
+        .replaceAll('/', '-');
+
     final file = File('${dir.path}/$fileName.pdf');
+
+    await file.parent.create(recursive: true);
     await file.writeAsBytes(bytes);
     await shareFile(file.path, fileName);
   }
