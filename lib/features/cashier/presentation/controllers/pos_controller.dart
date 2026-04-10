@@ -1,11 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/log.dart';
+
 import '../../../../errors/result.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
+
 import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../settings/domain/entities/exchange_rate.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
+
 import '../../domain/entities/cart_item.dart';
 import 'pos_state.dart';
 
@@ -110,4 +113,5 @@ class PosController extends Notifier<PosState> {
     state = const PosState();
   }
 }
+
 

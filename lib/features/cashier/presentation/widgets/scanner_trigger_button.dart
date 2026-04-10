@@ -17,7 +17,8 @@ class ScannerTriggerButton extends ConsumerWidget {
 
   Future<void> _openScanner(BuildContext context, WidgetRef ref) async {
     final navigator = Navigator.of(context);
-    
+    final posNotifier = ref.read(posControllerProvider.notifier);
+
     while (true) {
       if (!navigator.mounted) break;
       final barcode = await showModalBottomSheet<String?>(
@@ -27,20 +28,19 @@ class ScannerTriggerButton extends ConsumerWidget {
 
       if (barcode == null || !navigator.mounted) break;
 
-      final posNotifier = ref.read(posControllerProvider.notifier);
       final product = await posNotifier.findProductByBarcode(barcode);
 
       if (product != null) {
         posNotifier.addToCart(product);
         // Delay to allow the bottom sheet to close and native resources to release
-        await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 1));
         continue;
       } else {
-          navigator.context.showSnakbar(
-            'المنتج غير موجود في المستودع',
-            type: SnackBarType.error,
-          );
-        
+        navigator.context.showSnakbar(
+          'المنتج غير موجود في المستودع',
+          type: SnackBarType.error,
+        );
+
         break;
       }
     }

@@ -8,13 +8,11 @@ import '../controllers/pos_providers.dart';
 import 'checkout_button.dart';
 import 'scanner_trigger_button.dart';
 
-class PosCheckoutFooter extends ConsumerWidget {
-  const PosCheckoutFooter({
-    super.key,
-  });
-
+class PosCheckoutFooterWrapper extends StatelessWidget {
+  const PosCheckoutFooterWrapper({super.key, required this.child});
+  final Widget child;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -32,23 +30,24 @@ class PosCheckoutFooter extends ConsumerWidget {
           topRight: Radius.circular(20),
         ),
       ),
-      child: const Column(
+      child: child,
+    );
+  }
+}
+
+class PosCheckoutFooter extends ConsumerWidget {
+  const PosCheckoutFooter({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const PosCheckoutFooterWrapper(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         spacing: 25,
         children: [
-          Row(
-            spacing: 12,
-            children: [
-              Text(
-                'إجمالي الطلب',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              Expanded(
-                child: _CartTotalView(),
-              ),
-            ],
-          ),
+          CartTotalView(),
           SizedBox(
             height: 50,
             child: Row(
@@ -73,8 +72,8 @@ class PosCheckoutFooter extends ConsumerWidget {
   }
 }
 
-class _CartTotalView extends ConsumerWidget {
-  const _CartTotalView();
+class CartTotalView extends ConsumerWidget {
+  const CartTotalView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -90,32 +89,44 @@ class _CartTotalView extends ConsumerWidget {
     final convertedTotalPrice = result.price;
     final currency = result.currency;
 
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      alignment: AlignmentDirectional.centerEnd,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            convertedTotalPrice.formatDouble,
-            maxLines: 1,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primaryColor,
+    return Row(
+      spacing: 12,
+      children: [
+        const Text(
+          'إجمالي\nالطلب',
+          textAlign: TextAlign.center,
+          style:
+              TextStyle(fontSize: 13, height: 2, fontWeight: FontWeight.bold),
+        ),
+        Expanded(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerEnd,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  convertedTotalPrice.formatDouble,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+                Text(
+                  currency.label,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
-          Text(
-            currency.label,
-            maxLines: 1,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppTheme.textSecondary,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
-

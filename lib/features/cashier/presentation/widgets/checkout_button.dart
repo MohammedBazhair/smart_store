@@ -17,9 +17,8 @@ class CheckoutButton extends ConsumerWidget {
     final success = await ref.read(posControllerProvider.notifier).checkout();
     if (success && context.mounted) {
       // ignore: unawaited_futures
-      ref.read(audioControllerProvider.notifier).playSuccessResult();
+      await ref.read(audioControllerProvider.notifier).playSuccessResult();
       await showInvoiceDialog(context);
-
       ref.read(posControllerProvider.notifier).clearCart();
     } else if (!success && context.mounted) {
       final error = ref.read(posControllerProvider).errorMessage;

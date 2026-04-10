@@ -71,6 +71,10 @@ extension DateFormating on DateTime {
   String get formattedDate {
     return DateFormat('yyyy/MM/dd').format(this);
   }
+
+  String get formattedTime {
+    return DateFormat('hh:mm a').format(this);
+  }
 }
 
 extension BoolToInt on bool {
