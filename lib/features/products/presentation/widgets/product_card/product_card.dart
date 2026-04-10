@@ -25,6 +25,7 @@ class ProductCard extends ConsumerWidget {
     final status = product.expiryDate == null
         ? null
         : ProductExpiryStatus.from(product.expiryDate!);
+
     final (:price, :currency) =
         ref.read(settingsControllerProvider.notifier).convert(
               price: product.price,

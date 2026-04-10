@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../features/products/domain/entities/store_product.dart';
 import '../../../../../features/products/presentation/controllers/product_provider.dart';
-import '../../../../../features/products/presentation/screens/product_details_screen.dart';
 import '../../../../../features/products/presentation/screens/products_screen.dart';
+import '../../../../../features/products/presentation/widgets/product_card/product_card.dart';
 import '../../../../extensions/extensions.dart';
 import '../../theme/app_theme.dart';
 
@@ -70,26 +70,7 @@ class _NearbySectionBody extends StatelessWidget {
     }
     return Column(
       children: products.take(3).map((product) {
-        return ListTile(
-          leading: const Icon(
-            Icons.warning,
-            color: AppTheme.nearExpiryColor,
-          ),
-          title: Text(product.globalProduct.name),
-          subtitle: product.expiryDate == null
-              ? null
-              : Text(
-                  'ينتهي في ${DateTime.now().difference(product.expiryDate!).inDays.abs()} أيام',
-                ),
-          trailing: const Icon(Icons.chevron_left),
-          onTap: () {
-            context.pushTo(
-              ProductDetailsScreen(
-                productId: product.globalProduct.id!,
-              ),
-            );
-          },
-        );
+        return ProductCard(product: product);
       }).toList(),
     );
   }

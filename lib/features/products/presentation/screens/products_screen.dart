@@ -38,7 +38,6 @@ extension ProductListSort on List<StoreProduct> {
   }
 }
 
-
 enum ProductListType { all, expired, nearExpiry }
 
 class ProductsScreen extends ConsumerStatefulWidget {
@@ -131,9 +130,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
                 const SizedBox(height: 12),
 
-                // 🔀 رقاقات الترتيب (Premium UX)
                 SizedBox(
-                  height: 40,
+                  height: 50,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: ProductSortType.values.length,
@@ -145,8 +143,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       return ChoiceChip(
                         label: Row(
                           mainAxisSize: MainAxisSize.min,
+                          spacing: 5,
                           children: [
-                            if (type != ProductSortType.none) ...[
+                            if (type != ProductSortType.none)
                               Icon(
                                 type.icon,
                                 size: 16,
@@ -154,8 +153,6 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                                     ? Colors.white
                                     : Theme.of(context).primaryColor,
                               ),
-                              const SizedBox(width: 4),
-                            ],
                             Text(type.label),
                           ],
                         ),
@@ -169,19 +166,12 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                           // We don't need to trigger a full repo search if we just want to sort locally,
                           // but to be safe and consistent with query matching, we can call search:
                           if (query.isSearching || query.hasCategory) {
-                             ref.read(productSearchProvider.notifier).search();
+                            ref.read(productSearchProvider.notifier).search();
                           }
                         },
-                        showCheckmark: false,
-                        selectedColor: Theme.of(context).primaryColor,
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : null,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                          fontSize: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          fontWeight: isSelected ? FontWeight.bold : null,
                         ),
                       );
                     },

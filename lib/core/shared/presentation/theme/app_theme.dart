@@ -125,8 +125,23 @@ class AppTheme {
         ),
         actionsPadding: EdgeInsets.symmetric(horizontal: 5),
       ),
+      chipTheme: ChipThemeData(
+        backgroundColor: surfaceColor,
+        selectedColor: primaryColor,
+        showCheckmark: false,
+        labelStyle: const TextStyle(
+          color: textPrimary,
+          fontSize: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Colors.transparent),
+        ),
+        elevation: 1.5,
+        shadowColor: const Color(0x42ECECEC),
+      ),
       cardTheme: CardThemeData(
-        shadowColor: const Color.fromARGB(141, 255, 255, 255),
+        shadowColor: const Color(0x8DFFFFFF),
         elevation: 1.2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),

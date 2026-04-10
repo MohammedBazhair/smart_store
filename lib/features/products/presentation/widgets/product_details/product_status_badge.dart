@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../../../core/utils/date_utils.dart' as date_utils;
+import '../../../domain/entities/product_expiry_status.dart';
 import '../../../domain/entities/store_product.dart';
 
 class ProductStatusBadge extends StatelessWidget {
@@ -13,34 +12,21 @@ class ProductStatusBadge extends StatelessWidget {
   final StoreProduct product;
   @override
   Widget build(BuildContext context) {
-    final remainingDays =
-        date_utils.DateTimeUtils.daysUntilExpiry(product.expiryDate);
-    final isExpired =
-        date_utils.DateTimeUtils.isExpired(product.expiryDate) ?? false;
-    final color = isExpired
-        ? AppTheme.expiredColor
-        : remainingDays != null && remainingDays <= 7
-            ? AppTheme.nearExpiryColor
-            : AppTheme.validColor;
-
-    final text = isExpired
-        ? 'منتهي'
-        : remainingDays != null && remainingDays <= 30
-            ? 'قريب الانتهاء'
-            : 'صالح';
+    final status =
+        ProductExpiryStatus.from(product.expiryDate ?? DateTime(9999999));
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: status.color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        text,
+        status.text,
         style: Theme.of(context)
             .textTheme
             .labelLarge
-            ?.copyWith(color: color, fontWeight: FontWeight.w600),
+            ?.copyWith(color: status.color, fontWeight: FontWeight.w600),
       ),
     );
   }

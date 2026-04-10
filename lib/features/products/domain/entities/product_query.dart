@@ -32,7 +32,7 @@ class ProductQuery extends Equatable {
   bool get isSearching => search.trim().isNotEmpty;
   bool get hasCategory => category != null;
   bool get hasSort => sortType != ProductSortType.none;
-  bool get hasQuery => isSearching || hasCategory || hasSort;
+  bool get hasQuery => isSearching || hasCategory;
 
   String get uiNotFoundText {
     if (!hasQuery) return 'لا توجد منتجات متاحة حاليًا.';

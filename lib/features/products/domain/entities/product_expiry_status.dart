@@ -21,47 +21,40 @@ class ProductExpiryStatus {
   factory ProductExpiryStatus.from(DateTime expiryDate) {
     final days = date_utils.DateTimeUtils.daysUntilExpiry(expiryDate);
     final text = date_utils.DateTimeUtils.timeUntilExpiry(expiryDate) ?? 'صالح';
+
     if (days == null) {
-      return ProductExpiryStatus(
-        color: AppTheme.validColor,
-        text: text,
-        icon: Icons.check_circle,
-      );
+      return ProductExpiryStatus.valid();
     }
 
     if (days < 0) {
       return ProductExpiryStatus(
-        color: AppTheme.expiredColor,
+        color: AppTheme.expiredColor, // 🔴
         text: text,
         icon: Icons.cancel,
       );
     } else if (days <= 7) {
       return ProductExpiryStatus(
-        color: AppTheme.nearExpiryColor,
+        color: AppTheme.nearExpiryColor, // ⚠️
         text: text,
         icon: Icons.warning,
       );
-    } else if (days <= 29) {
+    } else if (days <= 30) {
       return ProductExpiryStatus(
-        color: AppTheme.validColor,
+        color: Colors.orange, // 🟡 (أضف لون تحذيري)
         text: text,
-        icon: Icons.check_circle,
-      );
-    } else if (days ~/ 30 >= 12) {
-      return ProductExpiryStatus(
-        color: AppTheme.validColor,
-        text: text,
-        icon: Icons.check_circle,
+        icon: Icons.warning_amber,
       );
     } else {
-      return ProductExpiryStatus(
-        color: AppTheme.validColor,
-        text: text,
-        icon: Icons.check_circle,
-      );
+      return ProductExpiryStatus.valid(); // 🟢
     }
   }
+
   final Color color;
   final String text;
   final IconData icon;
+
+  @override
+  String toString() {
+    return 'ProductExpiryStatus(color: $color, text: $text, icon: $icon)';
+  }
 }
