@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
+import '../../app_initializer.dart';
 import '../../features/alerts/data/alert_background_params.dart';
 import '../../features/alerts/presentation/controllers/notification_cache.dart';
 import '../constants/enums.dart';
+import '../database/local/database_helper.dart';
+import '../shared/providers/core_providers.dart';
 import '../shared/providers/repositories_provider.dart';
 import 'background_utils.dart';
 
@@ -15,10 +18,13 @@ void callbackDispatcher() {
     if (taskName.isEmpty) return Future.value(false);
 
     // تهيئة ProviderContainer في الخلفية
+    await initializeSupabase();
     final sharedPrefs = await SharedPreferences.getInstance();
+    final database = await DatabaseHelper.instance.database;
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+        databaseProvider.overrideWithValue(database),
       ],
     );
 

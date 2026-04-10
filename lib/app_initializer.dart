@@ -17,7 +17,7 @@ import 'main.dart';
 
 Future<ProviderContainer> configureDependencies() async {
   await initializeDateFormatting('ar');
-  await _initializeSupabase();
+  await initializeSupabase();
 
   final sharedPrefs = await SharedPreferences.getInstance();
   final database = await DatabaseHelper.instance.database;
@@ -72,7 +72,7 @@ Future<void> _registerBackgroundTasks() async {
   );
 }
 
-Future<void> _initializeSupabase() async {
+Future<void> initializeSupabase() async {
   await Supabase.initialize(
     url: 'https://btesmjmzmgkjyljfxsxx.supabase.co',
     anonKey:
