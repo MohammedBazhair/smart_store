@@ -5,6 +5,7 @@ import '../controllers/pos_providers.dart';
 import '../widgets/dialogs/show_clear_confirmation_dialog.dart';
 import '../widgets/pos_checkout_footer.dart';
 import '../widgets/pos_table.dart';
+import '../widgets/quick_products_section.dart';
 import '../widgets/scanner_trigger_button.dart';
 
 class CheckoutScreen extends ConsumerWidget {
@@ -32,6 +33,7 @@ class CheckoutScreen extends ConsumerWidget {
           ? const _BuildEmptyState()
           : Column(
               children: [
+                const QuickProductsSection(),
                 Expanded(
                   child: PosTable(cartItems: state.cartItems.values.toList()),
                 ),
@@ -64,7 +66,7 @@ class _BuildEmptyState extends StatelessWidget {
             ),
           ),
           const Text(
-            'لا توجد منتجات بعد',
+            'لا توجد منتجات صالحة في السلة',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
@@ -72,6 +74,8 @@ class _BuildEmptyState extends StatelessWidget {
               color: AppTheme.primaryColor,
             ),
           ),
+          const QuickProductsSection(),
+          const SizedBox(height: 12),
           const ScannerTriggerButton(),
           const Text(
             'ابدأ بمسح المنتجات لإضافتها إلى السلة',

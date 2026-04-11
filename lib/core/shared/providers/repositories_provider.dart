@@ -5,6 +5,7 @@ import '../../../features/alerts/data/alert_repository_impl.dart';
 import '../../../features/alerts/domain/alert_repository.dart';
 import '../../../features/backup/data/backup_repository_impl.dart';
 import '../../../features/backup/domain/backup_repository.dart';
+import 'core_providers.dart';
 
 // مزود SharedPreferences
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -17,7 +18,8 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 
 /// Provider لمستودع التنبيهات
 final alertRepositoryProvider = Provider<AlertRepository>((ref) {
-  return AlertRepositoryImpl();
+  final db = ref.read(localDatabaseServiceProvider);
+  return AlertRepositoryImpl(db);
 });
 
 

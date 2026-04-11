@@ -4,6 +4,7 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/database/local/query_where_builder.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/data/models/sync_change_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
@@ -125,7 +126,13 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       } else {
         await db.update(
           updated: category.toMapUpdate(),
-          filterWhere: {'category_id': category.id},
+          whereParams: WhereQueryParams(
+            groups: [
+              FilterGroup(
+                filters: [Filter(column: 'category_id', value: category.id)],
+              ),
+            ],
+          ),
           table: 'categories',
         );
       }
@@ -433,11 +440,13 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     final updated = product.toMap();
     updated.remove('id');
 
-    final filterWhere = {'id': product.id};
-
     await db.update(
       updated: updated,
-      filterWhere: filterWhere,
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(filters: [Filter(column: 'id', value: product.id!)]),
+        ],
+      ),
       table: 'global_products',
     );
 
@@ -459,14 +468,20 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     bool skipLocalTracking = false,
   ]) async {
     final updated = product.toMap();
-    final filterWhere = {
-      'store_id': product.storeId,
-      'product_id': product.globalProduct.id,
-    };
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'store_id', value: product.storeId),
+            Filter(column: 'product_id', value: product.globalProduct.id!),
+          ],
+        ),
+      ],
+    );
 
     await db.update(
       updated: updated,
-      filterWhere: filterWhere,
+      whereParams: whereParams,
       table: 'store_products',
     );
 
@@ -526,12 +541,23 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     StoreProductKey productKey, [
     bool skipLocalTracking = false,
   ]) async {
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'store_id', value: productKey.storeId),
+            Filter(column: 'product_id', value: productKey.productId),
+          ],
+        ),
+      ],
+    );
+
     await db.update(
       updated: {
         'is_deleted': true.toInt,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
-      filterWhere: productKey.toMap(),
+      whereParams: whereParams,
       table: 'store_products',
     );
 
@@ -549,15 +575,20 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
   @override
   Future<Category?> fetchCategory(int categoryId) async {
-    final row = await db.readRow(
-      id: categoryId,
-      column: 'category_id',
+    final rows = await db.query(
       table: 'categories',
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [Filter(column: 'category_id', value: categoryId)],
+          ),
+        ],
+      ),
     );
 
-    if (row.isEmpty) return null;
+    if (rows.isEmpty) return null;
 
-    final category = Category.fromLocal(row);
+    final category = Category.fromLocal(rows.first);
     return category;
   }
 }

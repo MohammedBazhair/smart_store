@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import '../../../core/extensions/extensions.dart';
 import '../domain/alert.dart';
 
 /// نموذج التنبيه للتعامل مع قاعدة البيانات
@@ -38,18 +39,19 @@ class AlertModel extends Alert {
       importance: Priority.values.byName(map['importance'] as String),
       isRead: (map['is_read'] as int) == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
-      expiryDate: DateTime.tryParse((map['expiry_date'] as String?)??''),
+      expiryDate: DateTime.tryParse((map['expiry_date'] as String?) ?? ''),
       productName: map['product_name'] as String,
     );
   }
 
   /// تحويل من AlertModel إلى Map
   Map<String, dynamic> toMap() {
+    final expiryDateOnly = expiryDate?.toDateOnly.toUtc().toIso8601String();
     return {
-     if (id != null) 'id': id,
+      if (id != null) 'id': id,
       'product_id': productId,
       'product_name': productName,
-      'expiry_date': expiryDate?.toIso8601String(),
+      'expiry_date': expiryDateOnly,
       'days_before_expiry': daysBeforeExpiry,
       'importance': importance.name,
       'is_read': isRead ? 1 : 0,

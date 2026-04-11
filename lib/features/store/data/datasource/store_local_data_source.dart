@@ -1,6 +1,7 @@
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/database/local/query_where_builder.dart';
 import '../../../../core/shared/data/models/sync_change_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../../user/domain/entities/role.dart';
@@ -52,10 +53,19 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   final SyncLocalDataSource _sync;
 
   Future<void> _updateStore(String storeId) async {
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'id', value: storeId),
+          ],
+        ),
+      ],
+    );
     await _db.update(
       updated: {'updated_at': DateTime.now().toUtc().toIso8601String()},
       table: 'stores',
-      filterWhere: {'id': storeId},
+      whereParams: whereParams,
     );
   }
 
@@ -66,6 +76,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   ]) async {
     bool isStoreCreated = false;
     bool isMemberInserted = false;
+
     final member = StoreMemberModel(
       primaryKey:
           StoreMemberKey(storeId: store.id!, memberPhone: store.ownerPhone),
@@ -74,13 +85,17 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       updatedAt: store.createdAt,
       isDeleted: false,
     );
-    final parent = await _db.rawQuery(
-      query: 'SELECT phone FROM profiles WHERE phone = ?',
-      arguments: [store.ownerPhone],
-    );
 
-    Logger.debugLog(message: 'parent: $parent');
     try {
+      final parent = await _db.rawQuery(
+        query: 'SELECT phone FROM profiles WHERE phone = ?',
+        arguments: [store.ownerPhone],
+      );
+
+      if (parent.isEmpty) {
+        throw Exception('Owner profile not found');
+      }
+
       final storeResult =
           await _db.insertRow(table: 'stores', map: store.toMap());
       final memberResult =
@@ -97,6 +112,7 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         operation: SyncOperation.insert,
         updatedAt: DateTime.now().toUtc(),
       );
+
       if (isStoreCreated) await _sync.addChange(storeChange);
 
       final memberKey = StoreMemberKey(
@@ -109,13 +125,18 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         operation: SyncOperation.insert,
         updatedAt: DateTime.now().toUtc(),
       );
+
       if (isMemberInserted) await _sync.addChange(memberChange);
     } catch (e, st) {
-      Logger.debugLog(message: '1');
       Logger.debugLog(error: e, stackTrace: st);
+
+      final whereParams = WhereQueryParams(
+        groups: [
+          FilterGroup(filters: [Filter(column: 'id', value: store.id!)]),
+        ],
+      );
       if (isStoreCreated && !isMemberInserted) {
-        Logger.debugLog(message: '2');
-        await _db.deleteWhere(table: 'stores', filters: {'id': store.id!});
+        await _db.deleteWhere(table: 'stores', whereParams: whereParams);
       }
     }
   }
@@ -150,14 +171,20 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     required String storeId,
     bool includeDeleted = true,
   }) async {
-    final filters = {
-      'store_id': storeId,
-      if (!includeDeleted) 'is_deleted': 0,
-    };
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'store_id', value: storeId),
+            if (!includeDeleted) const Filter(column: 'is_deleted', value: 0),
+          ],
+        ),
+      ],
+    );
 
-    final rows = await _db.readRowsWhere(
+    final rows = await _db.query(
       table: 'store_members',
-      filters: filters,
+      whereParams: whereParams,
     );
 
     return rows.map(StoreMemberModel.fromMap).toList();
@@ -192,9 +219,37 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     required StoreMemberKey key,
     bool skipLocalTracking = false,
   }) async {
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'store_id', value: key.storeId),
+            Filter(column: 'member_phone', value: key.memberPhone),
+          ],
+        ),
+      ],
+    );
     await _db.update(
       table: 'store_members',
-      filterWhere: key.toMap(),
+      whereParams: whereParams,
+      updated: {
+        'is_deleted': true,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+    );
+
+    await _db.update(
+      table: 'store_members',
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [
+              Filter(column: 'store_id', value: key.storeId),
+              Filter(column: 'member_phone', value: key.memberPhone),
+            ],
+          ),
+        ],
+      ),
       updated: {
         'is_deleted': true,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
@@ -266,9 +321,19 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     StoreModel store, [
     bool skipLocalTracking = false,
   ]) async {
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'id', value: store.id!),
+          ],
+        ),
+      ],
+    );
+
     await _db.update(
       updated: store.toMap(),
-      filterWhere: {'id': store.id},
+      whereParams: whereParams,
       table: 'stores',
     );
 
@@ -287,13 +352,22 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   @override
   Future<StoreModel?> getStore(String storeId) async {
     try {
-      final row = await _db.readRow(id: storeId, column: 'id', table: 'stores');
+      final whereParams = WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [
+              Filter(column: 'id', value: storeId),
+            ],
+          ),
+        ],
+      );
+      final rows = await _db.query(whereParams: whereParams, table: 'stores');
 
-      if (row.isEmpty) throw Exception();
-      final model = StoreModel.fromMap(row);
+      final model = StoreModel.fromMap(rows.first);
 
       return model;
-    } catch (e) {
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return null;
     }
   }
@@ -301,16 +375,26 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
   @override
   Future<StoreMemberModel?> getStoreMember(StoreMemberKey key) async {
     try {
-      final rows = await _db.readWhereArguments(
+      final whereParams = WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [
+              Filter(column: 'store_id', value: key.storeId),
+              Filter(column: 'member_phone', value: key.memberPhone),
+            ],
+          ),
+        ],
+      );
+      final rows = await _db.query(
+        whereParams: whereParams,
         table: 'store_members',
-        where: 'store_id = ? AND member_phone = ?',
-        whereArgs: [key.storeId, key.memberPhone],
       );
 
       final model = StoreMemberModel.fromMap(rows.first);
 
       return model;
-    } catch (e) {
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return null;
     }
   }
@@ -320,9 +404,22 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     StoreMemberModel member, [
     bool skipLocalTracking = false,
   ]) async {
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'store_id', value: member.primaryKey.storeId),
+            Filter(
+              column: 'member_phone',
+              value: member.primaryKey.memberPhone,
+            ),
+          ],
+        ),
+      ],
+    );
     await _db.update(
       updated: member.toUpdateMap(),
-      filterWhere: member.primaryKey.toMap(),
+      whereParams: whereParams,
       table: 'store_members',
     );
 
@@ -343,9 +440,18 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     String storeId, [
     bool skipLocalTracking = false,
   ]) async {
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'id', value: storeId),
+          ],
+        ),
+      ],
+    );
     await _db.update(
       table: 'stores',
-      filterWhere: {'id': storeId},
+      whereParams: whereParams,
       updated: {
         'is_deleted': true,
         'updated_at': DateTime.now().toUtc().toIso8601String(),

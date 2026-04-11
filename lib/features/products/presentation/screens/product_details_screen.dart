@@ -7,21 +7,13 @@ import '../widgets/product_details/product_header_card.dart';
 import '../widgets/product_details/product_info_section.dart';
 
 class ProductDetailsScreen extends ConsumerWidget {
-  const ProductDetailsScreen({super.key, required this.productId});
-  final String productId;
+  const ProductDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productAsync = ref.watch(productByIdProvider(productId));
+    final productAsync = ref.watch(currentProductProvider);
 
-    ref.listen(
-      productByIdProvider(productId),
-      (previous, next) {
-        next.whenData((product) {
-          ref.read(currentProductProvider.notifier).state = product;
-        });
-      },
-    );
+   
 
     return Scaffold(
       appBar: AppBar(

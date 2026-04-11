@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../errors/result.dart';
 import '../../../../features/alerts/presentation/controllers/alert_provider.dart';
-import '../../../../features/alerts/presentation/controllers/notification_cache.dart';
 import '../../../../features/alerts/presentation/screens/alerts_screen.dart';
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/products/presentation/screens/product_details_screen.dart';
 import '../../../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
+import '../../../constants/app_constants.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
+import '../../providers/core_providers.dart';
 import '../widgets/dashboard/dashboard_near_expiry_section.dart';
 import '../widgets/dashboard/dashboard_quick_actions.dart';
 import '../widgets/dashboard/dashboard_stats_section.dart';
@@ -39,14 +40,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<void> _handleInitialNotification() async {
-    final productId = await NotificationCache.read();
+    final cache = ref.read(localCacheServiceProvider);
+    final productId = cache.getString(key: AppConstants.pendingNotificationPayloadKey);
     if (productId == null) return;
 
-    await NotificationCache.clear();
+    await cache.remove(key: AppConstants.pendingNotificationPayloadKey);
 
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        context.pushTo(ProductDetailsScreen(productId: productId));
+        ref.read(currentProductIdProvider.notifier).state = productId;
+        context.pushTo(const ProductDetailsScreen());
       },
     );
   }

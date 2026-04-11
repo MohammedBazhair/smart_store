@@ -15,6 +15,11 @@ import 'core/shared/providers/repositories_provider.dart';
 import 'features/products/presentation/screens/init_screen.dart';
 import 'main.dart';
 
+class AppProviders {
+  AppProviders._();
+  static late ProviderContainer container;
+}
+
 Future<ProviderContainer> configureDependencies() async {
   await initializeDateFormatting('ar');
   await initializeSupabase();

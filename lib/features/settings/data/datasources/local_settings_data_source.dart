@@ -4,6 +4,7 @@ import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/database/local/query_where_builder.dart';
 import '../../../../core/shared/data/models/sync_change_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../domain/entities/currence_code.dart';
@@ -33,7 +34,7 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
 
   @override
   Future<List<ExchangeRateModel>> getExchangeRates() async {
-    final rows = await _localDatabase.readRows(table: 'exchange_rates');
+    final rows = await _localDatabase.query(table: 'exchange_rates');
 
     final exchangeRates = rows.map(ExchangeRateModel.fromMap);
 
@@ -50,8 +51,8 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
         table: 'exchange_rates',
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
     }
   }
 
@@ -61,8 +62,8 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
       final json = settings.toJson();
 
       await _cache.setString(key: 'settings', value: json);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
     }
   }
 
@@ -72,12 +73,22 @@ class LocalSettingsDataSourceImpl implements LocalSettingsDataSource {
     required String storeId,
     bool skipLocalTracking = false,
   }) async {
+final whereParams = WhereQueryParams(
+  groups: [
+    FilterGroup(
+      filters: [
+        Filter(column: 'id', value: storeId),
+      ],
+    ),
+  ],
+);
+
     await _localDatabase.update(
       updated: {
         'currency': currency.name,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
-      filterWhere: {'id': storeId},
+      whereParams: whereParams,
       table: 'stores',
     );
 

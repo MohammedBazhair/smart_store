@@ -5,8 +5,9 @@ import 'package:workmanager/workmanager.dart';
 
 import '../../app_initializer.dart';
 import '../../features/alerts/data/alert_background_params.dart';
-import '../../features/alerts/presentation/controllers/notification_cache.dart';
+import '../constants/app_constants.dart';
 import '../constants/enums.dart';
+import '../database/local/cache_service.dart';
 import '../database/local/database_helper.dart';
 import '../shared/providers/core_providers.dart';
 import '../shared/providers/repositories_provider.dart';
@@ -45,7 +46,7 @@ void callbackDispatcher() {
             return Future.value(false);
           }
 
-          await tasksUtils.addAlertInBackground( backgroundParams);
+          await tasksUtils.addAlertInBackground(backgroundParams);
         case BackgroundTask.syncAllData:
           await tasksUtils.syncAllData();
       }
@@ -59,11 +60,16 @@ void callbackDispatcher() {
 }
 
 @pragma('vm:entry-point')
-void onDidReceiveBackgroundNotificationResponse(NotificationResponse details) {
-  if (details.payload?.isEmpty ?? true) return;
-
+void onDidReceiveBackgroundNotificationResponse(
+  NotificationResponse details,
+) async {
   final productId = details.payload;
-  if (productId == null) return;
+  if (productId == null || productId.isEmpty) return;
 
-  NotificationCache.save(productId);
+  final _prefs = await SharedPreferences.getInstance();
+  final localCache = LocalCacheServiceImpl(_prefs);
+  await localCache.setString(
+    key: AppConstants.pendingNotificationPayloadKey,
+    value: productId,
+  );
 }

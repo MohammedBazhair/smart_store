@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../../../../app_initializer.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../main.dart';
 import '../../../products/domain/entities/store_product.dart';
+import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../settings/domain/repository/settings_repository.dart';
+import '../../domain/alert_repository.dart';
 import '../../domain/expiry_reminder.dart';
 import 'alert_controller.dart';
 import 'alert_scheduler.dart';
@@ -16,16 +19,19 @@ import 'notification_service.dart';
 void onDidReceiveNotificationResponse(NotificationResponse response) async {
   if (response.payload == null) return;
   final storeProductId = response.payload!;
+  final container = AppProviders.container;
 
-  final detatailsScreen = ProductDetailsScreen(productId: storeProductId);
+  container.read(currentProductIdProvider.notifier).state = storeProductId;
+  const detatailsScreen = ProductDetailsScreen();
   await navigatorKey.currentState
       ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
 }
 
 class AlertService {
-  AlertService(this.settingsRepo, this.alertController, this._notifications);
+  AlertService(this.settingsRepo, this.alertRepository, this._notifications, this.alertController);
 
   final SettingsRepository settingsRepo;
+  final AlertRepository alertRepository;
   final AlertController alertController;
   final NotificationService _notifications;
 
@@ -53,7 +59,7 @@ class AlertService {
       final isNearExpired =
           DateTimeUtils.isNearExpiry(product.expiryDate!, days);
 
-      final isAlertDuplicated = await alertController.isAlertDuplicated(
+      final isAlertDuplicated = await alertRepository.isAlertDuplicated(
         productId: product.globalProduct.id!,
         expiryDate: product.expiryDate!,
         daysBeforeExpiry: days,

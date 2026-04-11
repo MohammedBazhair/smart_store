@@ -1,5 +1,7 @@
 import '../../../core/constants/log.dart';
-import '../../../core/database/local/database_helper.dart';
+import '../../../core/database/local/local_database_service.dart';
+import '../../../core/database/local/query_where_builder.dart';
+import '../../../core/extensions/extensions.dart';
 import '../../../errors/result.dart';
 import '../domain/alert.dart';
 import '../domain/alert_repository.dart';
@@ -7,24 +9,25 @@ import 'alert_model.dart';
 
 /// تنفيذ مستودع التنبيهات
 class AlertRepositoryImpl implements AlertRepository {
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  AlertRepositoryImpl(this._db);
+
+  final LocalDatabaseService _db;
 
   @override
   Future<Map<int, Alert>> getAllAlerts() async {
     try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'alerts',
-        orderBy: 'created_at DESC',
-      );
-      final entries = maps.map((m) {
-        final alert = AlertModel.fromMap(m);
-        return MapEntry(alert.id!, alert);
-      });
+      final maps = await _db.query(table: 'alerts', orderBy: 'created_at DESC');
 
-      return Map.fromEntries(entries);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+      final result = <int, AlertModel>{};
+
+      for (final m in maps) {
+        final alert = AlertModel.fromMap(m);
+        result[alert.id!] = alert;
+      }
+
+      return result;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return {};
     }
   }
@@ -32,42 +35,26 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<Map<int, Alert>> getUnreadAlerts() async {
     try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'alerts',
-        where: 'is_read = ?',
-        whereArgs: [0],
+      final maps = await _db.query(
+        table: 'alerts',
+        whereParams: const WhereQueryParams(
+          groups: [
+            FilterGroup(filters: [Filter(column: 'is_read', value: 0)]),
+          ],
+        ),
         orderBy: 'created_at DESC',
       );
-      final entries = maps.map((m) {
+
+      final result = <int, AlertModel>{};
+
+      for (final m in maps) {
         final alert = AlertModel.fromMap(m);
-        return MapEntry(alert.id!, alert);
-      });
+        result[alert.id!] = alert;
+      }
 
-      return Map.fromEntries(entries);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
-      return {};
-    }
-  }
-
-  @override
-  Future<Map<int, Alert>> getNewAlerts() async {
-    try {
-      final db = await _dbHelper.database;
-      final maps = await db.query(
-        'alerts',
-        orderBy: 'created_at DESC',
-        limit: 3,
-      );
-      final entries = maps.map((m) {
-        final alert = AlertModel.fromMap(m);
-        return MapEntry(alert.id!, alert);
-      });
-
-      return Map.fromEntries(entries);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+      return result;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return {};
     }
   }
@@ -75,9 +62,8 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<Result<int>> addAlert(Alert alert) async {
     try {
-      final db = await _dbHelper.database;
       final model = AlertModel.fromEntity(alert);
-      final id = await db.insert('alerts', model.toMap());
+      final id = await _db.insertRow(table: 'alerts', map: model.toMap());
       return SuccessState(id);
     } catch (e) {
       return const ErrorState('فشل في إضافة التنبيه');
@@ -87,16 +73,19 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<Result<void>> markAlertAsRead(int id) async {
     try {
-      final db = await _dbHelper.database;
-      await db.update(
-        'alerts',
-        {'is_read': 1},
-        where: 'id = ?',
-        whereArgs: [id],
+      await _db.update(
+        updated: {'is_read': 1},
+        whereParams: WhereQueryParams(
+          groups: [
+            FilterGroup(filters: [Filter(column: 'id', value: id)]),
+          ],
+        ),
+        table: 'alerts',
       );
+
       return const SuccessState(null);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return ErrorState('فشل في تحديث التنبيه: ${e.toString()}');
     }
   }
@@ -107,11 +96,20 @@ class AlertRepositoryImpl implements AlertRepository {
     required DateTime expiryDate,
     required int daysBeforeExpiry,
   }) async {
-    final db = await _dbHelper.database;
-    final result = await db.query(
-      'alerts',
-      where: 'product_id = ? AND DATE(expiry_date) = DATE(?) AND days_before_expiry = ?',
-      whereArgs: [productId, expiryDate.toIso8601String(), daysBeforeExpiry],
+
+    final result = await _db.query(
+      table: 'alerts',
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [
+              Filter(column: 'product_id', value: productId),
+              Filter(column: 'expiry_date', value: expiryDate.toDateOnly.toUtc().toIso8601String()),
+              Filter(column: 'days_before_expiry', value: daysBeforeExpiry),
+            ],
+          ),
+        ],
+      ),
     );
 
     return result.isNotEmpty; // true إذا موجود مسبقًا
@@ -120,11 +118,13 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<Result<void>> deleteAlert(int id) async {
     try {
-      final db = await _dbHelper.database;
-      await db.delete(
-        'alerts',
-        where: 'id = ?',
-        whereArgs: [id],
+      await _db.deleteWhere(
+        table: 'alerts',
+        whereParams: WhereQueryParams(
+          groups: [
+            FilterGroup(filters: [Filter(column: 'id', value: id)]),
+          ],
+        ),
       );
       return const SuccessState(null);
     } catch (e) {
@@ -135,8 +135,7 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<Result<void>> deleteAllAlerts() async {
     try {
-      final db = await _dbHelper.database;
-      await db.delete('alerts');
+      await _db.deleteWhere(table: 'alerts');
       return const SuccessState(null);
     } catch (e) {
       return ErrorState(

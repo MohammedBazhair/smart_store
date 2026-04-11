@@ -11,12 +11,12 @@ Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  final container = await configureDependencies();
+  AppProviders.container = await configureDependencies();
 
   FlutterNativeSplash.remove();
   runApp(
     UncontrolledProviderScope(
-      container: container,
+      container: AppProviders.container,
       child: const SmartStoreApp(),
     ),
   );

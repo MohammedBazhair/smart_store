@@ -2,9 +2,11 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/enums.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/database/local/query_where_builder.dart';
 import '../../../../core/shared/data/models/sync_change_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../domain/entities/profile.dart';
@@ -35,10 +37,18 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
       value: profile.userId,
     );
 
-    final existingRow = await _localService.readRow(
-      id: profile.userId,
-      column: 'id',
+    final whereParams = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(column: 'id', value: profile.userId),
+          ],
+        ),
+      ],
+    );
+    final existingRow = await _localService.query(
       table: AppConstants.profilesTable,
+      whereParams: whereParams,
     );
 
     final isNew = existingRow.isEmpty;
@@ -49,8 +59,18 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
         table: AppConstants.profilesTable,
       );
     } else {
+      final whereParams = WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [
+              Filter(column: 'id', value: profile.userId),
+            ],
+          ),
+        ],
+      );
+
       await _localService.update(
-        filterWhere: {'id': profile.userId},
+        whereParams: whereParams,
         updated: profile.toMapUpdate(),
         table: AppConstants.profilesTable,
       );
@@ -69,17 +89,30 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
 
   @override
   Future<ProfileEntity> readProfile([String? userId]) async {
-    final id =
-        userId ?? _cacheService.getString(key: AppConstants.profileUserIdKey);
-    if (id == null) return ProfileEntity.guest();
+    try {
+      final id =
+          userId ?? _cacheService.getString(key: AppConstants.profileUserIdKey);
+      if (id == null) throw Exception('No user id found');
 
-    final map = await _localService.readRow(
-      id: id,
-      column: 'id',
-      table: AppConstants.profilesTable,
-    );
+      final whereParams = WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [
+              Filter(column: 'id', value: id),
+            ],
+          ),
+        ],
+      );
+      final maps = await _localService.query(
+        table: AppConstants.profilesTable,
+        whereParams: whereParams,
+      );
 
-    return ProfileEntity.fromMap(map);
+      return ProfileEntity.fromMap(maps.first);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      return ProfileEntity.guest();
+    }
   }
 
   @override
@@ -107,7 +140,7 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
         batch.insert(
           AppConstants.profilesTable,
           element,
-            conflictAlgorithm: ConflictAlgorithm.ignore,
+          conflictAlgorithm: ConflictAlgorithm.ignore,
         );
       }
     }

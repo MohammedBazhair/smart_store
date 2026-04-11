@@ -37,10 +37,9 @@ class ProductCard extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
         onTap: () {
-          ref.read(currentProductProvider.notifier).state = product;
-          context.pushTo(
-            ProductDetailsScreen(productId: product.globalProduct.id!),
-          );
+          ref.read(currentProductIdProvider.notifier).state =
+              product.globalProduct.id;
+          context.pushTo(const ProductDetailsScreen());
         },
         leading: StatusIcon(status ?? ProductExpiryStatus.valid()),
         title: Row(

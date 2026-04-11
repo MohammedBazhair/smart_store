@@ -68,20 +68,20 @@ class DashboardStatsSection extends StatelessWidget {
         ),
         Consumer(
           builder: (_, ref, __) {
-            final newAlerts = ref.watch(
-              alertControllerProvider.select((s) => s.newAlerts),
+            final unreadAlerts = ref.watch(
+              alertControllerProvider.select((s) => s.unreadAlerts),
             );
 
             return StatCard(
               title: 'تنبيهات جديدة',
-              value: newAlerts.length.toString(),
+              value: unreadAlerts.length.toString(),
               icon: Icons.notifications,
               color: AppTheme.primaryColor,
               onTap: () {
                 context.pushTo(
                   AlertsScreen(
                     title: 'التنبيهات الجديدة',
-                    alerts: newAlerts.values.toList(),
+                    alerts: unreadAlerts.values.toList(),
                   ),
                 );
               },

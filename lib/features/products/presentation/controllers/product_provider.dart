@@ -59,7 +59,15 @@ final focusNodesProvider =
 
   return map;
 });
-final currentProductProvider = StateProvider<StoreProduct?>((ref) => null);
+
+final currentProductProvider = FutureProvider<StoreProduct?>((ref)  {
+  final productId = ref.watch(currentProductIdProvider);
+  if (productId == null) return null;
+
+  return ref.watch(productByIdProvider(productId).future);
+});
+
+final currentProductIdProvider = StateProvider<String?>((ref) => null);
 
 final expiryDateControllerProvider =
     StateNotifierProvider<ExpiryDateController, ExpiryDateState>(

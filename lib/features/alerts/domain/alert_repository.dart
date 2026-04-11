@@ -8,9 +8,7 @@ abstract class AlertRepository {
 
   /// الحصول على التنبيهات غير المقروءة
   Future<Map<int, Alert>> getUnreadAlerts();
-
-  Future<Map<int, Alert>> getNewAlerts();
-
+  
   /// إضافة تنبيه
   Future<Result<int>> addAlert(Alert alert);
 

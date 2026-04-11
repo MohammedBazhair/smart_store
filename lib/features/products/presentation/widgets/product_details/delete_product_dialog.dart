@@ -57,7 +57,7 @@ class DeleteProductDialog extends ConsumerWidget {
                 children: [
                   const TextSpan(text: ' '),
                   TextSpan(
-                    text: product?.globalProduct.name ?? '',
+                    text: product.value?.globalProduct.name ?? '',
                     style: const TextStyle(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
@@ -83,11 +83,11 @@ class DeleteProductDialog extends ConsumerWidget {
                     onPressed: isLoading
                         ? null
                         : () async {
-                            if (product == null) return;
+                            if (product.value == null) return;
                             ref.read(_loadingProvider.notifier).state = true;
                             final result = await ref
                                 .read(productControllerProvider.notifier)
-                                .deleteProduct(product);
+                                .deleteProduct(product.value!);
 
                             ref.read(_loadingProvider.notifier).state = false;
 

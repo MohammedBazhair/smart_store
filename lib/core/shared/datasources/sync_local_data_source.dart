@@ -1,6 +1,7 @@
 import '../../constants/enums.dart';
 import '../../constants/log.dart';
 import '../../database/local/local_database_service.dart';
+import '../../database/local/query_where_builder.dart';
 import '../data/models/sync_change_model.dart';
 import '../data/models/sync_state_model.dart';
 
@@ -24,12 +25,18 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
 
   @override
   Future<void> addChange(SyncChangeModel change) async {
-    final existing = await _db.readRowsWhere(
+    final existing = await _db.query(
       table: 'sync_changes',
-      filters: {
-        'table_name': change.tableName,
-        'record_id': change.recordId,
-      },
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [
+              Filter(column: 'table_name', value: change.tableName),
+              Filter(column: 'record_id', value: change.recordId),
+            ],
+          ),
+        ],
+      ),
     );
 
     if (existing.isEmpty) {
@@ -63,7 +70,13 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
 
     await _db.update(
       updated: {'operation': newOperation.name},
-      filterWhere: {'id': oldChange.id},
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [Filter(column: 'id', value: oldChange.id!)],
+          ),
+        ],
+      ),
       table: 'sync_changes',
     );
   }
@@ -71,31 +84,48 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
   @override
   Future<List<SyncChangeModel>> getTableChanges(String table) async {
     try {
-      final maps = await _db.readRowsWhere(
+      final maps = await _db.query(
         table: 'sync_changes',
-        filters: {'table_name': table},
+        whereParams: WhereQueryParams(
+          groups: [
+            FilterGroup(
+              filters: [ Filter(column: 'table_name', value: table)],
+            ),
+          ],
+        ),
       );
-      
+
       return maps.map(SyncChangeModel.fromMap).toSet().toList();
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return [];
     }
   }
 
   @override
   Future<void> deleteChange(int id) async {
-    await _db.delete(
+    await _db.deleteWhere(
       table: 'sync_changes',
-      where: 'id = ?',
-      whereArgs: [id],
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(filters: [Filter(column: 'id', value: id)]),
+        ],
+      ),
     );
   }
 
   @override
   Future<void> clearTablesChanges(String table) async {
-    await _db
-        .deleteWhere(table: 'sync_changes', filters: {'table_name': table});
+    await _db.deleteWhere(
+      table: 'sync_changes',
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [Filter(column: 'table_name', value: table)],
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -106,7 +136,13 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
       await _db.update(
         table: 'sync_state',
         updated: state.toMap(),
-        filterWhere: {'table_name': state.tableName},
+        whereParams: WhereQueryParams(
+          groups: [
+            FilterGroup(
+              filters: [Filter(column: 'table_name', value: state.tableName)],
+            ),
+          ],
+        ),
       );
     } else {
       await _db.insertRow(
@@ -118,11 +154,15 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
 
   @override
   Future<SyncStateModel?> getLastSynced(String tableName) async {
-    final maps = await _db.readRowsWhere(
+    final maps = await _db.query(
       table: 'sync_state',
-      filters: {
-        'table_name': tableName,
-      },
+      whereParams: WhereQueryParams(
+        groups: [
+          FilterGroup(
+            filters: [Filter(column: 'table_name', value: tableName)],
+          ),
+        ],
+      ),
     );
 
     if (maps.isEmpty) return null;

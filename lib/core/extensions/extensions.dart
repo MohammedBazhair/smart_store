@@ -75,6 +75,8 @@ extension DateFormating on DateTime {
   String get formattedTime {
     return DateFormat('hh:mm a').format(this);
   }
+
+  DateTime get toDateOnly => DateTime(year, month, day);
 }
 
 extension BoolToInt on bool {

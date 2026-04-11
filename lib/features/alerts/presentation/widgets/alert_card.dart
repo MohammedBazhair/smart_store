@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
@@ -91,25 +89,15 @@ class AlertCard extends ConsumerWidget {
             alert.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
           ),
           onPressed: () async {
-
             final controller = ref.read(alertControllerProvider.notifier);
             await controller.markAsRead(alert.id!);
           },
         ),
-        onTap: () async {
-          final product = await ref
-              .read(productControllerProvider.notifier)
-              .getProductById(alert.productId);
-          if (product != null) {
-            await context.pushTo(
-              ProductDetailsScreen(productId: product.globalProduct.id!),
-            );
-          } else {
-            context.showSnakbar(
-              'لا يمكن عرض تفاصيل هذا المنتج لانه غير موجود',
-              type: SnackBarType.error,
-            );
-          }
+        onTap: () {
+          ref.read(alertControllerProvider.notifier).markAsRead(alert.id!);
+
+          ref.read(currentProductIdProvider.notifier).state = alert.productId;
+          context.pushTo(const ProductDetailsScreen());
         },
       ),
     );
