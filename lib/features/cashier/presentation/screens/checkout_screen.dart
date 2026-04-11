@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../controllers/pos_providers.dart';
+import '../widgets/dialogs/manage_quick_products_dialog.dart';
 import '../widgets/dialogs/show_clear_confirmation_dialog.dart';
 import '../widgets/pos_checkout_footer.dart';
 import '../widgets/pos_table.dart';
@@ -40,6 +41,12 @@ class CheckoutScreen extends ConsumerWidget {
                 if (state.cartItems.isNotEmpty) const PosCheckoutFooter(),
               ],
             ),
+      floatingActionButton: state.cartItems.isEmpty
+          ? FloatingActionButton(
+              onPressed: () => showManageQuickProductsDialog(context),
+              child: const Icon(Icons.bolt_outlined),
+            )
+          : null,
     );
   }
 }
@@ -66,7 +73,7 @@ class _BuildEmptyState extends StatelessWidget {
             ),
           ),
           const Text(
-            'لا توجد منتجات صالحة في السلة',
+            'لا توجد منتجات في السلة',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
@@ -74,13 +81,28 @@ class _BuildEmptyState extends StatelessWidget {
               color: AppTheme.primaryColor,
             ),
           ),
-          const QuickProductsSection(),
           const SizedBox(height: 12),
           const ScannerTriggerButton(),
           const Text(
             'ابدأ بمسح المنتجات لإضافتها إلى السلة',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppTheme.textSecondary),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            child: const Row(
+              spacing: 15,
+              children: [
+                Expanded(child: Divider()),
+                Text('أو', style: TextStyle(color: AppTheme.textSecondary)),
+                Expanded(child: Divider()),
+              ],
+            ),
+          ),
+          const Text(
+            'اضغط على زر المنتجات السريعة ⚡\nلاختيار منتجاتك المفضلة وإضافتها للسلة',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppTheme.textSecondary, height: 2),
           ),
         ],
       ),

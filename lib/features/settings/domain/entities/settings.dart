@@ -6,25 +6,25 @@ class Settings extends Equatable {
   const Settings({
     required this.defaultCurrency,
     required this.enableNotifications,
-    required this.exchageRates,
+    required this.exchagneRates,
   });
 
   factory Settings.theDefault(List<ExchangeRate> exchangeRates) {
     return Settings(
       defaultCurrency: CurrencyCode.YER,
       enableNotifications: true,
-      exchageRates: exchangeRates,
+      exchagneRates: exchangeRates,
     );
   }
 
   final CurrencyCode defaultCurrency;
   final bool enableNotifications;
-  final List<ExchangeRate> exchageRates;
+  final List<ExchangeRate> exchagneRates;
 
   ExchangeRate get defaultExchangeRate {
     try {
       final result =
-          exchageRates.firstWhere((e) => e.currency == defaultCurrency);
+          exchagneRates.firstWhere((e) => e.currency == defaultCurrency);
 
       return result;
     } catch (e) {
@@ -38,17 +38,17 @@ class Settings extends Equatable {
 
   @override
   List<Object?> get props =>
-      [defaultCurrency, enableNotifications, exchageRates];
+      [defaultCurrency, enableNotifications, exchagneRates];
 
   Settings copyWith({
     CurrencyCode? defaultCurrency,
     bool? enableNotifications,
-    List<ExchangeRate>? exchageRates,
+    List<ExchangeRate>? exchagneRates,
   }) {
     return Settings(
       defaultCurrency: defaultCurrency ?? this.defaultCurrency,
       enableNotifications: enableNotifications ?? this.enableNotifications,
-      exchageRates: exchageRates ?? this.exchageRates,
+      exchagneRates: exchagneRates ?? this.exchagneRates,
     );
   }
 }

@@ -23,7 +23,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       ref.read(permissionServiceProvider);
 
   ProductRepository get productRepo => ref.read(productRepositoryProvider);
-
   @override
   ProductManagementState build() {
     return const ProductManagementState();

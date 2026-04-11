@@ -17,9 +17,14 @@ class ProductCard extends ConsumerWidget {
   const ProductCard({
     super.key,
     required this.product,
+    this.isSelected = false,
+    this.onTap,
   });
 
+  final VoidCallback? onTap;
+
   final StoreProduct product;
+  final bool isSelected;
   @override
   Widget build(BuildContext context, ref) {
     final status = product.expiryDate == null
@@ -31,16 +36,27 @@ class ProductCard extends ConsumerWidget {
               price: product.price,
               from: CurrencyCode.theDefault,
             );
-
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isSelected
+              ? AppTheme.primaryColor.withOpacity(0.3)
+              : Colors.transparent,
+          width: 0.2,
+        ),
+      ),
+      shadowColor: isSelected
+          ? AppTheme.primaryColor.withOpacity(0.2)
+          : const Color(0x33000000),
       child: ListTile(
-        onTap: () {
-          ref.read(currentProductIdProvider.notifier).state =
-              product.globalProduct.id;
-          context.pushTo(const ProductDetailsScreen());
-        },
+        onTap: onTap ??
+            () {
+              ref.read(currentProductIdProvider.notifier).state =
+                  product.globalProduct.id;
+              context.pushTo(const ProductDetailsScreen());
+            },
         leading: StatusIcon(status ?? ProductExpiryStatus.valid()),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

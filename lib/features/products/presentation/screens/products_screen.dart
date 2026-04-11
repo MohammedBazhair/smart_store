@@ -6,10 +6,9 @@ import '../../../../core/shared/providers/core_providers.dart';
 import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
 import '../controllers/product_provider.dart';
-import '../widgets/products_widgets/product_filter_dialog.dart';
+import '../widgets/product_card/product_card.dart';
 import '../widgets/products_widgets/product_search_bar.dart';
 import '../widgets/products_widgets/products_empty_state.dart';
-import '../widgets/products_widgets/products_list.dart';
 import 'upsert_product_screen.dart';
 
 extension ProductListSort on List<StoreProduct> {
@@ -40,7 +39,7 @@ extension ProductListSort on List<StoreProduct> {
 
 enum ProductListType { all, expired, nearExpiry }
 
-class ProductsScreen extends ConsumerStatefulWidget {
+class ProductsScreen extends ConsumerWidget {
   const ProductsScreen({
     super.key,
     this.listType = ProductListType.all,
@@ -51,25 +50,12 @@ class ProductsScreen extends ConsumerStatefulWidget {
   final String? title;
 
   @override
-  ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
-}
-
-class _ProductsScreenState extends ConsumerState<ProductsScreen> {
-  final _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     final query = ref.watch(productQueryProvider);
     final productsSearchAsync = ref.watch(productSearchProvider);
 
     final state = ref.watch(productControllerProvider);
-    final List<StoreProduct> products = switch (widget.listType) {
+    final List<StoreProduct> products = switch (listType) {
       ProductListType.all => state.products.values.toList(),
       ProductListType.expired => state.expiredProducts,
       ProductListType.nearExpiry => state.nearbyExpiredProducts,
@@ -77,7 +63,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title ?? 'المنتجات'),
+        title: Text(title ?? 'المنتجات'),
       ),
       body: Skeletonizer(
         enabled: query.hasQuery && productsSearchAsync.isLoading,
@@ -87,49 +73,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             onTap: () => FocusScope.of(context).unfocus(),
             child: Column(
               children: [
-                // 🔍 شريط البحث
-                Row(
-                  spacing: 5,
-                  children: [
-                    Expanded(
-                      child: ProductSearchBar(
-                        controller: _searchController,
-                        query: query,
-                        onChanged: (value) {
-                          ref
-                              .read(productQueryProvider.notifier)
-                              .update((q) => q.copyWith(search: value.trim()));
-                          ref.read(productSearchProvider.notifier).search();
-                        },
-                        onClear: () {
-                          _searchController.clear();
-                          ref
-                              .read(productQueryProvider.notifier)
-                              .update((q) => q.copyWith(search: ''));
-                        },
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: query.hasCategory
-                          ? query.category?.name
-                          : 'فلترة المنتجات',
-                      icon: query.hasCategory
-                          ? const Icon(Icons.filter_list)
-                          : const Icon(Icons.filter_list_off_rounded),
-                      onPressed: () {
-                        if (query.hasCategory) {
-                          ref.read(productQueryProvider.notifier).update(
-                                (q) => q.copyWith(clearCategory: true),
-                              );
-                        }
-                        _showFilterDialog(context);
-                      },
-                    ),
-                  ],
-                ),
-
+                const ProductSearchBar(),
                 const SizedBox(height: 12),
-
                 SizedBox(
                   height: 50,
                   child: ListView.separated(
@@ -177,23 +122,19 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
                 Expanded(
                   child: !query.hasQuery
-                      ? _buildProductsBody(products, query)
+                      ? _ProductsBody(products)
                       : productsSearchAsync.when(
                           data: (filteredProducts) {
-                            return _buildProductsBody(filteredProducts, query);
+                            return _ProductsBody(filteredProducts);
                           },
                           loading: () {
                             final fakeProducts = StoreProduct.fakeProducts;
 
                             return Skeletonizer(
-                              child: ProductsList(
-                                products: fakeProducts,
-                              ),
+                              child: _ProductsBody(fakeProducts),
                             );
                           },
                           error: (error, stack) {
@@ -218,44 +159,39 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildProductsBody(List<StoreProduct> products, ProductQuery query) {
+class _ProductsBody extends ConsumerWidget {
+  const _ProductsBody(this.products);
+  final List<StoreProduct> products;
+
+  Future<void> onRefresh(WidgetRef ref) async {
+    final container = ref.container;
+    container.read(appSyncLoadingProvider.notifier).state = true;
+    try {
+      await container.refresh(appSyncProvider.future);
+    } finally {
+      container.read(appSyncLoadingProvider.notifier).state = false;
+    }
+
+    await container
+        .read(productControllerProvider.notifier)
+        .loadStoreProducts();
+  }
+
+  @override
+  Widget build(BuildContext context, ref) {
+    final query = ref.watch(productQueryProvider);
     final sortedProducts = products.sortProducts(query.sortType);
 
     if (sortedProducts.isEmpty) {
       return ProductsEmptyState(text: query.uiNotFoundText);
     }
     return RefreshIndicator(
-      onRefresh: () async {
-        final container = ref.container;
-        container.read(appSyncLoadingProvider.notifier).state = true;
-        try {
-          await container.refresh(appSyncProvider.future);
-        } finally {
-          container.read(appSyncLoadingProvider.notifier).state = false;
-        }
-        if (!mounted) return;
-        await container
-            .read(productControllerProvider.notifier)
-            .loadStoreProducts();
-      },
-      child: ProductsList(
-        products: sortedProducts,
-      ),
-    );
-  }
-
-  void _showFilterDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => ProductFilterDialog(
-        initialCategory: ref.watch(productQueryProvider).category,
-        onApply: (category) {
-          ref.read(productQueryProvider.notifier).update(
-                (q) => q.copyWith(category: category),
-              );
-          ref.read(productSearchProvider.notifier).search();
-        },
+      onRefresh: () => onRefresh(ref),
+      child: ListView.builder(
+        itemCount: sortedProducts.length,
+        itemBuilder: (context, index) => ProductCard(product: products[index]),
       ),
     );
   }

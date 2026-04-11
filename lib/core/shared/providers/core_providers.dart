@@ -160,8 +160,6 @@ final tokenRefreshProvider = Provider((ref) {
 });
 
 final appSyncProvider = FutureProvider((ref) async {
-  Logger.debugLog(message: 'appSyncProvider');
-
   try {
     final network = ref.read(networkProvider);
 
@@ -177,6 +175,8 @@ final appSyncProvider = FutureProvider((ref) async {
     await backgroundUtils.syncAllData();
 
     await loadLocal();
+
+    Logger.debugLog(message: 'تمت المزامنة بنجاح');
   } catch (e, st) {
     Logger.debugLog(error: e, stackTrace: st);
   }

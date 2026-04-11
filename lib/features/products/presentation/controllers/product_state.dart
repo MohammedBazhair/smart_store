@@ -18,13 +18,11 @@ class ProductManagementState extends Equatable {
   final List<StoreProduct> nearbyExpiredProducts;
   final List<Category> categories;
 
- 
-  
+  List<StoreProduct> get productsList => products.values.toList();
 
   @override
-  List<Object?> get props => [products.length, categories.length,expiredProducts.length];
-
- 
+  List<Object?> get props =>
+      [products.length, categories.length, expiredProducts.length];
 
   ProductManagementState copyWith({
     ProductsByIdentifier? products,
@@ -35,7 +33,8 @@ class ProductManagementState extends Equatable {
     return ProductManagementState(
       products: products ?? this.products,
       expiredProducts: expiredProducts ?? this.expiredProducts,
-      nearbyExpiredProducts: nearbyExpiredProducts ?? this.nearbyExpiredProducts,
+      nearbyExpiredProducts:
+          nearbyExpiredProducts ?? this.nearbyExpiredProducts,
       categories: categories ?? this.categories,
     );
   }

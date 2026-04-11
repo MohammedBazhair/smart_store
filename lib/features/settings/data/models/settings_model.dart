@@ -7,7 +7,7 @@ class SettingsModel extends Settings {
   const SettingsModel({
     required super.defaultCurrency,
     required super.enableNotifications,
-    required super.exchageRates,
+    required super.exchagneRates,
   });
 
   factory SettingsModel.fromJson(
@@ -22,7 +22,7 @@ class SettingsModel extends Settings {
     return SettingsModel(
       defaultCurrency: settings.defaultCurrency,
       enableNotifications: settings.enableNotifications,
-      exchageRates: settings.exchageRates,
+      exchagneRates: settings.exchagneRates,
     );
   }
 
@@ -34,7 +34,7 @@ class SettingsModel extends Settings {
       defaultCurrency:
           CurrencyCode.values.byName(map['default_currency'] as String),
       enableNotifications: (map['enable_notifications'] as int) == 1,
-      exchageRates: exchangeRates,
+      exchagneRates: exchangeRates,
     );
   }
 
@@ -49,6 +49,6 @@ class SettingsModel extends Settings {
 
   @override
   String toString() {
-    return 'SettingsModel(defaultCurrency: $defaultCurrency, enableNotifications: $enableNotifications, exchageRates: $exchageRates)';
+    return 'SettingsModel(defaultCurrency: $defaultCurrency, enableNotifications: $enableNotifications, exchagneRates: $exchagneRates)';
   }
 }

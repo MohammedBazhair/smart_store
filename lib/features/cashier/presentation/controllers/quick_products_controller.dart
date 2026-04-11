@@ -1,12 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/shared/providers/repositories_provider.dart';
+import '../../../../core/constants/typedef.dart';
+import '../../../../core/database/local/cache_service.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 
-class QuickProductsController extends Notifier<List<StoreProduct>> {
+class QuickProductsController extends Notifier<ProductsByIdentifier> {
+  LocalCacheService get _cacheService => ref.read(localCacheServiceProvider);
+
   @override
-  List<StoreProduct> build() {
+  ProductsByIdentifier build() {
     _loadQuickProducts();
     // Re-evaluate if products overall change.
     ref.listen(productControllerProvider, (prev, next) {
@@ -18,39 +22,43 @@ class QuickProductsController extends Notifier<List<StoreProduct>> {
   }
 
   void _loadQuickProducts() {
-    final prefs = ref.read(sharedPreferencesProvider);
-    final ids = prefs.getStringList(AppConstants.quickProductsIdsKey) ?? [];
-    
+    final ids =
+        _cacheService.getStringList(key: AppConstants.quickProductsIdsKey) ??
+            [];
+
     final allProducts = ref.read(productControllerProvider).products;
-    
-    final quickProducts = <StoreProduct>[];
-    for (final id in ids) {
-      if (allProducts.containsKey(id)) {
-        quickProducts.add(allProducts[id]!);
-      }
-    }
-    state = quickProducts;
+
+    final entries = ids.map((id) => MapEntry(id, allProducts[id]));
+    final quickProducts = entries.where((m) => m.value != null);
+
+    state = Map.fromIterable(quickProducts);
   }
 
   Future<void> toggleProduct(StoreProduct product) async {
-    final prefs = ref.read(sharedPreferencesProvider);
-    final ids = List<String>.from(
-      prefs.getStringList(AppConstants.quickProductsIdsKey) ?? [],
-    );
-    
+    final ids =
+        _cacheService.getStringList(key: AppConstants.quickProductsIdsKey) ??
+            [];
+
     final productId = product.id!;
-    if (ids.contains(productId)) {
-      ids.remove(productId);
+
+    final isTapToAdd = !ids.contains(productId);
+
+    isTapToAdd ? ids.add(productId) : ids.remove(productId);
+
+    final copiedProducts = {...state};
+
+    if (isTapToAdd) {
+      copiedProducts[productId] = product;
     } else {
-      ids.add(productId);
+      copiedProducts.remove(productId);
     }
-    
-    await prefs.setStringList(AppConstants.quickProductsIdsKey, ids);
-    _loadQuickProducts();
+   
+
+    state = copiedProducts;
+
+    await _cacheService.setStringList(
+      key: AppConstants.quickProductsIdsKey,
+      value: ids,
+    );
   }
 }
-
-final quickProductsProvider =
-    NotifierProvider<QuickProductsController, List<StoreProduct>>(() {
-  return QuickProductsController();
-});

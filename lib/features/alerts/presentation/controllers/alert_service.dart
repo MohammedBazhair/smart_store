@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../app_initializer.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
@@ -20,6 +22,16 @@ void onDidReceiveNotificationResponse(NotificationResponse response) async {
   if (response.payload == null) return;
   final storeProductId = response.payload!;
   final container = AppProviders.container;
+
+  // If navigator is not ready yet (app just launched), save to cache
+  if (navigatorKey.currentState == null) {
+    final cache = container.read(localCacheServiceProvider);
+    await cache.setString(
+      key: AppConstants.pendingNotificationPayloadKey,
+      value: storeProductId,
+    );
+    return;
+  }
 
   container.read(currentProductIdProvider.notifier).state = storeProductId;
   const detatailsScreen = ProductDetailsScreen();

@@ -76,8 +76,10 @@ class SettingsController extends AsyncNotifier<Settings> {
     final toCurrency =
         to ?? state.value?.defaultCurrency ?? CurrencyCode.theDefault;
     try {
-      final ratesState = state.value?.exchageRates;
-      if (ratesState == null) throw Exception('No exchange rates found');
+      final ratesState = state.value?.exchagneRates;
+      if (ratesState == null) {
+        return (price: price.toDouble(), currency: toCurrency);
+      }
 
       if (from == toCurrency) {
         return (price: price.toDouble(), currency: toCurrency);
