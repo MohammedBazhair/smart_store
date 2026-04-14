@@ -152,10 +152,9 @@ class ProductsScreen extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => context.pushTo(const UpsertProductScreen()),
-        icon: const Icon(Icons.add),
-        label: const Text('إضافة منتج'),
+        child: const Icon(Icons.add_circle),
       ),
     );
   }

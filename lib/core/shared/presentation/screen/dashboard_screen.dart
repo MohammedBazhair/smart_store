@@ -41,7 +41,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   Future<void> _handleInitialNotification() async {
     final cache = ref.read(localCacheServiceProvider);
-    final productId = cache.getString(key: AppConstants.pendingNotificationPayloadKey);
+    final productId =
+        cache.getString(key: AppConstants.pendingNotificationPayloadKey);
     if (productId == null) return;
 
     await cache.remove(key: AppConstants.pendingNotificationPayloadKey);
@@ -102,14 +103,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       body: const DashboardBody(),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         tooltip: 'مسح الباركود',
-        shape: const CircleBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
         elevation: 2.5,
         onPressed: () {
           context.pushTo(const BarcodeScannerScreen());
         },
-        child: const Icon(Icons.qr_code_scanner),
+        icon: const Icon(Icons.qr_code_scanner),
+        label: const Text('فحص منتج'),
       ),
     );
   }

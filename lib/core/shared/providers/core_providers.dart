@@ -163,20 +163,21 @@ final appSyncProvider = FutureProvider((ref) async {
   try {
     final network = ref.read(networkProvider);
 
-    Future<void> loadLocal() async {
+    Future<void> loadLocalAndNotify() async {
       await ref.read(userControllerProvider.notifier).loadProfile();
       await ref.read(storeControllerProvider.notifier).loadMyStores();
       await ref.read(productControllerProvider.notifier).initialize();
     }
 
-    if (!await network.hasConnection()) return loadLocal();
+    // Load local data first to make UI responsive immediately
+    await loadLocalAndNotify();
+
+    if (!await network.hasConnection()) return;
 
     final backgroundUtils = BackgroundUtils(ref.container);
     await backgroundUtils.syncAllData();
 
-    await loadLocal();
-
-    Logger.debugLog(message: 'تمت المزامنة بنجاح');
+    await loadLocalAndNotify();
   } catch (e, st) {
     Logger.debugLog(error: e, stackTrace: st);
   }

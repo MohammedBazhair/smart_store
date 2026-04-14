@@ -5,6 +5,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../../../app_initializer.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/top_level_fuctions.dart';
 import 'alert_service.dart';
@@ -33,10 +34,10 @@ class NotificationService {
 
     const defaultTimezone = 'Asia/Aden';
     try {
-      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
-      final currentZone = timezoneInfo.localizedName?.name ?? defaultTimezone;
-      tz.setLocalLocation(tz.getLocation(currentZone));
-    } catch (_) {
+      final currentTimezone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(currentTimezone.identifier));
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       tz.setLocalLocation(tz.getLocation(defaultTimezone));
     }
 
@@ -70,10 +71,9 @@ class NotificationService {
     final cache = AppProviders.container.read(localCacheServiceProvider);
     await cache.setString(
       key: AppConstants.pendingNotificationPayloadKey,
-        value: payload,
-      );
-    }
-  
+      value: payload,
+    );
+  }
 
   /// عرض إشعار فوري
   Future<void> show({

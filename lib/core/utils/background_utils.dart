@@ -94,13 +94,18 @@ class BackgroundUtils {
     final userRepo = container.read(userRepositoryProvider);
     final settingsRepo = container.read(settingsRepositoryProvider);
 
-    await settingsRepo.getExchangeRates();
+    // Initial essentials
     final profile = await userRepo.syncAllProfiles();
 
-    await storesRepo.syncAll(profile.phone!);
-    await productRepo.syncAllCategories();
-    await productRepo.syncAllProducts();
-
-    await dailyExpiryCheck();
+    await Future.wait([
+      settingsRepo.getExchangeRates(),
+      storesRepo.syncAll(profile.phone!),
+      productRepo.syncAllCategories(),
+    ]);
+    
+    await Future.wait([
+      productRepo.syncAllProducts(),
+      dailyExpiryCheck(),
+    ]);
   }
 }

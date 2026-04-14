@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../domain/entities/product_details.dart';
 import '../../controllers/product_provider.dart';
 
@@ -17,7 +16,9 @@ class ProductQuantityField extends ConsumerWidget {
       textInputAction: TextInputAction.next,
       decoration: const InputDecoration(
         labelText: 'الكمية',
-        prefixIcon: Icon(Icons.numbers),
+        prefixIcon: Icon(
+          Icons.shopify,
+        ),
         helperText: '',
       ),
       keyboardType: TextInputType.number,

@@ -187,8 +187,14 @@ class AppTheme {
           ),
         ),
       ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: AppTheme.primaryColor,
+        ),
+      ),
       iconTheme: IconThemeData(
         size: 24,
+        color: AppTheme.primaryColor,
         shadows: [
           BoxShadow(
             color: AppTheme.accentColor.withOpacity(0.08),

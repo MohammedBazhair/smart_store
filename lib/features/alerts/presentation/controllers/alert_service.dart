@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../app_initializer.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
@@ -19,12 +20,15 @@ import 'notification_service.dart';
 
 /// handle tap on notification
 void onDidReceiveNotificationResponse(NotificationResponse response) async {
-  if (response.payload == null) return;
+  if (response.payload == null || response.payload!.isEmpty) return;
   final storeProductId = response.payload!;
   final container = AppProviders.container;
 
-  // If navigator is not ready yet (app just launched), save to cache
-  if (navigatorKey.currentState == null) {
+  // If navigator is not ready OR we are still in the initialization phase (AuthGate/Splash), cache it.
+  // We check if DashboardScreen is not yet the active screen or if navigator is null.
+  final isReady = navigatorKey.currentState != null;
+  
+  if (!isReady) {
     final cache = container.read(localCacheServiceProvider);
     await cache.setString(
       key: AppConstants.pendingNotificationPayloadKey,
@@ -33,7 +37,18 @@ void onDidReceiveNotificationResponse(NotificationResponse response) async {
     return;
   }
 
+  // Set the current product ID and try to navigate.
+  // Note: if the app is still at AuthGate, this push will happen, 
+  // but if AuthGate then does pushAndRemoveUntilTo, it might be lost.
+  // To be safe, we ALSO set the cache.
   container.read(currentProductIdProvider.notifier).state = storeProductId;
+  
+  final cache = container.read(localCacheServiceProvider);
+  await cache.setString(
+    key: AppConstants.pendingNotificationPayloadKey,
+    value: storeProductId,
+  );
+
   const detatailsScreen = ProductDetailsScreen();
   await navigatorKey.currentState
       ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
@@ -93,11 +108,12 @@ class AlertService {
   }) async {
     final payload = product.globalProduct.id;
 
+    final formattedDate = product.expiryDate!.formattedDate;
     await _notifications.show(
       id: AlertUtils.notificationId(product, daysBefore),
       title: 'تنبيه صلاحية: ${product.globalProduct.name}',
       body:
-          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
+          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"} ($formattedDate)',
       payload: payload,
     );
 
@@ -137,11 +153,12 @@ class AlertService {
     }
     final payload = product.globalProduct.id?.toString();
 
+    final formattedDate = product.expiryDate!.formattedDate;
     await _notifications.schedule(
       id: AlertUtils.notificationId(product, daysBefore),
       title: 'تنبيه صلاحية',
       body:
-          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"}',
+          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"} ($formattedDate)',
       date: alertDate,
       payload: payload,
     );

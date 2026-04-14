@@ -22,5 +22,5 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 /// Provider للـ AlertController
 final alertControllerProvider =
     NotifierProvider<AlertController, AlertsState>(() {
-  return AlertController();
+  return AlertController()..loadAlerts();
 });

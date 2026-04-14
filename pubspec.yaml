@@ -54,6 +54,7 @@ dependencies:
   uuid: ^4.5.3
   audioplayers: ^6.6.0
   printing: ^5.14.3
+  restart_app: ^1.7.3
 
 dev_dependencies:
   flutter_test:

@@ -12,6 +12,7 @@ class ProductExpiryDateField extends ConsumerWidget {
   final TextEditingController controller;
   final VoidCallback onSelectDate;
 
+
   @override
   Widget build(BuildContext context, ref) {
     return TextFormField(
@@ -20,12 +21,24 @@ class ProductExpiryDateField extends ConsumerWidget {
       readOnly: true,
       keyboardType: TextInputType.none,
       onTap: onSelectDate,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'تاريخ الانتهاء',
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        prefixIcon: Icon(Icons.calendar_today),
+        prefixIcon: const Icon(Icons.calendar_today),
+        suffixIcon: ValueListenableBuilder(
+          valueListenable: controller,
+          builder: (context, value, closeButton) {
+            return value.text.isEmpty
+                ? const Icon(Icons.edit_note_rounded)
+                : closeButton!;
+          },
+          child: IconButton(
+            onPressed: controller.clear,
+            icon: const Icon(Icons.clear_sharp),
+          ),
+        ),
         helperText: '',
-        hint: Text('اختر التاريخ'),
+        hint: const Text('اختر التاريخ'),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) return null;
