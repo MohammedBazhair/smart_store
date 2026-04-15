@@ -166,12 +166,7 @@ class _ProductsBody extends ConsumerWidget {
 
   Future<void> onRefresh(WidgetRef ref) async {
     final container = ref.container;
-    container.read(appSyncLoadingProvider.notifier).state = true;
-    try {
-      await container.refresh(appSyncProvider.future);
-    } finally {
-      container.read(appSyncLoadingProvider.notifier).state = false;
-    }
+    await container.read(appSyncControllerProvider.notifier).sync(isManual: true);
 
     await container
         .read(productControllerProvider.notifier)

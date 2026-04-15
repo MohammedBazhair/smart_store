@@ -30,6 +30,8 @@ extension ShowSnackbar on BuildContext {
 
 extension RoutesNavigators on BuildContext {
   Future<T?> pushTo<T extends Object?>(Widget screen) {
+    if (!mounted) return Future.value();
+
     return Navigator.push(
       this,
       MaterialPageRoute(builder: (context) => screen),
@@ -39,6 +41,7 @@ extension RoutesNavigators on BuildContext {
   Future<T?> pushReplacementTo<T extends Object?, TO extends Object?>(
     Widget screen,
   ) {
+    if (!mounted) return Future.value();
     return Navigator.pushReplacement(
       this,
       MaterialPageRoute(builder: (context) => screen),
@@ -46,6 +49,7 @@ extension RoutesNavigators on BuildContext {
   }
 
   Future<T?> pushAndRemoveUntilTo<T extends Object?>(Widget screen) {
+    if (!mounted) return Future.value();
     return Navigator.pushAndRemoveUntil(
       this,
       MaterialPageRoute(builder: (context) => screen),
@@ -54,6 +58,7 @@ extension RoutesNavigators on BuildContext {
   }
 
   void pop<T extends Object?>([T? result]) {
+    if (!mounted) return;
     Navigator.pop(this, result);
   }
 }

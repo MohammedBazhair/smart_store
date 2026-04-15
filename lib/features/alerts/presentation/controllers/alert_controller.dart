@@ -10,6 +10,7 @@ import '../../domain/alert_repository.dart';
 class AlertController extends Notifier<AlertsState> {
   @override
   AlertsState build() {
+    Future.microtask(loadAlerts);
     return AlertsState.empty();
   }
 
@@ -95,8 +96,6 @@ class AlertController extends Notifier<AlertsState> {
     );
     return result;
   }
-
-  
 }
 
 class AlertsState {

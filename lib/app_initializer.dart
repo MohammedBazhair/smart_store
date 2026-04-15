@@ -52,7 +52,7 @@ Future<void> _initializeServices(ProviderContainer container) async {
   await Future.wait([
     _initializeAlertService(container),
     _initializeWorkManager(),
-    _initializePushNotification(),
+    _initializePushNotification(container),
   ]);
 }
 
@@ -97,7 +97,7 @@ Future<void> initializeSupabase() async {
   );
 }
 
-Future<void> _initializePushNotification() async {
+Future<void> _initializePushNotification(ProviderContainer container) async {
   // Enable verbose logging for debugging (remove in production)
   await OneSignal.Debug.setLogLevel(OSLogLevel.none);
   // Initialize with your OneSignal App ID
@@ -108,12 +108,13 @@ Future<void> _initializePushNotification() async {
     final productId = notification.additionalData?['product_id']?.toString();
 
     if (notification.title?.contains('تم تفعيل حسابك') ?? false) {
-      await navigatorKey.currentContext?.pushAndRemoveUntilTo(const InitScreen());
+      if (navigatorKey.currentContext != null) {
+        await navigatorKey.currentContext?.pushAndRemoveUntilTo(const InitScreen());
+      }
       return;
     }
 
     if (productId != null) {
-      final container = AppProviders.container;
       final cache = container.read(localCacheServiceProvider);
       await cache.setString(
         key: AppConstants.pendingNotificationPayloadKey,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../app_initializer.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
@@ -22,40 +21,49 @@ import 'notification_service.dart';
 void onDidReceiveNotificationResponse(NotificationResponse response) async {
   if (response.payload == null || response.payload!.isEmpty) return;
   final storeProductId = response.payload!;
-  final container = AppProviders.container;
 
-  // If navigator is not ready OR we are still in the initialization phase (AuthGate/Splash), cache it.
-  // We check if DashboardScreen is not yet the active screen or if navigator is null.
-  final isReady = navigatorKey.currentState != null;
-  
-  if (!isReady) {
-    final cache = container.read(localCacheServiceProvider);
-    await cache.setString(
-      key: AppConstants.pendingNotificationPayloadKey,
-      value: storeProductId,
-    );
-    return;
+  // Wait a bit to ensure AppProviders.container is initialized
+  // if this is called at the very first frame of the app.
+  int retries = 0;
+  while (retries < 10) {
+    try {
+      final container = AppProviders.container;
+      final isReady = navigatorKey.currentState != null;
+
+      if (!isReady) {
+        final cache = container.read(localCacheServiceProvider);
+        await cache.setString(
+          key: AppConstants.pendingNotificationPayloadKey,
+          value: storeProductId,
+        );
+        return;
+      }
+
+      container.read(currentProductIdProvider.notifier).state = storeProductId;
+      final cache = container.read(localCacheServiceProvider);
+      await cache.setString(
+        key: AppConstants.pendingNotificationPayloadKey,
+        value: storeProductId,
+      );
+
+      const detatailsScreen = ProductDetailsScreen();
+      await navigatorKey.currentState
+          ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
+      break;
+    } catch (e) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      retries++;
+    }
   }
-
-  // Set the current product ID and try to navigate.
-  // Note: if the app is still at AuthGate, this push will happen, 
-  // but if AuthGate then does pushAndRemoveUntilTo, it might be lost.
-  // To be safe, we ALSO set the cache.
-  container.read(currentProductIdProvider.notifier).state = storeProductId;
-  
-  final cache = container.read(localCacheServiceProvider);
-  await cache.setString(
-    key: AppConstants.pendingNotificationPayloadKey,
-    value: storeProductId,
-  );
-
-  const detatailsScreen = ProductDetailsScreen();
-  await navigatorKey.currentState
-      ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
 }
 
 class AlertService {
-  AlertService(this.settingsRepo, this.alertRepository, this._notifications, this.alertController);
+  AlertService(
+    this.settingsRepo,
+    this.alertRepository,
+    this._notifications,
+    this.alertController,
+  );
 
   final SettingsRepository settingsRepo;
   final AlertRepository alertRepository;
@@ -108,12 +116,15 @@ class AlertService {
   }) async {
     final payload = product.globalProduct.id;
 
-    final formattedDate = product.expiryDate!.formattedDate;
+    final remainingDays =
+        DateTimeUtils.daysUntilExpiry(product.expiryDate) ?? 0;
+    final String timeMsg =
+        remainingDays <= 0 ? 'منتهي الصلاحية' : 'باقي $remainingDays يوم';
+
     await _notifications.show(
       id: AlertUtils.notificationId(product, daysBefore),
       title: 'تنبيه صلاحية: ${product.globalProduct.name}',
-      body:
-          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"} ($formattedDate)',
+      body: '${product.globalProduct.name} ($timeMsg)',
       payload: payload,
     );
 
@@ -153,12 +164,13 @@ class AlertService {
     }
     final payload = product.globalProduct.id?.toString();
 
-    final formattedDate = product.expiryDate!.formattedDate;
+    final String timeMsg =
+        daysBefore == 0 ? 'منتهي الصلاحية' : 'باقي $daysBefore يوم';
+
     await _notifications.schedule(
       id: AlertUtils.notificationId(product, daysBefore),
       title: 'تنبيه صلاحية',
-      body:
-          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"} ($formattedDate)',
+      body: '${product.globalProduct.name} ($timeMsg)',
       date: alertDate,
       payload: payload,
     );

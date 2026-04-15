@@ -11,22 +11,37 @@ import '../../providers/core_providers.dart';
 import 'dashboard_screen.dart';
 import 'splash_screen.dart';
 
-class AuthGate extends ConsumerWidget {
+class AuthGate extends ConsumerStatefulWidget {
   const AuthGate({super.key});
 
   @override
-  Widget build(BuildContext context, ref) {
+  ConsumerState<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends ConsumerState<AuthGate> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(userControllerProvider.notifier).isUserLoggedIn) {
+        ref.read(appSyncControllerProvider.notifier).sync();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isLogged = ref.watch(userControllerProvider.notifier).isUserLoggedIn;
 
     if (!isLogged) return const SignInScreen();
 
-    final appSync = ref.watch(appSyncProvider);
+    final isSyncing = ref.watch(appSyncControllerProvider);
     final profile = ref.watch(userControllerProvider).profile;
 
     final storeState = ref.watch(storeControllerProvider);
     final isLoadingStores = storeState is LoadinMyStoresEvent;
 
-    if (!profile.isDataComplete || isLoadingStores || appSync.isLoading) {
+    if (!profile.isDataComplete || isLoadingStores || isSyncing) {
       return const SplashScreen();
     }
 
@@ -43,7 +58,8 @@ class AuthGate extends ConsumerWidget {
         AccountStatus.pending => AccountStatusScreen(profile: profile),
       };
 
-      context.pushAndRemoveUntilTo(screen);
+        context.pushAndRemoveUntilTo(screen);
+      
     });
 
     return const SplashScreen();
