@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app_initializer.dart';
 import '../../errors/result.dart';
-import '../../features/alerts/data/alert_background_params.dart';
-import '../../features/alerts/domain/alert.dart';
+import '../../features/alerts/data/models/alert_background_params.dart';
+import '../../features/alerts/domain/entities/alert.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../features/products/domain/entities/store_product.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';

@@ -1,5 +1,5 @@
-import '../../../errors/result.dart';
-import 'alert.dart';
+import '../../../../errors/result.dart';
+import '../entities/alert.dart';
 
 /// واجهة مستودع التنبيهات
 abstract class AlertRepository {

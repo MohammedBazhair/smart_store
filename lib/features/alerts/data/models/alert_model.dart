@@ -1,7 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../../../core/extensions/extensions.dart';
-import '../domain/alert.dart';
+import '../../../../core/extensions/extensions.dart';
+import '../../domain/entities/alert.dart';
 
 /// نموذج التنبيه للتعامل مع قاعدة البيانات
 class AlertModel extends Alert {

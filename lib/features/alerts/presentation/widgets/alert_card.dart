@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
-import '../../domain/alert.dart';
+import '../../domain/entities/alert.dart';
 import '../controllers/alert_provider.dart';
 
 class AlertCard extends ConsumerWidget {
@@ -46,52 +45,12 @@ class AlertCard extends ConsumerWidget {
                 fontWeight: alert.isRead ? FontWeight.normal : FontWeight.bold,
               ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            if (alert.expiryDate != null)
-              Text(
-                'ينتهي في ${DateFormat('yyyy-MM-dd').format(alert.expiryDate!)}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: importanceColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    alert.importance.name,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: importanceColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${alert.daysBeforeExpiry} أيام قبل الانتهاء',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ],
+        subtitle: Text(
+          '${alert.remainingDays} أيام قبل الانتهاء',
+          style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: IconButton(
-          icon: Icon(
-            alert.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
-          ),
-          onPressed: () async {
-            final controller = ref.read(alertControllerProvider.notifier);
-            await controller.markAsRead(alert.id!);
-          },
+        trailing: Icon(
+          alert.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
         ),
         onTap: () {
           ref.read(alertControllerProvider.notifier).markAsRead(alert.id!);

@@ -1,6 +1,7 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../../../../core/utils/date_utils.dart';
 
 class Alert extends Equatable {
   const Alert({
@@ -21,6 +22,8 @@ class Alert extends Equatable {
   final bool isRead;
   final DateTime createdAt;
   final DateTime? expiryDate;
+
+  int get remainingDays => DateTimeUtils.daysUntilExpiry(expiryDate)??0;
 
   @override
   List<Object?> get props => [

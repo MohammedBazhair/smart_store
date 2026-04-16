@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
 import '../../../products/domain/entities/store_product.dart';
-import '../../domain/alert.dart';
-import '../../domain/alert_repository.dart';
+import '../../domain/entities/alert.dart';
+import '../../domain/repositories/alert_repository.dart';
 
 class AlertController extends Notifier<AlertsState> {
   @override
