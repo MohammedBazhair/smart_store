@@ -25,6 +25,6 @@ abstract class AlertRepository {
   /// حذف تنبيه
   Future<Result<void>> deleteAlert(int id);
 
-  /// حذف جميع التنبيهات
-  Future<Result<void>> deleteAllAlerts();
+  /// حذف أقدم التنبيهات
+  Future<void> deleteOldAlerts();
 }

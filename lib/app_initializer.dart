@@ -72,7 +72,7 @@ Future<void> _registerBackgroundTasks() async {
   await Workmanager().registerPeriodicTask(
     'dailyExpiryTask',
     BackgroundTask.checkDailyExpiry.name,
-    frequency: const Duration(hours: 24),
+    frequency: const Duration(days: 1),
     existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
     backoffPolicy: BackoffPolicy.linear,
     backoffPolicyDelay: const Duration(minutes: 5),
@@ -81,11 +81,20 @@ Future<void> _registerBackgroundTasks() async {
   await Workmanager().registerPeriodicTask(
     'syncAllDataTask',
     BackgroundTask.syncAllData.name,
-    frequency: const Duration(hours: 2),
+    frequency: const Duration(hours: 3),
     existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
     backoffPolicy: BackoffPolicy.linear,
     backoffPolicyDelay: const Duration(minutes: 5),
     constraints: Constraints(networkType: NetworkType.connected),
+  );
+
+  await Workmanager().registerPeriodicTask(
+    'removeOldAlertsTask',
+    BackgroundTask.removeOldAlerts.name,
+    frequency: const Duration(days: 15),
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
+    backoffPolicy: BackoffPolicy.linear,
+    backoffPolicyDelay: const Duration(minutes: 5),
   );
 }
 

@@ -31,11 +31,12 @@ class AlertController extends Notifier<AlertsState> {
     required int daysBeforeExpiry,
     required Priority importance,
   }) async {
+    if (product.expiryDate == null) return;
     final alert = Alert(
       productId: product.globalProduct.id!,
       isRead: false,
       createdAt: DateTime.now().toUtc(),
-      expiryDate: product.expiryDate,
+      expiryDate: product.expiryDate!,
       productName: product.globalProduct.name,
     );
 

@@ -1,5 +1,4 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -8,9 +7,6 @@ import '../../features/alerts/data/models/alert_background_params.dart';
 import '../constants/app_constants.dart';
 import '../constants/enums.dart';
 import '../database/local/cache_service.dart';
-import '../database/local/database_helper.dart';
-import '../shared/providers/core_providers.dart';
-import '../shared/providers/repositories_provider.dart';
 import 'background_utils.dart';
 
 @pragma('vm:entry-point')
@@ -18,16 +14,9 @@ void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     if (taskName.isEmpty) return Future.value(false);
 
-    // تهيئة ProviderContainer في الخلفية
-    await initializeSupabase();
-    final sharedPrefs = await SharedPreferences.getInstance();
-    final database = await DatabaseHelper.instance.database;
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-        databaseProvider.overrideWithValue(database),
-      ],
-    );
+    AppProviders.container = await configureDependencies();
+
+    final container = AppProviders.container;
 
     final tasksUtils = BackgroundUtils(container);
     try {
@@ -49,6 +38,8 @@ void callbackDispatcher() {
           await tasksUtils.addAlertInBackground(backgroundParams);
         case BackgroundTask.syncAllData:
           await tasksUtils.syncAllData();
+        case BackgroundTask.removeOldAlerts:
+          await tasksUtils.removeOldAlerts();
       }
     } catch (e) {
       return Future.value(false);

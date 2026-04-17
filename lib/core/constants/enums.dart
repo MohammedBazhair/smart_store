@@ -27,7 +27,7 @@ enum SnackBarType {
 
 enum IsLoading { settings, saveProduct, backup }
 
-enum BackgroundTask { checkDailyExpiry, addProductAlert, syncAllData }
+enum BackgroundTask { checkDailyExpiry, addProductAlert, syncAllData, removeOldAlerts }
 
 enum SyncOperation {
   insert,

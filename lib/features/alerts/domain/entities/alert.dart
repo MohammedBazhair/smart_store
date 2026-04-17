@@ -17,7 +17,7 @@ class Alert extends Equatable {
   final String productName;
   final bool isRead;
   final DateTime createdAt;
-  final DateTime? expiryDate;
+  final DateTime expiryDate;
 
   int get remainingDays => DateTimeUtils.daysUntilExpiry(expiryDate)??0;
   Priority get priority => AlertModel.getPriorityFrom(remainingDays);
