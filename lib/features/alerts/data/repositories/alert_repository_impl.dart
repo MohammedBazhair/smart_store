@@ -16,7 +16,8 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<Map<int, Alert>> getAllAlerts() async {
     try {
-      final maps = await _db.query(table: 'alerts', orderBy: 'days_before_expiry');
+      final maps =
+          await _db.query(table: 'alerts', orderBy: 'days_before_expiry');
 
       final result = <int, AlertModel>{};
 
@@ -105,7 +106,7 @@ class AlertRepositoryImpl implements AlertRepository {
               Filter(column: 'product_id', value: productId),
               Filter(
                 column: 'expiry_date',
-                value: expiryDate.toDateOnly.toUtc().toIso8601String(),
+                value: expiryDate.toUtcDateOnly.toIso8601String(),
               ),
               Filter(column: 'days_before_expiry', value: daysBeforeExpiry),
             ],
@@ -135,14 +136,22 @@ class AlertRepositoryImpl implements AlertRepository {
   }
 
   @override
-  Future<Result<void>> deleteAllAlerts() async {
-    try {
-      await _db.deleteWhere(table: 'alerts');
-      return const SuccessState(null);
-    } catch (e) {
-      return ErrorState(
-        'فشل في حذف جميع التنبيهات: ${e.toString()}',
-      );
-    }
+  Future<void> deleteOldAlerts() async {
+    final date = DateTime.now().subtract(const Duration(days: 30)).toUtcDateOnly;
+
+    final params = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(
+              column: 'expiry_date',
+              value: date.toIso8601String(),
+              operator: FilterOperator.lessOrEqual,
+            ),
+          ],
+        ),
+      ],
+    );
+    await _db.deleteWhere(table: 'alerts', whereParams: params);
   }
 }

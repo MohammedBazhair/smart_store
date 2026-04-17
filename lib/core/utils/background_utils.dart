@@ -1,7 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../app_initializer.dart';
 import '../../errors/result.dart';
 import '../../features/alerts/data/models/alert_background_params.dart';
 import '../../features/alerts/data/models/alert_model.dart';
@@ -35,7 +34,7 @@ class BackgroundUtils {
       importance: Priority.high,
       isRead: false,
       createdAt: DateTime.now(),
-      expiryDate: product.expiryDate,
+      expiryDate: product.expiryDate?? DateTime.now().add(const Duration(days: 365)),
       productName: product.globalProduct.name,
     );
     final result = await repository.addAlert(alert);
@@ -89,7 +88,6 @@ class BackgroundUtils {
   }
 
   Future<void> syncAllData() async {
-    final container = AppProviders.container;
     final productRepo = container.read(productRepositoryProvider);
     final storesRepo = container.read(storeRepositoryProvider);
     final userRepo = container.read(userRepositoryProvider);
@@ -117,5 +115,10 @@ class BackgroundUtils {
       Logger.debugLog(error: e, stackTrace: st);
       rethrow;
     }
+  }
+
+ Future< void> removeOldAlerts()async {
+    final repo = container.read(alertRepositoryProvider);
+     await repo.deleteOldAlerts();
   }
 }

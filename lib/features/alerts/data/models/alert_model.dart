@@ -42,7 +42,7 @@ class AlertModel extends Alert {
       importance: Priority.values.byName(map['importance'] as String),
       isRead: (map['is_read'] as int) == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
-      expiryDate: DateTime.tryParse((map['expiry_date'] as String?) ?? ''),
+      expiryDate: DateTime.parse((map['expiry_date'] as String)),
       productName: map['product_name'] as String,
     );
   }
@@ -61,7 +61,7 @@ class AlertModel extends Alert {
 
   /// تحويل من AlertModel إلى Map
   Map<String, dynamic> toMap() {
-    final expiryDateOnly = expiryDate?.toDateOnly.toUtc().toIso8601String();
+    final expiryDateOnly = expiryDate.toUtcDateOnly.toIso8601String();
     return {
       if (id != null) 'id': id,
       'product_id': productId,

@@ -81,7 +81,7 @@ extension DateFormating on DateTime {
     return DateFormat('hh:mm a').format(this);
   }
 
-  DateTime get toDateOnly => DateTime(year, month, day);
+DateTime get toUtcDateOnly => DateTime.utc(year, month, day);
 }
 
 extension BoolToInt on bool {
