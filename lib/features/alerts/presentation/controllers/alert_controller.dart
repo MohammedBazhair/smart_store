@@ -38,6 +38,8 @@ class AlertController extends Notifier<AlertsState> {
       createdAt: DateTime.now().toUtc(),
       expiryDate: product.expiryDate!,
       productName: product.globalProduct.name,
+      daysBeforeExpiry: daysBeforeExpiry,
+      importance: importance,
     );
 
     final result = await repository.addAlert(alert);

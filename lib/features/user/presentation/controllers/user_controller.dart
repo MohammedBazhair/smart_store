@@ -11,13 +11,14 @@ class UserController extends StateNotifier<UserState> {
   UserController(this._userRepository) : super(UserInitialState());
   final UserRepository _userRepository;
 
-  bool get isUserLoggedIn => _userRepository.isUserLoggedIn;
-
   User? get currentUser => _userRepository.currentUser;
 
   Future<ProfileEntity?> loadProfile() async {
     try {
-      state = UserLoadingProfileState(state.profile);
+      state = UserLoadingProfileState(
+        profile: state.profile,
+        isLogged: state.isLogged,
+      );
       if (currentUser?.id == null) return null;
 
       final profileParams = GetProfileParams(
@@ -28,13 +29,14 @@ class UserController extends StateNotifier<UserState> {
 
       final newProfile = await _userRepository.getProfile(profileParams);
 
-      state = UserLoadedProfileState(newProfile);
+      state = UserLoadedProfileState(profile: newProfile, isLogged: true);
       return newProfile;
     } catch (e, st) {
-      Logger.debugLog(error: e,stackTrace: st);
+      Logger.debugLog(error: e, stackTrace: st);
       state = UserErrorState(
-        state.profile,
-        'حدث لم نتمكن من الحصول على بيانات بروفايلك',
+        profile: state.profile,
+        message: 'حدث لم نتمكن من الحصول على بيانات بروفايلك',
+        isLogged: state.isLogged,
       );
       return null;
     }
@@ -43,13 +45,17 @@ class UserController extends StateNotifier<UserState> {
   Future<Result<void>> updateProfile(ProfileEntity newProfile) async {
     try {
       await _userRepository.updateProfile(newProfile);
-      state = UserUpdatedProfileState(newProfile);
+      state = UserUpdatedProfileState(
+        profile: newProfile,
+        isLogged: state.isLogged,
+      );
       return const SuccessState(null);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       state = UserErrorState(
-        state.profile,
-        'حصل خطا أثناء التحديث معلومات المستخدم',
+        profile: state.profile,
+        message: 'حصل خطا أثناء التحديث معلومات المستخدم',
+        isLogged: state.isLogged,
       );
       return ErrorState(e.toString());
     }

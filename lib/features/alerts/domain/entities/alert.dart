@@ -11,6 +11,8 @@ class Alert extends Equatable {
     required this.createdAt,
     required this.productName,
     required this.expiryDate,
+    required this.daysBeforeExpiry,
+    required this.importance,
   });
   final int? id;
   final String productId;
@@ -18,6 +20,8 @@ class Alert extends Equatable {
   final bool isRead;
   final DateTime createdAt;
   final DateTime expiryDate;
+  final int daysBeforeExpiry;
+  final Priority importance;
 
   int get remainingDays => DateTimeUtils.daysUntilExpiry(expiryDate)??0;
   Priority get priority => AlertModel.getPriorityFrom(remainingDays);
@@ -30,6 +34,8 @@ class Alert extends Equatable {
         createdAt,
         productName,
         expiryDate,
+        daysBeforeExpiry,
+        importance,
       ];
 
   @override
@@ -42,6 +48,8 @@ class Alert extends Equatable {
     bool? isRead,
     DateTime? createdAt,
     DateTime? expiryDate,
+    int? daysBeforeExpiry,
+    Priority? importance,
   }) {
     return Alert(
       id: id ?? this.id,
@@ -50,6 +58,8 @@ class Alert extends Equatable {
       isRead: isRead ?? this.isRead,
       createdAt: createdAt ?? this.createdAt,
       expiryDate: expiryDate ?? this.expiryDate,
+      daysBeforeExpiry: daysBeforeExpiry ?? this.daysBeforeExpiry,
+      importance: importance ?? this.importance,
     );
   }
 }

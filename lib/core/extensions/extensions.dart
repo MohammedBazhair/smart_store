@@ -23,6 +23,7 @@ extension ShowSnackbar on BuildContext {
         duration: type.duration,
         action: action,
         backgroundColor: type.backgroundColor,
+        elevation: 2,
       ),
     );
   }
@@ -81,7 +82,7 @@ extension DateFormating on DateTime {
     return DateFormat('hh:mm a').format(this);
   }
 
-DateTime get toUtcDateOnly => DateTime.utc(year, month, day);
+  DateTime get toUtcDateOnly => DateTime.utc(year, month, day);
 }
 
 extension BoolToInt on bool {

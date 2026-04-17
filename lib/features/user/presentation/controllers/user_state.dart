@@ -1,31 +1,36 @@
 import '../../domain/entities/profile.dart';
 
 sealed class UserState {
-  UserState(this.profile);
+  UserState({required this.profile, this.isLogged = false});
   final ProfileEntity profile;
+  final bool isLogged;
 }
 
 class UserInitialState extends UserState {
-  UserInitialState() : super(ProfileEntity.guest());
+  UserInitialState() : super(profile: ProfileEntity.guest(), isLogged: false);
 }
 
 class UserUpdatedProfileState extends UserState {
-  UserUpdatedProfileState(super.profile);
+  UserUpdatedProfileState({required super.profile,required super.isLogged});
 }
 
 class UserLoadingProfileState extends UserState {
-  UserLoadingProfileState(super.profile);
+  UserLoadingProfileState({required super.profile, required super.isLogged});
 }
 
 class UserLoadedProfileState extends UserState {
-  UserLoadedProfileState(super.profile);
+  UserLoadedProfileState({required super.profile, required super.isLogged});
 }
 
 class UserMoreInfoProfileState extends UserState {
-  UserMoreInfoProfileState(super.profile);
+  UserMoreInfoProfileState({required super.profile, required super.isLogged});
 }
 
 class UserErrorState extends UserState {
-  UserErrorState(super.profile, this.message);
+  UserErrorState({
+    required super.profile,
+   required super.isLogged,
+    required this.message,
+  });
   final String message;
 }
