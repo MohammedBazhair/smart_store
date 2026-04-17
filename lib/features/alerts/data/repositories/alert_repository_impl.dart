@@ -1,11 +1,11 @@
-import '../../../core/constants/log.dart';
-import '../../../core/database/local/local_database_service.dart';
-import '../../../core/database/local/query_where_builder.dart';
-import '../../../core/extensions/extensions.dart';
-import '../../../errors/result.dart';
-import '../domain/alert.dart';
-import '../domain/alert_repository.dart';
-import 'alert_model.dart';
+import '../../../../core/constants/log.dart';
+import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/database/local/query_where_builder.dart';
+import '../../../../core/extensions/extensions.dart';
+import '../../../../errors/result.dart';
+import '../../domain/entities/alert.dart';
+import '../../domain/repositories/alert_repository.dart';
+import '../models/alert_model.dart';
 
 /// تنفيذ مستودع التنبيهات
 class AlertRepositoryImpl implements AlertRepository {
@@ -16,7 +16,7 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<Map<int, Alert>> getAllAlerts() async {
     try {
-      final maps = await _db.query(table: 'alerts', orderBy: 'created_at DESC');
+      final maps = await _db.query(table: 'alerts', orderBy: 'days_before_expiry');
 
       final result = <int, AlertModel>{};
 
@@ -96,7 +96,6 @@ class AlertRepositoryImpl implements AlertRepository {
     required DateTime expiryDate,
     required int daysBeforeExpiry,
   }) async {
-
     final result = await _db.query(
       table: 'alerts',
       whereParams: WhereQueryParams(
@@ -104,7 +103,10 @@ class AlertRepositoryImpl implements AlertRepository {
           FilterGroup(
             filters: [
               Filter(column: 'product_id', value: productId),
-              Filter(column: 'expiry_date', value: expiryDate.toDateOnly.toUtc().toIso8601String()),
+              Filter(
+                column: 'expiry_date',
+                value: expiryDate.toDateOnly.toUtc().toIso8601String(),
+              ),
               Filter(column: 'days_before_expiry', value: daysBeforeExpiry),
             ],
           ),

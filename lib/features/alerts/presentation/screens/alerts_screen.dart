@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/alert.dart';
+import '../../domain/entities/alert.dart';
 import '../controllers/alert_provider.dart';
 import '../widgets/alert_card.dart';
 import '../widgets/alerts_empty_state.dart';
@@ -21,19 +21,20 @@ class AlertsScreen extends ConsumerWidget {
           await ref.read(alertControllerProvider.notifier).loadAlerts();
         },
         child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverFillRemaining(
               child: alerts.isEmpty
                   ? const AlertsEmptyState()
                   : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: alerts.length,
-                    itemBuilder: (context, index) {
-                      return AlertCard(
-                        alert: alerts[index],
-                      );
-                    },
-                  ),
+                      padding: const EdgeInsets.all(16),
+                      itemCount: alerts.length,
+                      itemBuilder: (context, index) {
+                        return AlertCard(
+                          alert: alerts[index],
+                        );
+                      },
+                    ),
             ),
           ],
         ),

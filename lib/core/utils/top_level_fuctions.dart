@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../app_initializer.dart';
-import '../../features/alerts/data/alert_background_params.dart';
+import '../../features/alerts/data/models/alert_background_params.dart';
 import '../constants/app_constants.dart';
 import '../constants/enums.dart';
 import '../database/local/cache_service.dart';

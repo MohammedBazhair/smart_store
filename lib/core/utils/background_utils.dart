@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app_initializer.dart';
 import '../../errors/result.dart';
-import '../../features/alerts/data/alert_background_params.dart';
-import '../../features/alerts/domain/alert.dart';
+import '../../features/alerts/data/models/alert_background_params.dart';
+import '../../features/alerts/data/models/alert_model.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../features/products/domain/entities/store_product.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
@@ -29,7 +29,7 @@ class BackgroundUtils {
   ) async {
     final product = params.product;
     final repository = container.read(alertRepositoryProvider);
-    final alert = Alert(
+    final alert = AlertModel(
       productId: product.globalProduct.id!,
       daysBeforeExpiry: params.daysBeforeExpire,
       importance: Priority.high,
@@ -40,8 +40,7 @@ class BackgroundUtils {
     );
     final result = await repository.addAlert(alert);
 
-    // When the app is terminated, this Workmanager task is what fires at the due
-    // time. We must show a local notification here as well.
+    // When the app is terminated, this Workmanager task is what fires at the due time. We must show a local notification here as well.
     final productId = product.globalProduct.id;
     if (productId != null) {
       await _showExpiryLocalNotification(

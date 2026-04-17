@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import '../../../../app_initializer.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/shared/providers/core_providers.dart';
@@ -11,8 +12,9 @@ import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../settings/domain/repository/settings_repository.dart';
-import '../../domain/alert_repository.dart';
-import '../../domain/expiry_reminder.dart';
+import '../../data/models/alert_model.dart';
+import '../../domain/entities/expiry_reminder.dart';
+import '../../domain/repositories/alert_repository.dart';
 import 'alert_controller.dart';
 import 'alert_scheduler.dart';
 import 'notification_service.dart';
@@ -131,20 +133,11 @@ class AlertService {
     await alertController.addAlert(
       product: product,
       daysBeforeExpiry: daysBefore,
-      importance: _getPriorityFrom(daysBefore),
+      importance: AlertModel.getPriorityFrom(daysBefore),
     );
   }
 
-  Priority _getPriorityFrom(int daysBefore) {
-    final alerts = {
-      30: Priority.high,
-      15: Priority.high,
-      7: Priority.max,
-      0: Priority.max,
-    };
-
-    return alerts[daysBefore] ?? Priority.defaultPriority;
-  }
+  
 
   Future<void> _scheduleAlert({
     required StoreProduct product,
