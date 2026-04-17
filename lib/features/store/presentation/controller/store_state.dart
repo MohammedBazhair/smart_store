@@ -15,24 +15,29 @@ class StoreState {
   const StoreState({
     this.myStores = const {},
     this.selectedStoreId,
+    this.isInitialized = false,
   });
 
   final Map<String, StoreWithMembers> myStores;
   final String? selectedStoreId;
+  final bool isInitialized;
 
   List<StoreWithMembers> get myStoresList => myStores.values.toList();
   StoreWithMembers? get selectedStore => myStores[selectedStoreId];
 
-
   StoreState copyWith({
     Map<String, StoreWithMembers>? myStores,
-    String? selectedStoreId,
+    Object? selectedStoreId = _noValue,
+    bool? isInitialized,
   }) {
     return StoreState(
       myStores: myStores ?? this.myStores,
-      selectedStoreId: selectedStoreId ?? this.selectedStoreId,
+      selectedStoreId:selectedStoreId==_noValue?this.selectedStoreId : selectedStoreId as String?,
+      isInitialized: isInitialized ?? this.isInitialized,
     );
   }
+
+  static const _noValue = Object();
 }
 
 sealed class StoreEventState {

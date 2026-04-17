@@ -13,8 +13,8 @@ class SplashScreen extends StatelessWidget {
           children: [
             Image.asset(
               'assets/images/app_logo.png',
-              width: 300,
-              height: 300,
+              width: 290,
+              height: 290,
             ),
             const ThreeDotsLoading(),
           ],

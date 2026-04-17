@@ -1,6 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/utils/date_utils.dart';
 import '../../domain/entities/alert.dart';
 
 class AlertModel extends Alert {
@@ -11,25 +10,21 @@ class AlertModel extends Alert {
     required super.createdAt,
     required super.productName,
     required super.expiryDate,
-    required this.daysBeforeExpiry,
-    required this.importance,
+    required super.daysBeforeExpiry,
+    required super.importance,
   });
 
   factory AlertModel.fromEntity(
     Alert alert,
   ) {
-    final daysBeforeExpiry =
-        DateTimeUtils.daysUntilExpiry(alert.expiryDate) ?? 0;
-    final importance = getPriorityFrom(daysBeforeExpiry);
-
     return AlertModel(
       productId: alert.productId,
       isRead: alert.isRead,
       createdAt: alert.createdAt,
       productName: alert.productName,
       expiryDate: alert.expiryDate,
-      daysBeforeExpiry: daysBeforeExpiry,
-      importance: importance,
+      daysBeforeExpiry: alert.daysBeforeExpiry,
+      importance: alert.importance,
     );
   }
 
@@ -55,9 +50,6 @@ class AlertModel extends Alert {
 
     return priority ;
   }
-
-  final int daysBeforeExpiry;
-  final Priority importance;
 
   /// تحويل من AlertModel إلى Map
   Map<String, dynamic> toMap() {

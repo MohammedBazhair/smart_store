@@ -5,7 +5,6 @@ import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/products/presentation/screens/product_details_screen.dart';
 import '../../../../features/store/presentation/controller/store_provider.dart';
-import '../../../../features/store/presentation/controller/store_state.dart';
 import '../../../../features/store/presentation/screens/store_selection_screen.dart';
 import '../../../../features/user/domain/entities/account_status.dart';
 import '../../../../features/user/presentation/screens/account_status_screen.dart';
@@ -27,7 +26,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (ref.read(userControllerProvider.notifier).isUserLoggedIn) {
+      if (ref.read(userControllerProvider).isLogged) {
         ref.read(appSyncControllerProvider.notifier).sync();
         _pushPendingProductDetails();
       }
@@ -51,17 +50,17 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
   @override
   Widget build(BuildContext context) {
-    final isLogged = ref.watch(userControllerProvider.notifier).isUserLoggedIn;
+    final isLogged =
+        ref.watch(userControllerProvider.select((s) => s.isLogged));
 
     if (!isLogged) return const SignInScreen();
 
-    final isSyncing = ref.watch(appSyncControllerProvider);
     final profile = ref.watch(userControllerProvider).profile;
 
-    final storeState = ref.watch(storeControllerProvider);
-    final isLoadingStores = storeState is LoadinMyStoresEvent;
+    final isStoresInitialized =
+        ref.watch(storeControllerProvider.select((s) => s.state.isInitialized));
 
-    if (!profile.isDataComplete || isLoadingStores || isSyncing) {
+    if (!profile.isDataComplete || !isStoresInitialized) {
       return const SplashScreen();
     }
 
