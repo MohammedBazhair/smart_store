@@ -236,7 +236,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       final products = <String, StoreProductModel>{};
 
       for (final m in response) {
-        Logger.debugLog(message: m.toString());
         final product = StoreProductModel.fromLocal(m);
         final key = product.globalProduct.barcode ?? product.globalProduct.id!;
         products[key] = product;
@@ -263,8 +262,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     );
     if (response.isEmpty) return null;
     final map = response.first;
-    Logger.debugLog(message: 'response:');
-    Logger.debugLog(message: response.toString());
     return StoreProductModel.fromLocal(map);
   }
 
@@ -372,7 +369,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     ''',
             [key.storeId, key.productId, true.toInt],
           );
-          Logger.debugLog(message: 'result: $result');
           return result.isNotEmpty;
         }
 

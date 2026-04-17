@@ -63,7 +63,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<String?> signInWithGoogle() async {
     try {
-      Logger.debugLog(message: 'Google Sign In');
       const webClientId =
           '711796199152-i0iuh8rvglm0jcgsbae80m9m7cc02pqe.apps.googleusercontent.com';
 

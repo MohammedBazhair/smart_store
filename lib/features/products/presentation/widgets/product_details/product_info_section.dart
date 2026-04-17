@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../../core/constants/log.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../../settings/domain/entities/currence_code.dart';
@@ -20,7 +19,6 @@ class ProductInfoSection extends ConsumerWidget {
         date_utils.DateTimeUtils.timeUntilExpiry(product.expiryDate);
     final isExpired = date_utils.DateTimeUtils.isExpired(product.expiryDate);
     const spacing = 10.0;
-    Logger.debugLog(message: '(${product.notes.trim()})');
 
     final (:price, :currency) =
         ref.read(settingsControllerProvider.notifier).convert(

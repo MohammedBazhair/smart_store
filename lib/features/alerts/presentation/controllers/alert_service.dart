@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../../../app_initializer.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
@@ -21,6 +22,9 @@ import 'notification_service.dart';
 
 /// handle tap on notification
 void onDidReceiveNotificationResponse(NotificationResponse response) async {
+  Logger.debugLog(
+    message: 'Received notification response: ${response.id}',
+  );
   if (response.payload == null || response.payload!.isEmpty) return;
   final storeProductId = response.payload!;
 
@@ -136,8 +140,6 @@ class AlertService {
       importance: AlertModel.getPriorityFrom(daysBefore),
     );
   }
-
-  
 
   Future<void> _scheduleAlert({
     required StoreProduct product,
