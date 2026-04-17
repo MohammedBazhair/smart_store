@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
+import '../../../../features/products/presentation/controllers/product_provider.dart';
+import '../../../../features/products/presentation/screens/product_details_screen.dart';
 import '../../../../features/store/presentation/controller/store_provider.dart';
 import '../../../../features/store/presentation/controller/store_state.dart';
 import '../../../../features/store/presentation/screens/store_selection_screen.dart';
 import '../../../../features/user/domain/entities/account_status.dart';
 import '../../../../features/user/presentation/screens/account_status_screen.dart';
+import '../../../../main.dart';
+import '../../../constants/app_constants.dart';
 import '../../../extensions/extensions.dart';
 import '../../providers/core_providers.dart';
 import 'dashboard_screen.dart';
@@ -27,6 +32,23 @@ class _AuthGateState extends ConsumerState<AuthGate> {
         ref.read(appSyncControllerProvider.notifier).sync();
       }
     });
+  }
+
+  Future<void> _pushPendingProductDetails() async {
+    final cache = ref.read(localCacheServiceProvider);
+    final productId = cache.getString(
+      key: AppConstants.pendingNotificationPayloadKey,
+    );
+
+    if (productId == null || productId.isEmpty) return;
+
+    await cache.remove(key: AppConstants.pendingNotificationPayloadKey);
+
+    ref.read(currentProductIdProvider.notifier).state = productId;
+
+    await navigatorKey.currentState?.push(
+      MaterialPageRoute(builder: (_) => const ProductDetailsScreen()),
+    );
   }
 
   @override
@@ -58,8 +80,11 @@ class _AuthGateState extends ConsumerState<AuthGate> {
         AccountStatus.pending => AccountStatusScreen(profile: profile),
       };
 
-        context.pushAndRemoveUntilTo(screen);
-      
+      context.pushAndRemoveUntilTo(screen);
+
+      if (profile.accountStatus == AccountStatus.active) {
+        Future.microtask(_pushPendingProductDetails);
+      }
     });
 
     return const SplashScreen();
