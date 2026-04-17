@@ -5,7 +5,6 @@ import '../../errors/result.dart';
 import '../../features/alerts/data/models/alert_background_params.dart';
 import '../../features/alerts/data/models/alert_model.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
-import '../../features/products/domain/entities/store_product.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
 import '../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../features/store/presentation/controller/store_provider.dart';
@@ -39,27 +38,10 @@ class BackgroundUtils {
     );
     final result = await repository.addAlert(alert);
 
-    // When the app is terminated, this Workmanager task is what fires at the due time. We must show a local notification here as well.
-    final productId = product.globalProduct.id;
-    if (productId != null) {
-      await _showExpiryLocalNotification(
-        product: product,
-        daysBefore: params.daysBeforeExpire,
-      );
-    }
-
+    // This background task is used to persist the fired alert in the local database.
+    // The local notification itself is already scheduled through FlutterLocalNotifications,
+    // so do not fire the same notification again here.
     return result;
-  }
-
-  Future<void> _showExpiryLocalNotification({
-    required StoreProduct product,
-    required int daysBefore,
-  }) async {
-    final service = container.read(alertServiceProvider);
-
-    await service.initialize(false);
-
-    await service.showNotification(product: product, daysBefore: daysBefore);
   }
 
   Future<void> dailyExpiryCheck() async {

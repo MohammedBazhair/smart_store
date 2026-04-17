@@ -18,6 +18,7 @@ Future<void> scheduleWorkManagerAlert(
     '${product.globalProduct.id}_$daysBefore',
     BackgroundTask.addProductAlert.name,
     initialDelay: delay,
+    existingWorkPolicy: ExistingWorkPolicy.replace,
     inputData: alertParams.toMap(),
   );
 }

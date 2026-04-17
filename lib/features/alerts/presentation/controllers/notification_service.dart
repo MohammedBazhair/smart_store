@@ -3,10 +3,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-import '../../../../app_initializer.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/log.dart';
-import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/top_level_fuctions.dart';
 import 'alert_service.dart';
 
@@ -25,9 +22,6 @@ class NotificationService {
           channelDescription: 'تنبيهات صلاحية المنتجات',
           importance: Importance.high,
           priority: Priority.high,
-          actions: [
-            AndroidNotificationAction('ProductDetailsScreen', 'تفاصيل المنتج'),
-          ],
         ),
         iOS: DarwinNotificationDetails(),
       );
@@ -57,24 +51,6 @@ class NotificationService {
       onDidReceiveBackgroundNotificationResponse:
           onDidReceiveBackgroundNotificationResponse,
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-    );
-
-    // Check if the app was launched from a notification
-    final NotificationAppLaunchDetails? launchDetails =
-        await _notifications.getNotificationAppLaunchDetails();
-
-    final isLaunchedFromNotification =
-        launchDetails?.didNotificationLaunchApp ?? false;
-
-    if (!isLaunchedFromNotification) return;
-
-    final payload = launchDetails?.notificationResponse?.payload;
-    if (payload == null || payload.isEmpty) return;
-
-    final cache = AppProviders.container.read(localCacheServiceProvider);
-    await cache.setString(
-      key: AppConstants.pendingNotificationPayloadKey,
-      value: payload,
     );
   }
 
