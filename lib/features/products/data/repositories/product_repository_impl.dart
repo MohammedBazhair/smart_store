@@ -240,7 +240,6 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       final globalProductsChanges =
           await _sync.getTableChanges('global_products');
-      Logger.debugLog(message: globalProductsChanges.toString());
 
       final inserts = <GlobalProductModel>[];
       final updates = <GlobalProductModel>[];

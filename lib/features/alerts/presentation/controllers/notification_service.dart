@@ -25,6 +25,9 @@ class NotificationService {
           channelDescription: 'تنبيهات صلاحية المنتجات',
           importance: Importance.high,
           priority: Priority.high,
+          actions: [
+            AndroidNotificationAction('ProductDetailsScreen', 'تفاصيل المنتج'),
+          ],
         ),
         iOS: DarwinNotificationDetails(),
       );

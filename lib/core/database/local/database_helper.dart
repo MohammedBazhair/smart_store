@@ -3,7 +3,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../constants/app_constants.dart';
-import '../../constants/log.dart';
 
 /// مساعد قاعدة البيانات
 class DatabaseHelper {
@@ -21,7 +20,6 @@ class DatabaseHelper {
   /// تهيئة قاعدة البيانات
   Future<Database> _initDB(String filePath) async {
     final path = await getDatabaseFilePath();
-    Logger.debugLog(message: path);
 
     return openDatabase(
       path,

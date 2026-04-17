@@ -11,7 +11,6 @@ import '../../../../features/user/domain/entities/account_status.dart';
 import '../../../../features/user/presentation/screens/account_status_screen.dart';
 import '../../../../main.dart';
 import '../../../constants/app_constants.dart';
-import '../../../extensions/extensions.dart';
 import '../../providers/core_providers.dart';
 import 'dashboard_screen.dart';
 import 'splash_screen.dart';
@@ -24,6 +23,8 @@ class AuthGate extends ConsumerStatefulWidget {
 }
 
 class _AuthGateState extends ConsumerState<AuthGate> {
+  bool _pendingNotificationHandled = false;
+
   @override
   void initState() {
     super.initState();
@@ -46,9 +47,20 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
     ref.read(currentProductIdProvider.notifier).state = productId;
 
+    if (!mounted) return;
     await navigatorKey.currentState?.push(
       MaterialPageRoute(builder: (_) => const ProductDetailsScreen()),
     );
+  }
+
+  void _schedulePendingProductDetails() {
+    if (_pendingNotificationHandled) return;
+    _pendingNotificationHandled = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _pushPendingProductDetails();
+    });
   }
 
   @override
@@ -73,20 +85,16 @@ class _AuthGateState extends ConsumerState<AuthGate> {
       return const StoreSelectionScreen();
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final screen = switch (profile.accountStatus) {
-        AccountStatus.active => const DashboardScreen(),
-        AccountStatus.frozen => AccountStatusScreen(profile: profile),
-        AccountStatus.pending => AccountStatusScreen(profile: profile),
-      };
+    final screen = switch (profile.accountStatus) {
+      AccountStatus.active => const DashboardScreen(),
+      AccountStatus.frozen => AccountStatusScreen(profile: profile),
+      AccountStatus.pending => AccountStatusScreen(profile: profile),
+    };
 
-      context.pushAndRemoveUntilTo(screen);
+    if (profile.accountStatus == AccountStatus.active) {
+      _schedulePendingProductDetails();
+    }
 
-      if (profile.accountStatus == AccountStatus.active) {
-        Future.microtask(_pushPendingProductDetails);
-      }
-    });
-
-    return const SplashScreen();
+    return screen;
   }
 }

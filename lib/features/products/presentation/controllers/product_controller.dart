@@ -37,7 +37,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final categories = await getCategories();
     final products = await getStoreProducts();
 
-    Logger.debugLog(message: products.toString());
 
     final expiredProducts = storeId != null
         ? await productRepo.getExpiredProducts(storeId)

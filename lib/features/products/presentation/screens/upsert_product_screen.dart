@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/enums.dart';
-import '../../../../core/constants/log.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
@@ -131,7 +130,6 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
 
   StoreProduct _buildProductFromFields({StoreProduct? oldProduct}) {
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
-    Logger.debugLog(message: _selectedCategory.toString());
     final now = DateTime.now().toUtc();
     final globalProduct = GlobalProduct(
       id: oldProduct?.globalProduct.id,
@@ -186,7 +184,6 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
       ),
     );
 
-    Logger.debugLog(message: barcode);
 
     _barcodeController.text = barcode ?? _barcodeController.text;
   }

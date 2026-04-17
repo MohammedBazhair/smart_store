@@ -228,10 +228,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
   @override
   Future<void> addGlobalProducts(List<GlobalProductModel> products) async {
     try {
-      Logger.debugLog(message: products.toString());
       final rows = products.map((m) => m.toMap()).toList();
-      Logger.debugLog(message: 'rows:');
-      Logger.debugLog(message: rows.toString());
 
       await _client.insertRows(rows: rows, table: 'global_products');
     } catch (e, st) {

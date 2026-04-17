@@ -7,6 +7,7 @@ import '../../app_initializer.dart';
 import '../../features/alerts/data/models/alert_background_params.dart';
 import '../constants/app_constants.dart';
 import '../constants/enums.dart';
+import '../constants/log.dart';
 import '../database/local/cache_service.dart';
 import 'background_utils.dart';
 
@@ -55,8 +56,14 @@ void callbackDispatcher() {
 void onDidReceiveBackgroundNotificationResponse(
   NotificationResponse details,
 ) async {
+  Logger.debugLog(
+    message: 'Received background notification response: ${details.id}',
+  );
   WidgetsFlutterBinding.ensureInitialized();
-
+  if (details.notificationResponseType ==
+      NotificationResponseType.selectedNotification) {
+    return;
+  }
   final productId = details.payload;
   if (productId == null || productId.isEmpty) return;
 
