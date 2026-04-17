@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
@@ -54,6 +55,8 @@ void callbackDispatcher() {
 void onDidReceiveBackgroundNotificationResponse(
   NotificationResponse details,
 ) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final productId = details.payload;
   if (productId == null || productId.isEmpty) return;
 
