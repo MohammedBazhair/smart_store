@@ -1,8 +1,8 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -30,7 +30,7 @@ final databaseProvider =
     Provider<Database>((ref) => throw UnimplementedError());
 
 final networkProvider = Provider((_) {
-  return ConnectivityServiceImpl(InternetConnection());
+  return ConnectivityServiceImpl(Connectivity());
 });
 
 final supabaseProvider = Provider((ref) {
@@ -141,7 +141,7 @@ final tokenRefreshProvider = Provider((ref) {
   final supabase = ref.watch(supabaseAuthProvider);
   // استمع لتغييرات الاتصال
   final subscription = network.listenToConnectionChanges((status) async {
-    if (status == InternetStatus.connected) {
+    if (await network.hasConnection()) {
       try {
         // جدد التوكن فقط عند الاتصال الأول
         final session = supabase.currentSession;

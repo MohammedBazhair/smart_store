@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -10,14 +9,11 @@ import 'package:workmanager/workmanager.dart';
 import '../../core/constants/enums.dart';
 import '../../core/utils/top_level_fuctions.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
-import 'core/constants/app_constants.dart';
 import 'core/database/local/database_helper.dart';
 import 'core/extensions/extensions.dart';
 import 'core/shared/providers/core_providers.dart';
 import 'core/shared/providers/repositories_provider.dart';
-import 'features/products/presentation/controllers/product_provider.dart';
 import 'features/products/presentation/screens/init_screen.dart';
-import 'features/products/presentation/screens/product_details_screen.dart';
 import 'main.dart';
 
 class AppProviders {
@@ -114,28 +110,13 @@ Future<void> _initializePushNotification(ProviderContainer container) async {
 
   OneSignal.Notifications.addClickListener((event) async {
     final notification = event.notification;
-    final productId = notification.additionalData?['product_id']?.toString();
 
     if (notification.title?.contains('تم تفعيل حسابك') ?? false) {
       if (navigatorKey.currentContext != null) {
-        await navigatorKey.currentContext?.pushAndRemoveUntilTo(const InitScreen());
+        await navigatorKey.currentContext
+            ?.pushAndRemoveUntilTo(const InitScreen());
       }
       return;
-    }
-
-    if (productId != null) {
-      final cache = container.read(localCacheServiceProvider);
-      await cache.setString(
-        key: AppConstants.pendingNotificationPayloadKey,
-        value: productId,
-      );
-
-      if (navigatorKey.currentState != null) {
-        container.read(currentProductIdProvider.notifier).state = productId;
-        await navigatorKey.currentState?.push(
-          MaterialPageRoute(builder: (_) => const ProductDetailsScreen()),
-        );
-      }
     }
   });
 }

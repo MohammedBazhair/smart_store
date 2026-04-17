@@ -57,13 +57,10 @@ void onDidReceiveBackgroundNotificationResponse(
   NotificationResponse details,
 ) async {
   Logger.debugLog(
-    message: 'Received background notification response: ${details.id}',
+    message: 'Received background notification response: ${details.payload}',
   );
   WidgetsFlutterBinding.ensureInitialized();
-  if (details.notificationResponseType ==
-      NotificationResponseType.selectedNotification) {
-    return;
-  }
+
   final productId = details.payload;
   if (productId == null || productId.isEmpty) return;
 
