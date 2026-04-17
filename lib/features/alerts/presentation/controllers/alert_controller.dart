@@ -33,8 +33,6 @@ class AlertController extends Notifier<AlertsState> {
   }) async {
     final alert = Alert(
       productId: product.globalProduct.id!,
-      daysBeforeExpiry: daysBeforeExpiry,
-      importance: importance,
       isRead: false,
       createdAt: DateTime.now().toUtc(),
       expiryDate: product.expiryDate,

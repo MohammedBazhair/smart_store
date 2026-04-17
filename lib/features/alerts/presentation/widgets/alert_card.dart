@@ -15,9 +15,9 @@ class AlertCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final importanceColor = alert.importance == Priority.high
+    final importanceColor = alert.priority == Priority.high
         ? AppTheme.errorColor
-        : alert.importance == Priority.defaultPriority
+        : alert.priority == Priority.defaultPriority
             ? AppTheme.warningColor
             : AppTheme.primaryColor;
 
@@ -51,6 +51,7 @@ class AlertCard extends ConsumerWidget {
         ),
         trailing: Icon(
           alert.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
+          color: AppTheme.primaryColor,
         ),
         onTap: () {
           ref.read(alertControllerProvider.notifier).markAsRead(alert.id!);

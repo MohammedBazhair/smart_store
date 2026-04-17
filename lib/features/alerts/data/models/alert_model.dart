@@ -1,32 +1,35 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../domain/entities/alert.dart';
 
-/// نموذج التنبيه للتعامل مع قاعدة البيانات
 class AlertModel extends Alert {
   const AlertModel({
-    required super.id,
+    super.id,
     required super.productId,
-    required super.daysBeforeExpiry,
-    required super.importance,
     required super.isRead,
     required super.createdAt,
     required super.productName,
     required super.expiryDate,
+    required this.daysBeforeExpiry,
+    required this.importance,
   });
 
-  /// تحويل من Entity إلى Model
-  factory AlertModel.fromEntity(Alert alert) {
+  factory AlertModel.fromEntity(
+    Alert alert,
+  ) {
+    final daysBeforeExpiry =
+        DateTimeUtils.daysUntilExpiry(alert.expiryDate) ?? 0;
+    final importance = getPriorityFrom(daysBeforeExpiry);
+
     return AlertModel(
-      id: alert.id,
       productId: alert.productId,
-      daysBeforeExpiry: alert.daysBeforeExpiry,
-      importance: alert.importance,
       isRead: alert.isRead,
       createdAt: alert.createdAt,
-      expiryDate: alert.expiryDate,
       productName: alert.productName,
+      expiryDate: alert.expiryDate,
+      daysBeforeExpiry: daysBeforeExpiry,
+      importance: importance,
     );
   }
 
@@ -43,6 +46,18 @@ class AlertModel extends Alert {
       productName: map['product_name'] as String,
     );
   }
+
+  static Priority getPriorityFrom(int daysBefore) {
+    final priority = switch (daysBefore) {
+      (<= 30 && >= 15) => Priority.high,
+      _ => Priority.max
+    };
+
+    return priority ;
+  }
+
+  final int daysBeforeExpiry;
+  final Priority importance;
 
   /// تحويل من AlertModel إلى Map
   Map<String, dynamic> toMap() {

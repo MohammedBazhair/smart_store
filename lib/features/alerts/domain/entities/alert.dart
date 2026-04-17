@@ -1,14 +1,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 import '../../../../core/utils/date_utils.dart';
+import '../../data/models/alert_model.dart';
 
 class Alert extends Equatable {
   const Alert({
     this.id,
     required this.productId,
-    required this.daysBeforeExpiry,
-    required this.importance,
     required this.isRead,
     required this.createdAt,
     required this.productName,
@@ -17,20 +15,17 @@ class Alert extends Equatable {
   final int? id;
   final String productId;
   final String productName;
-  final int daysBeforeExpiry;
-  final Priority importance;
   final bool isRead;
   final DateTime createdAt;
   final DateTime? expiryDate;
 
   int get remainingDays => DateTimeUtils.daysUntilExpiry(expiryDate)??0;
+  Priority get priority => AlertModel.getPriorityFrom(remainingDays);
 
   @override
   List<Object?> get props => [
         id,
         productId,
-        daysBeforeExpiry,
-        importance,
         isRead,
         createdAt,
         productName,
@@ -44,8 +39,6 @@ class Alert extends Equatable {
     int? id,
     String? productId,
     String? productName,
-    int? daysBeforeExpiry,
-    Priority? importance,
     bool? isRead,
     DateTime? createdAt,
     DateTime? expiryDate,
@@ -54,8 +47,6 @@ class Alert extends Equatable {
       id: id ?? this.id,
       productId: productId ?? this.productId,
       productName: productName ?? this.productName,
-      daysBeforeExpiry: daysBeforeExpiry ?? this.daysBeforeExpiry,
-      importance: importance ?? this.importance,
       isRead: isRead ?? this.isRead,
       createdAt: createdAt ?? this.createdAt,
       expiryDate: expiryDate ?? this.expiryDate,
