@@ -230,6 +230,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         query: '''
     SELECT ${_storeProductColumnsAndJoins()}
     WHERE sp.store_id = ? AND sp.is_deleted = ? 
+    ORDER BY sp.expiry_date DESC
    ''',
         arguments: [storeId, includeDeleted.toInt],
       );
@@ -278,6 +279,22 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
     if (query.hasCategory) queryRaw.write(' AND c.category_id = ?');
     if (query.isSearching) queryRaw.write(' AND LOWER(gp.name) LIKE LOWER(?)');
+    switch (query.sortType) {
+      case ProductSortType.quantityAsc:
+        queryRaw.write(' ORDER BY sp.quantity ASC');
+        break;
+      case ProductSortType.quantityDesc:
+        queryRaw.write(' ORDER BY sp.quantity DESC');
+        break;
+      case ProductSortType.expiryAsc:
+        queryRaw.write(' ORDER BY sp.expiry_date ASC');
+        break;
+      case ProductSortType.expiryDesc:
+        queryRaw.write(' ORDER BY sp.expiry_date DESC');
+        break;
+    }
+   
+   
     final maps = await db.rawQuery(
       query: queryRaw.toString(),
       arguments: [

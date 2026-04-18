@@ -42,7 +42,6 @@ class ProductCard extends ConsumerWidget {
     return Skeletonizer(
       enabled: isLoadingProducts,
       child: Card(
-        margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
@@ -55,6 +54,7 @@ class ProductCard extends ConsumerWidget {
         shadowColor: isSelected
             ? AppTheme.primaryColor.withOpacity(0.2)
             : const Color(0x33000000),
+       
         child: ListTile(
           onTap: onTap ??
               () {
@@ -80,7 +80,7 @@ class ProductCard extends ConsumerWidget {
                   Text(
                     product.globalProduct.category.name,
                     maxLines: 1,
-                    overflow: TextOverflow.fade,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],

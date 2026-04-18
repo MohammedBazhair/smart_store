@@ -21,11 +21,9 @@ void handleUserStates(
       );
     case UserErrorState(:final message):
       context.showSnakbar(message, type: SnackBarType.error);
-    case UserMoreInfoProfileState(:final profile):
+    case UserMoreInfoProfileState(:final entity):
       context.pushReplacementTo(
-        AccountStatusScreen(
-          profile: profile,
-        ),
+        AccountStatusScreen(profile: entity.profile),
       );
   }
 }

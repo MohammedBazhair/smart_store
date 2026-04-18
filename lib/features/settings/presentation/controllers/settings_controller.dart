@@ -19,9 +19,17 @@ class SettingsController extends AsyncNotifier<Settings> {
     return repository.getSettings();
   }
 
+  Future<void> getExchangeRates() async {
+    final repository = ref.read(settingsRepositoryProvider);
+    final rates = await repository.getExchangeRates();
+    state = state.whenData(
+      (s) => s.copyWith(exchagneRates: rates),
+    );
+  }
+
   Future<void> refreshSettings() async {
     final repo = ref.read(storeRepositoryProvider);
-    final userPhone = ref.watch(userControllerProvider).profile.phone!;
+    final userPhone = ref.watch(userControllerProvider).entity.profile.phone!;
     await repo.syncAll(userPhone);
 
     final settings = await _getSettings();

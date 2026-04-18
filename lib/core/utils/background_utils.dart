@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../errors/result.dart';
 import '../../features/alerts/data/models/alert_background_params.dart';
 import '../../features/alerts/data/models/alert_model.dart';
+import '../../features/alerts/domain/entities/expiry_reminder.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
 import '../../features/settings/presentation/controllers/settings_provider.dart';
@@ -27,8 +28,7 @@ class BackgroundUtils {
     final repository =container.read(alertRepositoryProvider);
     final alert = AlertModel(
       productId: product.globalProduct.id!,
-      daysBeforeExpiry: params.daysBeforeExpire,
-      importance: Priority.high,
+      expiryRemainder: ExpiryRemainder(daysBeforeExpiry: params.daysBeforeExpire, importance: Priority.high),
       isRead: false,
       createdAt: DateTime.now(),
       expiryDate:

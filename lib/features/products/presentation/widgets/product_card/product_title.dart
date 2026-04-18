@@ -15,7 +15,8 @@ class ProductTitle extends StatelessWidget {
       overflow: TextOverflow.fade,
       style: const TextStyle(
         color: AppTheme.primaryColor,
-        fontSize: 14,
+        fontSize: 13,
+        overflow: TextOverflow.ellipsis,
         fontWeight: FontWeight.bold,
       ),
     );

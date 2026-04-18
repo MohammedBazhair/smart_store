@@ -151,7 +151,7 @@ final tokenRefreshProvider = Provider((ref) {
 });
 
 final permissionServiceProvider = Provider((ref) {
-  final accountStatus = ref.watch(userControllerProvider).profile.accountStatus;
+  final accountStatus = ref.watch(userControllerProvider).entity.profile.accountStatus;
 
   ref.watch(storeControllerProvider);
   final member = ref.read(storeControllerProvider.notifier).meAsCurrentMember;

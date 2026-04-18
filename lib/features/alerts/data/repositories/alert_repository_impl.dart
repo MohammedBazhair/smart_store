@@ -45,6 +45,7 @@ class AlertRepositoryImpl implements AlertRepository {
         ),
         orderBy: 'created_at DESC',
       );
+      Logger.debugLog(message: 'maps: $maps');
 
       final result = <int, AlertModel>{};
 
@@ -53,6 +54,7 @@ class AlertRepositoryImpl implements AlertRepository {
         result[alert.id!] = alert;
       }
 
+      Logger.debugLog(message: 'result: $result');
       return result;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);

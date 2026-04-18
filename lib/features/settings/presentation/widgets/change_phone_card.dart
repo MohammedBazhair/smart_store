@@ -31,7 +31,7 @@ class _ChangePhoneCardState extends ConsumerState<ChangePhoneCard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final profile = ref.watch(userControllerProvider).profile;
+      final profile = ref.watch(userControllerProvider).entity.profile;
       widget.phoneController?.text = profile.phone!;
     });
   }
@@ -44,7 +44,7 @@ class _ChangePhoneCardState extends ConsumerState<ChangePhoneCard> {
 
   Future<void> _submit() async {
     final phone = widget.phoneController?.text;
-    final profile = ref.watch(userControllerProvider).profile;
+    final profile = ref.watch(userControllerProvider).entity.profile;
 
     if (phone == null || phone.isEmpty) {
       widget.phoneController?.text = profile.phone!;

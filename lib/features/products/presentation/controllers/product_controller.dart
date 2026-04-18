@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/shared/domain/entities/permission.dart';
@@ -38,18 +37,8 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final categories = await getCategories();
     final products = await getStoreProducts();
 
-
-    final expiredProducts = storeId != null
-        ? await productRepo.getExpiredProducts(storeId)
-        : <StoreProduct>[];
-    final nearbyExpiredProducts = storeId != null
-        ? await productRepo.getNearExpiryProducts(storeId, 30)
-        : <StoreProduct>[];
-
     state = state.copyWith(
       products: products,
-      expiredProducts: expiredProducts,
-      nearbyExpiredProducts: nearbyExpiredProducts,
       categories: categories,
       isLoading: false,
     );

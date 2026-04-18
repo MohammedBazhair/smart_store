@@ -51,10 +51,10 @@ class _ProductSearchBarState extends ConsumerState<ProductSearchBar> {
               ),
             ),
             onChanged: (value) {
+              final query = ref.read(productQueryProvider);
               ref
-                  .read(productQueryProvider.notifier)
-                  .update((q) => q.copyWith(search: value.trim()));
-              ref.read(productSearchProvider.notifier).search();
+                  .read(productSearchProvider.notifier)
+                  .search(query.copyWith(search: value.trim()));
             },
           ),
         ),
@@ -73,10 +73,10 @@ class _ProductFilterAction extends ConsumerWidget {
       builder: (_) => ProductFilterDialog(
         initialCategory: ref.watch(productQueryProvider).category,
         onApply: (category) {
-          ref.read(productQueryProvider.notifier).update(
-                (q) => q.copyWith(category: category),
-              );
-          ref.read(productSearchProvider.notifier).search();
+          final query = ref.read(productQueryProvider);
+          ref
+              .read(productSearchProvider.notifier)
+              .search(query.copyWith(category: category));
         },
       ),
     );

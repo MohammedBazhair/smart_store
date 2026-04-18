@@ -23,20 +23,19 @@ class AlertsScreen extends ConsumerWidget {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            if (alerts.isEmpty)
-              const SliverFillRemaining(
-                child: AlertsEmptyState(),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList.builder(
-                  itemBuilder: (_, index) => AlertCard(
-                    alert: alerts[index],
-                  ),
-                  itemCount: alerts.length,
-                ),
-              ),
+            SliverPadding(
+              padding: EdgeInsets.all(alerts.isEmpty ? 24 : 16),
+              sliver: alerts.isEmpty
+                  ? const SliverFillRemaining(
+                      child: AlertsEmptyState(),
+                    )
+                  : SliverList.builder(
+                      itemBuilder: (_, index) => AlertCard(
+                        alert: alerts[index],
+                      ),
+                      itemCount: alerts.length,
+                    ),
+            ),
           ],
         ),
       ),

@@ -76,8 +76,12 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
 
         case UserErrorState(:final message):
           context.showSnakbar(message, type: SnackBarType.error);
-        case UserMoreInfoProfileState(:final profile):
-          context.pushReplacementTo(AccountStatusScreen(profile: profile,));
+        case UserMoreInfoProfileState(:final entity):
+          context.pushReplacementTo(
+            AccountStatusScreen(
+              profile: entity.profile,
+            ),
+          );
       }
     });
     return Scaffold(
@@ -138,7 +142,7 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                             final isLoading =
                                 ref.watch(_isLoadingProvider.notifier).state;
                             return CustomButton(
-                              onPressed:isLoading? null: onSubmit,
+                              onPressed: isLoading ? null : onSubmit,
                               child: isLoading
                                   ? const ThreeDotsLoading()
                                   : const Text('التالي'),

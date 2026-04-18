@@ -22,7 +22,7 @@ class _UserProfileWidgetState extends ConsumerState<UserProfileWidget> {
     });
   }
 
-  ProfileEntity get profile => ref.watch(userControllerProvider).profile;
+  ProfileEntity get profile => ref.watch(userControllerProvider).entity.profile;
   UserController get userController =>
       ref.read(userControllerProvider.notifier);
 
