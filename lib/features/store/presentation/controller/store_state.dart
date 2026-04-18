@@ -24,6 +24,7 @@ class StoreState {
 
   List<StoreWithMembers> get myStoresList => myStores.values.toList();
   StoreWithMembers? get selectedStore => myStores[selectedStoreId];
+  bool get isSelectedStore => selectedStoreId!= null;
 
   StoreState copyWith({
     Map<String, StoreWithMembers>? myStores,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
 import '../../../../../features/products/presentation/controllers/product_provider.dart';
@@ -31,16 +32,21 @@ class DashboardStatsSection extends StatelessWidget {
                 )
                 .values;
 
-            return StatCard(
-              title: 'إجمالي المنتجات',
-              value: products.length.toString(),
-              icon: Icons.inventory_2,
-              color: AppTheme.primaryColor,
-              onTap: () {
-                context.pushTo(
-                  const ProductsScreen(),
-                );
-              },
+            final isLoading =
+                ref.watch(productControllerProvider.select((s) => s.isLoading));
+            return Skeletonizer(
+              enabled: isLoading,
+              child: StatCard(
+                title: 'إجمالي المنتجات',
+                value: products.length.toString(),
+                icon: Icons.inventory_2,
+                color: AppTheme.primaryColor,
+                onTap: () {
+                  context.pushTo(
+                    const ProductsScreen(),
+                  );
+                },
+              ),
             );
           },
         ),
@@ -49,20 +55,25 @@ class DashboardStatsSection extends StatelessWidget {
             final expiredProducts = ref.watch(
               productControllerProvider.select((s) => s.expiredProducts),
             );
+            final isLoading =
+                ref.watch(productControllerProvider.select((s) => s.isLoading));
 
-            return StatCard(
-              title: 'منتهية الصلاحية',
-              value: expiredProducts.length.toString(),
-              icon: Icons.cancel,
-              color: AppTheme.expiredColor,
-              onTap: () {
-                context.pushTo(
-                  const ProductsScreen(
-                    listType: ProductListType.expired,
-                    title: 'المنتجات منهية الصلاحية',
-                  ),
-                );
-              },
+            return Skeletonizer(
+              enabled: isLoading,
+              child: StatCard(
+                title: 'منتهية الصلاحية',
+                value: expiredProducts.length.toString(),
+                icon: Icons.cancel,
+                color: AppTheme.expiredColor,
+                onTap: () {
+                  context.pushTo(
+                    const ProductsScreen(
+                      listType: ProductListType.expired,
+                      title: 'المنتجات منهية الصلاحية',
+                    ),
+                  );
+                },
+              ),
             );
           },
         ),
@@ -93,16 +104,21 @@ class DashboardStatsSection extends StatelessWidget {
             final nearExpiryProducts = ref.watch(
               productControllerProvider.select((s) => s.nearbyExpiredProducts),
             );
+            final isLoading =
+                ref.watch(productControllerProvider.select((s) => s.isLoading));
 
-            return StatCard(
-              title: 'قريبة من الانتهاء',
-              value: nearExpiryProducts.length.toString(),
-              icon: Icons.warning,
-              color: AppTheme.nearExpiryColor,
-              onTap: () => context.pushTo(
-                const ProductsScreen(
-                  listType: ProductListType.nearExpiry,
-                  title: 'المنتجات قريبة الانتهاء',
+            return Skeletonizer(
+              enabled: isLoading,
+              child: StatCard(
+                title: 'قريبة من الانتهاء',
+                value: nearExpiryProducts.length.toString(),
+                icon: Icons.warning,
+                color: AppTheme.nearExpiryColor,
+                onTap: () => context.pushTo(
+                  const ProductsScreen(
+                    listType: ProductListType.nearExpiry,
+                    title: 'المنتجات قريبة الانتهاء',
+                  ),
                 ),
               ),
             );

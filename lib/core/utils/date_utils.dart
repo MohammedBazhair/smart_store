@@ -1,3 +1,8 @@
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:timezone/data/latest.dart' as tzl;
+import 'package:timezone/timezone.dart' as tz;
+
+import '../constants/log.dart';
 
 class DateTimeUtils {
   DateTimeUtils._();
@@ -69,5 +74,15 @@ class DateTimeUtils {
     return days > 0 && days <= daysThreshold;
   }
 
-
+  static Future<void> initializeTimezone() async {
+    tzl.initializeTimeZones();
+    const defaultTimezone = 'Asia/Aden';
+    try {
+      final currentTimezone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(currentTimezone.identifier));
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      tz.setLocalLocation(tz.getLocation(defaultTimezone));
+    }
+  }
 }

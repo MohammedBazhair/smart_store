@@ -9,6 +9,7 @@ import '../constants/app_constants.dart';
 import '../constants/enums.dart';
 import '../constants/log.dart';
 import '../database/local/cache_service.dart';
+import '../shared/providers/app_provider_class.dart';
 import 'background_utils.dart';
 
 @pragma('vm:entry-point')
@@ -16,11 +17,9 @@ void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     if (taskName.isEmpty) return Future.value(false);
 
-    AppProviders.container = await configureDependencies();
+    await configureDependencies();
 
-    final container = AppProviders.container;
-
-    final tasksUtils = BackgroundUtils(container);
+    final tasksUtils = BackgroundUtils();
     try {
       final task = BackgroundTask.values.byName(taskName);
 
@@ -46,6 +45,8 @@ void callbackDispatcher() {
     } catch (e) {
       return Future.value(false);
     } finally {
+      final container = await AppProviders.container;
+
       container.dispose();
     }
     return Future.value(true);

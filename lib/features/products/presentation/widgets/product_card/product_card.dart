@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../auth/presentation/widgets/wrapper_background.dart';
@@ -36,106 +37,111 @@ class ProductCard extends ConsumerWidget {
               price: product.price,
               from: CurrencyCode.theDefault,
             );
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: isSelected
-              ? AppTheme.primaryColor.withOpacity(0.3)
-              : Colors.transparent,
-          width: 0.2,
+    final isLoadingProducts =
+        ref.watch(productControllerProvider.select((s) => s.isLoading));
+    return Skeletonizer(
+      enabled: isLoadingProducts,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isSelected
+                ? AppTheme.primaryColor.withOpacity(0.3)
+                : Colors.transparent,
+            width: 0.2,
+          ),
         ),
-      ),
-      shadowColor: isSelected
-          ? AppTheme.primaryColor.withOpacity(0.2)
-          : const Color(0x33000000),
-      child: ListTile(
-        onTap: onTap ??
-            () {
-              ref.read(currentProductIdProvider.notifier).state =
-                  product.globalProduct.id;
-              context.pushTo(const ProductDetailsScreen());
-            },
-        leading: StatusIcon(status ?? ProductExpiryStatus.valid()),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          spacing: 10,
-          children: [
-            Expanded(child: ProductTitle(product.globalProduct.name)),
-            Row(
-              spacing: 4,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.category,
-                  size: 14,
-                  color: AppTheme.textSecondary,
-                ),
-                Text(
-                  product.globalProduct.category.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.fade,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ],
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: IntrinsicHeight(
-            child: Row(
-              spacing: 15,
-              children: [
-                ProductMetaColumn(product),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    spacing: 8,
-                    children: [
-                      if (product.expiryDate != null && status?.text != null)
+        shadowColor: isSelected
+            ? AppTheme.primaryColor.withOpacity(0.2)
+            : const Color(0x33000000),
+        child: ListTile(
+          onTap: onTap ??
+              () {
+                ref.read(currentProductIdProvider.notifier).state =
+                    product.globalProduct.id;
+                context.pushTo(const ProductDetailsScreen());
+              },
+          leading: StatusIcon(status ?? ProductExpiryStatus.valid()),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            spacing: 10,
+            children: [
+              Expanded(child: ProductTitle(product.globalProduct.name)),
+              Row(
+                spacing: 4,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.category,
+                    size: 14,
+                    color: AppTheme.textSecondary,
+                  ),
+                  Text(
+                    product.globalProduct.category.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: IntrinsicHeight(
+              child: Row(
+                spacing: 15,
+                children: [
+                  ProductMetaColumn(product),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      spacing: 8,
+                      children: [
+                        if (product.expiryDate != null && status?.text != null)
+                          WrapperBackground(
+                            color: status?.color.withOpacity(0.08),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                status!.text,
+                                overflow: TextOverflow.fade,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: status.color.withOpacity(0.9),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
                         WrapperBackground(
-                          color: status?.color.withOpacity(0.08),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              status!.text,
-                              overflow: TextOverflow.fade,
-                              maxLines: 1,
-                              style: TextStyle(
-                                color: status.color.withOpacity(0.9),
+                          color: AppTheme.secondaryColor.withOpacity(0.1),
+                          child: Text.rich(
+                            TextSpan(
+                              text: price.formatDouble,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      WrapperBackground(
-                        color: AppTheme.secondaryColor.withOpacity(0.1),
-                        child: Text.rich(
-                          TextSpan(
-                            text: price.formatDouble,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: ' ${currency.label}',
-                                style: const TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontWeight: FontWeight.normal,
+                              children: [
+                                TextSpan(
+                                  text: ' ${currency.label}',
+                                  style: const TextStyle(
+                                    color: AppTheme.textSecondary,
+                                    fontWeight: FontWeight.normal,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
