@@ -19,9 +19,6 @@ Future<void> onDidReceiveNotificationResponse(NotificationResponse response) asy
   if (response.payload == null || response.payload!.isEmpty) return;
   final storeProductId = response.payload!;
 
-  while (!AppProviders.hasContainer) {
-    continue;
-  }
 
   final container =await AppProviders.container;
 
