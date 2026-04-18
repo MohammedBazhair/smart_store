@@ -9,7 +9,7 @@ import '../../../../features/settings/presentation/controllers/settings_provider
 import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
-import '../widgets/dashboard/dashboard_near_expiry_section.dart';
+import '../widgets/dashboard/dashboard_products_section.dart';
 import '../widgets/dashboard/dashboard_quick_actions.dart';
 import '../widgets/dashboard/dashboard_stats_section.dart';
 import 'permission_denied_screen.dart';
@@ -62,12 +62,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           icon: const Icon(Icons.notifications_rounded),
           onPressed: () {
             final allAlerts =
-                ref.read(alertControllerProvider).allAlerts.values;
+                ref.read(alertControllerProvider).allAlerts.values.toList();
 
             context.pushTo(
               AlertsScreen(
                 title: 'التنبيهات',
-                alerts: allAlerts.toList(),
+                alerts: allAlerts,
               ),
             );
           },
@@ -119,7 +119,7 @@ class DashboardBody extends ConsumerWidget {
           children: [
             DashboardStatsSection(),
             DashboardQuickActions(),
-            DashboardNearExpirySection(),
+            DashboardProductsSection(),
           ],
         ),
       ),

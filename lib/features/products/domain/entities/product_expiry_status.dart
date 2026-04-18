@@ -28,21 +28,21 @@ class ProductExpiryStatus {
 
     if (days < 0) {
       return ProductExpiryStatus(
-        color: AppTheme.expiredColor, // 🔴
+        color: AppTheme.expiredColor,
         text: text,
         icon: Icons.cancel,
       );
     } else if (days <= 7) {
       return ProductExpiryStatus(
-        color: AppTheme.nearExpiryColor, // ⚠️
+        color: AppTheme.nearExpiryColor,
         text: text,
-        icon: Icons.warning,
+        icon: Icons.warning_rounded,
       );
     } else if (days <= 30) {
       return ProductExpiryStatus(
-        color: Colors.orange, // 🟡 (أضف لون تحذيري)
+        color: Colors.orange,
         text: text,
-        icon: Icons.warning_amber,
+        icon: Icons.warning_rounded,
       );
     } else {
       return ProductExpiryStatus.valid(); // 🟢

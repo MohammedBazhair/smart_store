@@ -31,14 +31,7 @@ class ManageQuickProductsDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final searchQuery = ref.watch(productQueryProvider);
-    final tabType = ref.watch(quickTabProvider);
-    final products = switch (tabType) {
-      QuickTabType.onlyQuick =>
-        ref.watch(quickProductsProvider).values.toList(),
-      QuickTabType.allProducts =>
-        ref.watch(productControllerProvider).productsList,
-    };
+    
     return FractionallySizedBox(
       heightFactor: 0.8,
       child: Padding(
@@ -64,11 +57,7 @@ class ManageQuickProductsDialog extends ConsumerWidget {
             const _TabsQuick(),
 
             Expanded(
-              child: !searchQuery.hasQuery
-                  ? _ProductsBody(
-                      products,
-                    )
-                  : ref.watch(productSearchProvider).when(
+              child: ref.watch(productSearchProvider).when(
                         data: _ProductsBody.new,
                         loading: () {
                           final fakeProducts = StoreProduct.fakeProducts;

@@ -7,7 +7,6 @@ import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../products/domain/entities/store_product.dart';
 import '../../../settings/domain/repository/settings_repository.dart';
-import '../../data/models/alert_model.dart';
 import '../../domain/entities/expiry_reminder.dart';
 import '../../domain/repositories/alert_repository.dart';
 import 'alert_controller.dart';
@@ -15,12 +14,13 @@ import 'alert_scheduler.dart';
 import 'notification_service.dart';
 
 /// handle tap on notification
-Future<void> onDidReceiveNotificationResponse(NotificationResponse response) async {
+Future<void> onDidReceiveNotificationResponse(
+  NotificationResponse response,
+) async {
   if (response.payload == null || response.payload!.isEmpty) return;
   final storeProductId = response.payload!;
 
-
-  final container =await AppProviders.container;
+  final container = await AppProviders.container;
 
   final cache = container.read(localCacheServiceProvider);
   await cache.setString(
@@ -53,16 +53,15 @@ class AlertService {
 
     if (product.expiryDate == null) return;
 
-    final alerts = [
-      ExpiryReminder(daysBefore: 30, importance: Priority.high),
-      ExpiryReminder(daysBefore: 15, importance: Priority.high),
-      ExpiryReminder(daysBefore: 7, importance: Priority.max),
-      ExpiryReminder(daysBefore: 0, importance: Priority.max),
+    final alertsTypes = [
+      ExpiryRemainder(daysBeforeExpiry: 30, importance: Priority.high),
+      ExpiryRemainder(daysBeforeExpiry: 15, importance: Priority.high),
+      ExpiryRemainder(daysBeforeExpiry: 7, importance: Priority.max),
+      ExpiryRemainder(daysBeforeExpiry: 0, importance: Priority.max),
     ];
 
-    for (final alert in alerts) {
-      final days = alert.daysBefore;
-      final importance = alert.importance;
+    for (final type in alertsTypes) {
+      final days = type.daysBeforeExpiry;
       final isNearExpired =
           DateTimeUtils.isNearExpiry(product.expiryDate!, days);
 
@@ -76,15 +75,14 @@ class AlertService {
 
       await _scheduleAlert(
         product: product,
-        daysBefore: days,
-        importance: importance,
+        remainder: type,
       );
     }
   }
 
   Future<void> showNotification({
     required StoreProduct product,
-    required int daysBefore,
+    required ExpiryRemainder remainder,
   }) async {
     final payload = product.globalProduct.id;
 
@@ -94,7 +92,7 @@ class AlertService {
         remainingDays <= 0 ? 'منتهي الصلاحية' : 'باقي $remainingDays يوم';
 
     await _notifications.show(
-      id: AlertUtils.notificationId(product, daysBefore),
+      id: AlertUtils.notificationId(product, remainder.daysBeforeExpiry),
       title: 'تنبيه صلاحية: ${product.globalProduct.name}',
       body: '${product.globalProduct.name} ($timeMsg)',
       payload: payload,
@@ -102,34 +100,34 @@ class AlertService {
 
     await alertController.addAlert(
       product: product,
-      daysBeforeExpiry: daysBefore,
-      importance: AlertModel.getPriorityFrom(daysBefore),
+      expiryRemainder: remainder,
     );
   }
 
   Future<void> _scheduleAlert({
     required StoreProduct product,
-    required int daysBefore,
-    required Priority importance,
+    required ExpiryRemainder remainder,
   }) async {
     if (product.expiryDate == null) return;
-    final alertDate = product.expiryDate!.subtract(Duration(days: daysBefore));
+    final alertDate = product.expiryDate!
+        .subtract(Duration(days: remainder.daysBeforeExpiry));
 
     if (alertDate.isBefore(DateTime.now())) {
       // إذا كان التاريخ في الماضي، أرسل التنبيه فورًا
       await showNotification(
         product: product,
-        daysBefore: daysBefore,
+        remainder: remainder,
       );
       return;
     }
     final payload = product.globalProduct.id?.toString();
 
-    final String timeMsg =
-        daysBefore == 0 ? 'منتهي الصلاحية' : 'باقي $daysBefore يوم';
+    final String timeMsg = remainder.daysBeforeExpiry == 0
+        ? 'منتهي الصلاحية'
+        : 'باقي ${remainder.daysBeforeExpiry} يوم';
 
     await _notifications.schedule(
-      id: AlertUtils.notificationId(product, daysBefore),
+      id: AlertUtils.notificationId(product, remainder.daysBeforeExpiry),
       title: 'تنبيه صلاحية',
       body: '${product.globalProduct.name} ($timeMsg)',
       date: alertDate,
@@ -137,7 +135,7 @@ class AlertService {
     );
 
     final delay = alertDate.difference(DateTime.now());
-    await scheduleWorkManagerAlert(product, daysBefore, delay);
+    await scheduleWorkManagerAlert(product, remainder.daysBeforeExpiry, delay);
   }
 
   Future<void> cancelProductAlerts(StoreProduct product) async {

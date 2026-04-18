@@ -26,7 +26,7 @@ class StoreController extends Notifier<StoreEventState> {
   }
 
   LocalCacheService get _cache => ref.read(localCacheServiceProvider);
-  ProfileEntity get profile => ref.read(userControllerProvider).profile;
+  ProfileEntity get profile => ref.read(userControllerProvider).entity.profile;
   StoreRepository get storeRepo => ref.read(storeRepositoryProvider);
 
   StoreMember? get meAsCurrentMember {

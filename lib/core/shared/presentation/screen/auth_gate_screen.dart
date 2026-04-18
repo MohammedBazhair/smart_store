@@ -26,7 +26,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!ref.read(userControllerProvider).isLogged) return;
+      if (!ref.read(userControllerProvider).entity.isLogged) return;
 
       ref.read(appSyncControllerProvider.notifier).sync();
       _handleNotificationAppLaunch();
@@ -48,11 +48,11 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   @override
   Widget build(BuildContext context) {
     final isLogged =
-        ref.watch(userControllerProvider.select((s) => s.isLogged));
+        ref.watch(userControllerProvider.select((s) => s.entity.isLogged));
 
     if (!isLogged) return const SignInScreen();
 
-    final profile = ref.watch(userControllerProvider).profile;
+    final profile = ref.watch(userControllerProvider.select((s)=>s.entity.profile));
 
     final isStoresInitialized =
         ref.watch(storeControllerProvider.select((s) => s.state.isInitialized));

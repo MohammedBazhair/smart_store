@@ -1,10 +1,9 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/shared/providers/repositories_provider.dart';
 import '../../../../errors/result.dart';
 import '../../../products/domain/entities/store_product.dart';
 import '../../domain/entities/alert.dart';
+import '../../domain/entities/expiry_reminder.dart';
 import '../../domain/repositories/alert_repository.dart';
 
 class AlertController extends Notifier<AlertsState> {
@@ -28,8 +27,7 @@ class AlertController extends Notifier<AlertsState> {
 
   Future<void> addAlert({
     required StoreProduct product,
-    required int daysBeforeExpiry,
-    required Priority importance,
+    required ExpiryRemainder expiryRemainder,
   }) async {
     if (product.expiryDate == null) return;
     final alert = Alert(
@@ -38,8 +36,7 @@ class AlertController extends Notifier<AlertsState> {
       createdAt: DateTime.now().toUtc(),
       expiryDate: product.expiryDate!,
       productName: product.globalProduct.name,
-      daysBeforeExpiry: daysBeforeExpiry,
-      importance: importance,
+      expiryRemainder: expiryRemainder,
     );
 
     final result = await repository.addAlert(alert);

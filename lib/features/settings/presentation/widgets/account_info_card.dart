@@ -10,7 +10,7 @@ class AccountInfoCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final profile = ref.watch(userControllerProvider).profile;
+    final profile = ref.watch(userControllerProvider).entity.profile;
     final email = ref.read(userControllerProvider.notifier).currentUser?.email;
     return Card(
       child: Padding(

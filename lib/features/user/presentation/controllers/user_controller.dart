@@ -12,7 +12,12 @@ import 'user_state.dart';
 class UserController extends Notifier<UserState> {
   @override
   UserState build() {
-    return UserInitialState(isLogged: currentUser != null);
+    final stateEntity = UserStateEntity(
+      profile: ProfileEntity.guest(),
+      isLogged: currentUser != null,
+    );
+
+    return UserInitialState(stateEntity);
   }
 
   UserRepository get _userRepository => ref.read(userRepositoryProvider);
@@ -21,10 +26,8 @@ class UserController extends Notifier<UserState> {
 
   Future<ProfileEntity?> loadProfile() async {
     try {
-      state = UserLoadingProfileState(
-        profile: state.profile,
-        isLogged: state.isLogged,
-      );
+      if (state.entity.isInitilized) return state.entity.profile;
+      state = UserLoadingProfileState(state.entity);
       if (currentUser?.id == null) return null;
 
       final profileParams = GetProfileParams(
@@ -35,14 +38,16 @@ class UserController extends Notifier<UserState> {
 
       final newProfile = await _userRepository.getProfile(profileParams);
 
-      state = UserLoadedProfileState(profile: newProfile, isLogged: true);
+      state = UserLoadedProfileState(
+        state.entity
+            .copyWith(profile: newProfile, isLogged: true, isInitilized: true),
+      );
       return newProfile;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
       state = UserErrorState(
-        profile: state.profile,
+        state.entity,
         message: 'حدث خطأ... لم نتمكن من الحصول على بيانات بروفايلك',
-        isLogged: state.isLogged,
       );
       return null;
     }
@@ -52,16 +57,14 @@ class UserController extends Notifier<UserState> {
     try {
       await _userRepository.updateProfile(newProfile);
       state = UserUpdatedProfileState(
-        profile: newProfile,
-        isLogged: state.isLogged,
+        state.entity.copyWith(profile: newProfile),
       );
       return const SuccessState(null);
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
       state = UserErrorState(
-        profile: state.profile,
+        state.entity,
         message: 'حصل خطا أثناء التحديث معلومات المستخدم',
-        isLogged: state.isLogged,
       );
       return ErrorState(e.toString());
     }

@@ -52,33 +52,6 @@ class DashboardStatsSection extends StatelessWidget {
         ),
         Consumer(
           builder: (_, ref, __) {
-            final expiredProducts = ref.watch(
-              productControllerProvider.select((s) => s.expiredProducts),
-            );
-            final isLoading =
-                ref.watch(productControllerProvider.select((s) => s.isLoading));
-
-            return Skeletonizer(
-              enabled: isLoading,
-              child: StatCard(
-                title: 'منتهية الصلاحية',
-                value: expiredProducts.length.toString(),
-                icon: Icons.cancel,
-                color: AppTheme.expiredColor,
-                onTap: () {
-                  context.pushTo(
-                    const ProductsScreen(
-                      listType: ProductListType.expired,
-                      title: 'المنتجات منهية الصلاحية',
-                    ),
-                  );
-                },
-              ),
-            );
-          },
-        ),
-        Consumer(
-          builder: (_, ref, __) {
             final unreadAlerts = ref.watch(
               alertControllerProvider.select((s) => s.unreadAlerts),
             );
@@ -96,31 +69,6 @@ class DashboardStatsSection extends StatelessWidget {
                   ),
                 );
               },
-            );
-          },
-        ),
-        Consumer(
-          builder: (_, ref, __) {
-            final nearExpiryProducts = ref.watch(
-              productControllerProvider.select((s) => s.nearbyExpiredProducts),
-            );
-            final isLoading =
-                ref.watch(productControllerProvider.select((s) => s.isLoading));
-
-            return Skeletonizer(
-              enabled: isLoading,
-              child: StatCard(
-                title: 'قريبة من الانتهاء',
-                value: nearExpiryProducts.length.toString(),
-                icon: Icons.warning,
-                color: AppTheme.nearExpiryColor,
-                onTap: () => context.pushTo(
-                  const ProductsScreen(
-                    listType: ProductListType.nearExpiry,
-                    title: 'المنتجات قريبة الانتهاء',
-                  ),
-                ),
-              ),
             );
           },
         ),

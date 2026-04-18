@@ -54,6 +54,7 @@ dependencies:
   audioplayers: ^6.6.0
   printing: ^5.14.3
   connectivity_plus: ^7.1.1
+  flutter_svg: ^2.2.4
 
 dev_dependencies:
   flutter_test:

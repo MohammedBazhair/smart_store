@@ -60,7 +60,7 @@ final focusNodesProvider =
   return map;
 });
 
-final currentProductProvider = FutureProvider<StoreProduct?>((ref)  {
+final currentProductProvider = FutureProvider<StoreProduct?>((ref) {
   final productId = ref.watch(currentProductIdProvider);
   if (productId == null) return null;
 

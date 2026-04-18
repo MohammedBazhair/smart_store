@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 abstract interface class ConnectivityService {
@@ -17,12 +16,10 @@ class ConnectivityServiceImpl implements ConnectivityService {
   @override
   Future<bool> hasConnection() async {
     final connectionResult = await _connection.checkConnectivity();
-
     if (connectionResult.contains(ConnectivityResult.none)) return false;
 
     try {
       final lookup = await InternetAddress.lookup('example.com');
-
       if (lookup.isNotEmpty && lookup.first.rawAddress.isNotEmpty) return true;
 
       return false;

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
@@ -13,14 +12,24 @@ class AlertCard extends ConsumerWidget {
 
   final Alert alert;
 
+  Color getColorBackground() {
+    return switch (alert.expiryRemainder.daysBeforeExpiry) {
+      <= 27 => AppTheme.expiredColor,
+      _ => AppTheme.nearExpiryColor,
+    };
+  }
+
+  Icon getIcon() {
+    final iconData = switch (alert.expiryRemainder.daysBeforeExpiry) {
+      <= 27 => Icons.cancel_rounded,
+      _ => Icons.warning_rounded,
+    };
+
+    return Icon(iconData, size: 24);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final importanceColor = alert.priority == Priority.high
-        ? AppTheme.errorColor
-        : alert.priority == Priority.defaultPriority
-            ? AppTheme.warningColor
-            : AppTheme.primaryColor;
-
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: alert.isRead ? 1 : 3,
@@ -28,16 +37,10 @@ class AlertCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: importanceColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            Icons.warning,
-            color: importanceColor,
-          ),
+        leading: CircleAvatar(
+          radius: 20,
+          backgroundColor: getColorBackground(),
+          child: getIcon(),
         ),
         title: Text(
           alert.productName,
@@ -46,7 +49,7 @@ class AlertCard extends ConsumerWidget {
               ),
         ),
         subtitle: Text(
-          '${alert.remainingDays} أيام قبل الانتهاء',
+          '${alert.expiryRemainder.daysBeforeExpiry} أيام قبل الانتهاء',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         trailing: Icon(
