@@ -14,11 +14,11 @@ class AppProviders {
   
 
   static Future<ProviderContainer> get container async {
-    if (!hasContainer) await _initialize();
+    if (!_hasContainer) await _initialize();
     return _container!;
   }
 
-  static bool get hasContainer => _container != null;
+  static bool get _hasContainer => _container != null;
 
   static Future<void> _initialize() async {
     final [_, _, sharedPrefs as SharedPreferences, database as Database] =
