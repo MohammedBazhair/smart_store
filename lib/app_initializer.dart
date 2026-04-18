@@ -1,60 +1,25 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../core/constants/enums.dart';
 import '../../core/utils/top_level_fuctions.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
-import 'core/database/local/database_helper.dart';
 import 'core/extensions/extensions.dart';
-import 'core/shared/providers/core_providers.dart';
-import 'core/shared/providers/repositories_provider.dart';
+import 'core/shared/providers/app_provider_class.dart';
 import 'features/products/presentation/screens/init_screen.dart';
 import 'main.dart';
 
-class AppProviders {
-  AppProviders._();
-  static late ProviderContainer container;
-}
-
-Future<ProviderContainer> configureDependencies() async {
-  final results = await Future.wait([
-    initializeDateFormatting('ar'),
-    initializeSupabase(),
-    SharedPreferences.getInstance(),
-    DatabaseHelper.instance.database,
-  ]);
-
-  final sharedPrefs = results[2] as SharedPreferences;
-  final database = results[3] as Database;
-
-  final container = ProviderContainer(
-    overrides: [
-      sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-      databaseProvider.overrideWithValue(database),
-    ],
-  );
-
-  await _initializeServices(container);
-
-  return container;
-}
-
-Future<void> _initializeServices(ProviderContainer container) async {
+Future<void> configureDependencies() async {
   await Future.wait([
-    _initializeAlertService(container),
+    _initializeAlertService(),
     _initializeWorkManager(),
-    _initializePushNotification(container),
+    _initializePushNotification(),
   ]);
 }
 
-Future<void> _initializeAlertService(
-  ProviderContainer container,
-) async {
+Future<void> _initializeAlertService() async {
+  final container = await AppProviders.container;
   final alertService = container.read(alertServiceProvider);
   await alertService.initialize();
 }
@@ -102,7 +67,7 @@ Future<void> initializeSupabase() async {
   );
 }
 
-Future<void> _initializePushNotification(ProviderContainer container) async {
+Future<void> _initializePushNotification() async {
   // Enable verbose logging for debugging (remove in production)
   await OneSignal.Debug.setLogLevel(OSLogLevel.none);
   // Initialize with your OneSignal App ID

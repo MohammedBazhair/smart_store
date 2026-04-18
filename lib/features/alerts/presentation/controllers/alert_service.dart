@@ -1,17 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-import '../../../../app_initializer.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/log.dart';
+import '../../../../core/shared/providers/app_provider_class.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
-import '../../../../main.dart';
 import '../../../products/domain/entities/store_product.dart';
-import '../../../products/presentation/controllers/product_provider.dart';
-import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../settings/domain/repository/settings_repository.dart';
 import '../../data/models/alert_model.dart';
 import '../../domain/entities/expiry_reminder.dart';
@@ -21,46 +15,21 @@ import 'alert_scheduler.dart';
 import 'notification_service.dart';
 
 /// handle tap on notification
-void onDidReceiveNotificationResponse(NotificationResponse response) async {
-  Logger.debugLog(
-    message: 'Received notification response: ${response.id}',
-  );
+Future<void> onDidReceiveNotificationResponse(NotificationResponse response) async {
   if (response.payload == null || response.payload!.isEmpty) return;
   final storeProductId = response.payload!;
 
-  // Wait a bit to ensure AppProviders.container is initialized
-  // if this is called at the very first frame of the app.
-  int retries = 0;
-  while (retries < 10) {
-    try {
-      final container = AppProviders.container;
-      final isReady = navigatorKey.currentState != null;
-
-      if (!isReady) {
-        final cache = container.read(localCacheServiceProvider);
-        await cache.setString(
-          key: AppConstants.pendingNotificationPayloadKey,
-          value: storeProductId,
-        );
-        return;
-      }
-
-      container.read(currentProductIdProvider.notifier).state = storeProductId;
-      final cache = container.read(localCacheServiceProvider);
-      await cache.setString(
-        key: AppConstants.pendingNotificationPayloadKey,
-        value: storeProductId,
-      );
-
-      const detatailsScreen = ProductDetailsScreen();
-      await navigatorKey.currentState
-          ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
-      break;
-    } catch (e) {
-      await Future.delayed(const Duration(milliseconds: 200));
-      retries++;
-    }
+  while (!AppProviders.hasContainer) {
+    continue;
   }
+
+  final container =await AppProviders.container;
+
+  final cache = container.read(localCacheServiceProvider);
+  await cache.setString(
+    key: AppConstants.pendingNotificationPayloadKey,
+    value: storeProductId,
+  );
 }
 
 class AlertService {

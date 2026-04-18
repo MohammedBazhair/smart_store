@@ -1,7 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -111,16 +110,10 @@ final userRemoteDataSourceProvider = Provider((ref) {
   );
 });
 
-final _userControllerProvider = Provider((ref) {
-  final repo = ref.read(userRepositoryProvider);
 
-  return UserController(repo);
-});
-
-final userControllerProvider = StateNotifierProvider<UserController, UserState>(
-  (ref) {
-    final controller = ref.read(_userControllerProvider);
-    return controller;
+final userControllerProvider = NotifierProvider<UserController, UserState>(
+  () {
+    return UserController();
   },
 );
 
@@ -156,7 +149,6 @@ final tokenRefreshProvider = Provider((ref) {
 
   ref.onDispose(subscription.cancel);
 });
-
 
 final permissionServiceProvider = Provider((ref) {
   final accountStatus = ref.watch(userControllerProvider).profile.accountStatus;

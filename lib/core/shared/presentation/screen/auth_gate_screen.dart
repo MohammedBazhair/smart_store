@@ -26,25 +26,22 @@ class _AuthGateState extends ConsumerState<AuthGate> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (ref.read(userControllerProvider).isLogged) {
-        ref.read(appSyncControllerProvider.notifier).sync();
-        _pushPendingProductDetails();
-      }
+      if (!ref.read(userControllerProvider).isLogged) return;
+
+      ref.read(appSyncControllerProvider.notifier).sync();
+      _handleNotificationAppLaunch();
     });
   }
 
-  Future<void> _pushPendingProductDetails() async {
+  Future<void> _handleNotificationAppLaunch() async {
     final cache = ref.read(localCacheServiceProvider);
-    final productId = cache.getString(
-      key: AppConstants.pendingNotificationPayloadKey,
-    );
-
+    final productId =
+        cache.getString(key: AppConstants.pendingNotificationPayloadKey);
     if (productId == null || productId.isEmpty) return;
 
     await cache.remove(key: AppConstants.pendingNotificationPayloadKey);
 
     ref.read(currentProductIdProvider.notifier).state = productId;
-
     await context.pushTo(const ProductDetailsScreen());
   }
 

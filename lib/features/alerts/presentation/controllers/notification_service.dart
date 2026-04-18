@@ -1,10 +1,9 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-
-import '../../../../core/constants/log.dart';
-import '../../../../core/utils/top_level_fuctions.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/shared/providers/app_provider_class.dart';
+import '../../../../core/shared/providers/core_providers.dart';
+import '../../../../core/utils/date_utils.dart';
 import 'alert_service.dart';
 
 class NotificationService {
@@ -26,31 +25,38 @@ class NotificationService {
         iOS: DarwinNotificationDetails(),
       );
 
+  InitializationSettings get initializationSettings =>
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(),
+      );
+      
   Future<void> initialize() async {
-    tz.initializeTimeZones();
+    await Future.wait([
+      DateTimeUtils.initializeTimezone(),
+      _notifications.initialize(
+        settings: initializationSettings,
+        // onDidReceiveBackgroundNotificationResponse:
+        // onDidReceiveBackgroundNotificationResponse,
+        onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+      ),
+    ]);
 
-    const defaultTimezone = 'Asia/Aden';
-    try {
-      final currentTimezone = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(currentTimezone.identifier));
-    } catch (e, st) {
-      Logger.debugLog(error: e, stackTrace: st);
-      tz.setLocalLocation(tz.getLocation(defaultTimezone));
-    }
+    await _handleNotificationAppLaunch();
+  }
 
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings();
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
+  Future<void> _handleNotificationAppLaunch() async {
+    final details = await _notifications.getNotificationAppLaunchDetails();
+    final isNotificationLaunch = details?.didNotificationLaunchApp ?? false;
+    final payload = details?.notificationResponse?.payload;
+    if (!isNotificationLaunch || payload == null || payload.isEmpty) return;
 
-    await _notifications.initialize(
-      settings: initSettings,
-      onDidReceiveBackgroundNotificationResponse:
-          onDidReceiveBackgroundNotificationResponse,
-      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+    final container = await AppProviders.container;
+
+    final cache =container.read(localCacheServiceProvider);
+    await cache.setString(
+      key: AppConstants.pendingNotificationPayloadKey,
+      value: payload,
     );
   }
 

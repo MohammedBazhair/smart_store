@@ -1,6 +1,4 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../errors/result.dart';
 import '../../features/alerts/data/models/alert_background_params.dart';
 import '../../features/alerts/data/models/alert_model.dart';
@@ -9,42 +7,42 @@ import '../../features/products/presentation/controllers/product_provider.dart';
 import '../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../features/store/presentation/controller/store_provider.dart';
 import '../constants/log.dart';
+import '../shared/providers/app_provider_class.dart';
 import '../shared/providers/core_providers.dart';
 import '../shared/providers/repositories_provider.dart';
 import 'date_utils.dart';
 
 class BackgroundUtils {
-  factory BackgroundUtils(ProviderContainer container) =>
-      _instance ??= BackgroundUtils._(container);
-  BackgroundUtils._(this.container);
+  factory BackgroundUtils() => _instance ??= BackgroundUtils._();
+  BackgroundUtils._();
 
   static BackgroundUtils? _instance;
-
-  final ProviderContainer container;
 
   Future<Result<int>> addAlertInBackground(
     AlertBackgroundParams params,
   ) async {
     final product = params.product;
-    final repository = container.read(alertRepositoryProvider);
+  final container = await AppProviders.container;
+
+    final repository =container.read(alertRepositoryProvider);
     final alert = AlertModel(
       productId: product.globalProduct.id!,
       daysBeforeExpiry: params.daysBeforeExpire,
       importance: Priority.high,
       isRead: false,
       createdAt: DateTime.now(),
-      expiryDate: product.expiryDate?? DateTime.now().add(const Duration(days: 365)),
+      expiryDate:
+          product.expiryDate ?? DateTime.now().add(const Duration(days: 365)),
       productName: product.globalProduct.name,
     );
     final result = await repository.addAlert(alert);
 
-    // This background task is used to persist the fired alert in the local database.
-    // The local notification itself is already scheduled through FlutterLocalNotifications,
-    // so do not fire the same notification again here.
     return result;
   }
 
   Future<void> dailyExpiryCheck() async {
+  final container = await AppProviders.container;
+
     final repository = container.read(productRepositoryProvider);
     final cache = container.read(localCacheServiceProvider);
     final storeId = cache.getString(key: 'selected_store_id');
@@ -70,6 +68,8 @@ class BackgroundUtils {
   }
 
   Future<void> syncAllData() async {
+  final container = await AppProviders.container;
+
     final productRepo = container.read(productRepositoryProvider);
     final storesRepo = container.read(storeRepositoryProvider);
     final userRepo = container.read(userRepositoryProvider);
@@ -99,8 +99,10 @@ class BackgroundUtils {
     }
   }
 
- Future< void> removeOldAlerts()async {
+  Future<void> removeOldAlerts() async {
+  final container = await AppProviders.container;
+
     final repo = container.read(alertRepositoryProvider);
-     await repo.deleteOldAlerts();
+    await repo.deleteOldAlerts();
   }
 }

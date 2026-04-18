@@ -1,15 +1,21 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/log.dart';
+import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/get_profile_params.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/repositories/user_repository.dart';
 import 'user_state.dart';
 
-class UserController extends StateNotifier<UserState> {
-  UserController(this._userRepository) : super(UserInitialState());
-  final UserRepository _userRepository;
+class UserController extends Notifier<UserState> {
+  @override
+  UserState build() {
+    return UserInitialState(isLogged: currentUser != null);
+  }
+
+  UserRepository get _userRepository => ref.read(userRepositoryProvider);
 
   User? get currentUser => _userRepository.currentUser;
 
@@ -35,7 +41,7 @@ class UserController extends StateNotifier<UserState> {
       Logger.debugLog(error: e, stackTrace: st);
       state = UserErrorState(
         profile: state.profile,
-        message: 'حدث لم نتمكن من الحصول على بيانات بروفايلك',
+        message: 'حدث خطأ... لم نتمكن من الحصول على بيانات بروفايلك',
         isLogged: state.isLogged,
       );
       return null;

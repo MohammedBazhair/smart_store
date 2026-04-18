@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/constants/typedef.dart';
@@ -11,12 +10,14 @@ class ProductManagementState extends Equatable {
     this.expiredProducts = const [],
     this.nearbyExpiredProducts = const [],
     this.categories = const [],
+    this.isLoading = false,
   });
 
   final ProductsByIdentifier products;
   final List<StoreProduct> expiredProducts;
   final List<StoreProduct> nearbyExpiredProducts;
   final List<Category> categories;
+  final bool isLoading;
 
   List<StoreProduct> get productsList => products.values.toList();
 
@@ -29,6 +30,7 @@ class ProductManagementState extends Equatable {
     List<StoreProduct>? expiredProducts,
     List<StoreProduct>? nearbyExpiredProducts,
     List<Category>? categories,
+    bool? isLoading,
   }) {
     return ProductManagementState(
       products: products ?? this.products,
@@ -36,6 +38,7 @@ class ProductManagementState extends Equatable {
       nearbyExpiredProducts:
           nearbyExpiredProducts ?? this.nearbyExpiredProducts,
       categories: categories ?? this.categories,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }

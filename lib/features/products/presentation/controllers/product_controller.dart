@@ -29,6 +29,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   }
 
   Future<void> initialize() async {
+    state = state.copyWith(isLoading: true);
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
     await productRepo.syncAllCategories();
@@ -50,6 +51,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       expiredProducts: expiredProducts,
       nearbyExpiredProducts: nearbyExpiredProducts,
       categories: categories,
+      isLoading: false,
     );
   }
 

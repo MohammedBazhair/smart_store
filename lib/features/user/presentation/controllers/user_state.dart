@@ -7,7 +7,7 @@ sealed class UserState {
 }
 
 class UserInitialState extends UserState {
-  UserInitialState() : super(profile: ProfileEntity.guest(), isLogged: false);
+  UserInitialState({required super.isLogged}) : super(profile: ProfileEntity.guest());
 }
 
 class UserUpdatedProfileState extends UserState {

@@ -40,7 +40,7 @@ class AppSyncController extends Notifier<bool> {
     try {
       final network = ref.read(networkProvider);
       if (await network.hasConnection()) {
-        final backgroundUtils = BackgroundUtils(ref.container);
+        final backgroundUtils = BackgroundUtils();
         await backgroundUtils.syncAllData();
         // Refresh local state after sync finishes
         await _loadLocal();
