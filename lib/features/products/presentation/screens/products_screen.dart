@@ -59,7 +59,14 @@ class ProductsBody extends ConsumerWidget {
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: showSimpleCount
-              ? _ProductsBody(simpleProducts)
+              ? Skeletonizer(
+                  enabled: productsSearchAsync.isLoading,
+                  child: _ProductsBody(
+                    productsSearchAsync.isLoading
+                        ? StoreProduct.fakeProducts
+                        : simpleProducts,
+                  ),
+                )
               : Column(
                   children: [
                     const ProductSearchBar(),
@@ -114,6 +121,7 @@ class _ProductsBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final query = ref.watch(productQueryProvider);
+
     if (products.isEmpty) {
       return ProductsEmptyState(text: query.uiNotFoundText);
     }

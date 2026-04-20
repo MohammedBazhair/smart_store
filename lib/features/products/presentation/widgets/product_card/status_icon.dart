@@ -13,8 +13,12 @@ class StatusIcon extends StatelessWidget {
     return Skeleton.leaf(
       child: CircleAvatar(
         radius: 22,
-        backgroundColor: status.color.withValues(alpha: 0.1),
-        child: Icon(status.icon, color: status.color, size: 24),
+        backgroundColor: status.color,
+        child: Icon(
+          status.icon,
+          color: Colors.white,
+          size: 24,
+        ),
       ),
     );
   }

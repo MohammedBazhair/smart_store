@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/common_actions.dart';
 import '../controllers/pos_providers.dart';
 import '../widgets/dialogs/manage_quick_products_dialog.dart';
 import '../widgets/dialogs/show_clear_confirmation_dialog.dart';
@@ -20,7 +21,9 @@ class CheckoutScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('المحاسب الصغير'),
         actions: [
+          const SettingsActonIcon(),
           IconButton(
+            tooltip: 'تفريغ السلة',
             icon: const Icon(Icons.delete_sweep_outlined),
             onPressed: () {
               if (state.cartItems.isNotEmpty) {

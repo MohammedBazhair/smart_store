@@ -6,9 +6,9 @@ import '../../../../features/alerts/presentation/screens/alerts_screen.dart';
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/settings/presentation/controllers/settings_provider.dart';
-import '../../../../features/settings/presentation/screens/settings_screen.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
+import '../widgets/common/common_actions.dart';
 import '../widgets/dashboard/dashboard_products_section.dart';
 import '../widgets/dashboard/dashboard_quick_actions.dart';
 import '../widgets/dashboard/dashboard_stats_section.dart';
@@ -61,24 +61,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           tooltip: 'التنبيهات',
           icon: const Icon(Icons.notifications_rounded),
           onPressed: () {
-            final allAlerts =
-                ref.read(alertControllerProvider).allAlerts.values.toList();
-
             context.pushTo(
-              AlertsScreen(
+              const AlertsScreen(
                 title: 'التنبيهات',
-                alerts: allAlerts,
+                alertsScreenType: AlertsScreenType.all,
               ),
             );
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              context.pushTo(const SettingsScreen());
-            },
-          ),
+        actions: const [
+          SettingsActonIcon(),
         ],
       ),
       body: const DashboardBody(),
@@ -96,6 +88,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 }
+
 
 class DashboardBody extends ConsumerWidget {
   const DashboardBody({

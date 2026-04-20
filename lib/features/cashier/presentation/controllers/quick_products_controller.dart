@@ -10,18 +10,9 @@ class QuickProductsController extends Notifier<ProductsByIdentifier> {
   LocalCacheService get _cacheService => ref.read(localCacheServiceProvider);
 
   @override
-  ProductsByIdentifier build() {
-    _loadQuickProducts();
-    // Re-evaluate if products overall change.
-    ref.listen(productControllerProvider, (prev, next) {
-      if (prev?.products != next.products) {
-        _loadQuickProducts();
-      }
-    });
-    return state;
-  }
+  ProductsByIdentifier build() => _getQuickProducts();
 
-  void _loadQuickProducts() {
+  ProductsByIdentifier _getQuickProducts() {
     final ids =
         _cacheService.getStringList(key: AppConstants.quickProductsIdsKey) ??
             [];
@@ -31,7 +22,7 @@ class QuickProductsController extends Notifier<ProductsByIdentifier> {
     final entries = ids.map((id) => MapEntry(id, allProducts[id]));
     final quickProducts = entries.where((m) => m.value != null);
 
-    state = Map.fromIterable(quickProducts);
+   return Map.fromIterable(quickProducts);
   }
 
   Future<void> toggleProduct(StoreProduct product) async {

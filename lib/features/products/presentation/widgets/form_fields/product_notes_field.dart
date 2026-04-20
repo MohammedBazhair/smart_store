@@ -16,7 +16,9 @@ class ProductNotesField extends ConsumerWidget {
       decoration: const InputDecoration(
         labelText: 'ملاحظات',
       ),
-      maxLines: 3,
+      maxLines: 5,
+      minLines: 2,
+      maxLength: 100,
     );
   }
 }

@@ -18,29 +18,28 @@ class DashboardQuickActions extends StatelessWidget {
           'إجراءات سريعة',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
-        GridView.count(
-          crossAxisCount: 2,
-          childAspectRatio: 1.5,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+        Row(
+          spacing: 12,
           children: [
-            DashboardQuickActionCard(
-              title: 'المحاسب',
-              icon: Icons.point_of_sale_outlined,
-              color: Colors.green,
-              onTap: () {
-                context.pushTo(const CheckoutScreen());
-              },
+            Expanded(
+              child: DashboardQuickActionCard(
+                title: 'المحاسب',
+                icon: Icons.point_of_sale_outlined,
+                color: Colors.green,
+                onTap: () {
+                  context.pushTo(const CheckoutScreen());
+                },
+              ),
             ),
-            DashboardQuickActionCard(
-              title: 'إضافة منتج',
-              icon: Icons.add_circle_outline,
-              color: AppTheme.primaryColor,
-              onTap: () {
-                context.pushTo(const UpsertProductScreen());
-              },
+            Expanded(
+              child: DashboardQuickActionCard(
+                title: 'إضافة منتج',
+                icon: Icons.add_circle_outline,
+                color: AppTheme.primaryColor,
+                onTap: () {
+                  context.pushTo(const UpsertProductScreen());
+                },
+              ),
             ),
           ],
         ),
