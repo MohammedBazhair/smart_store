@@ -131,6 +131,7 @@ class ProductInfoSection extends ConsumerWidget {
             value: product.notes,
             detailsType: ProductDetailsType.notes,
             iconColor: const Color(0xFF9CA3AF),
+            subtitleMaxLines: 10,
           ),
       ],
     );

@@ -20,7 +20,7 @@ Future<void> showManageQuickProductsDialog(BuildContext context) {
 
 enum QuickTabType {
   onlyQuick('المنتجات السريعة'),
-  allProducts('كل المنتجات');
+  withoutBarcode('بلا باركود');
 
   const QuickTabType(this.label);
   final String label;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
@@ -52,10 +53,13 @@ class AlertCard extends ConsumerWidget {
           '${alert.expiryRemainder.daysBeforeExpiry} أيام قبل الانتهاء',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: Icon(
-          alert.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
-          color: AppTheme.primaryColor,
-        ),
+        trailing: !alert.isRead
+            ? SvgPicture.asset(
+                'assets/icons/fire-alarm-icon.svg',
+                color: getColorBackground(),
+                width: 18,
+              )
+            : null,
         onTap: () {
           ref.read(alertControllerProvider.notifier).markAsRead(alert.id!);
 

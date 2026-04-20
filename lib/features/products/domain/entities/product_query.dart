@@ -59,6 +59,8 @@ class ProductQuery extends Equatable {
     return 'لا توجد نتائج متاحة.';
   }
 
+ static const _sentinalValue = Object();
+
   ProductQuery copyWith({
     String? search,
     Category? category,

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/product_query.dart';
@@ -9,16 +10,16 @@ import 'product_provider.dart';
 class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
   ProductRepository get productRepo => ref.read(productRepositoryProvider);
 
+  final searchController = SearchController();
+
   @override
   Future<List<StoreProduct>> build() {
     ref.onDispose(() {
       _debounce?.cancel();
+      searchController.dispose();
     });
-    final storeId = ref.read(storeControllerProvider).state.selectedStoreId!;
-    return productRepo.searchProducts(
-      query: const ProductQuery(),
-      storeId: storeId,
-    );
+
+    return initialState();
   }
 
   Timer? _debounce;
@@ -34,16 +35,47 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
 
     _debounce = Timer(const Duration(milliseconds: 400), () async {
       state = const AsyncLoading();
+      final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
+
+      if (storeId == null) return;
 
       state = await AsyncValue.guard(() {
-        final storeId =
-            ref.read(storeControllerProvider).state.selectedStoreId!;
-
         return productRepo.searchProducts(
           query: newQuery,
           storeId: storeId,
         );
       });
     });
+  }
+
+  Future<void> _reset() async {
+    final _state = await initialState();
+    state = AsyncData(_state);
+  }
+
+  Future<void> clearSearch() async {
+    searchController.text = '';
+    ref
+        .read(productQueryProvider.notifier)
+        .update((c) => c.copyWith(search: ''));
+    await _reset();
+  }
+
+  Future<void> clearCategory() async {
+    ref
+        .read(productQueryProvider.notifier)
+        .update((c) => c.copyWith(clearCategory: true));
+
+    await _reset();
+  }
+
+  Future<List<StoreProduct>> initialState() async {
+    final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
+
+    if (storeId == null) return <StoreProduct>[];
+    return productRepo.searchProducts(
+      query: const ProductQuery(),
+      storeId: storeId,
+    );
   }
 }
