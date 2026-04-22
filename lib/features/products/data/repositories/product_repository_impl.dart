@@ -384,4 +384,14 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<void> deleteProduct(StoreProductKey key) async {
     await _localDatabase.deleteStoreProduct(key);
   }
+
+  @override
+  Future<List<StoreProduct>> getWithoutBarcodeProducts(String storeId) async {
+    final result = await _localDatabase.fetchStoreProducts(
+      storeId: storeId,
+      onlyWithoutBarcode: true,
+    );
+
+    return result.values.toList();
+  }
 }

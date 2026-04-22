@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../../../../core/database/local/query_where_builder.dart';
+
 class StoreProductKey {
   StoreProductKey({
     required this.storeId,
@@ -17,6 +19,25 @@ class StoreProductKey {
     final map = jsonDecode(json);
 
     return StoreProductKey.fromMap(map);
+  }
+
+  WhereQueryParams getWhereParams() {
+    return WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(
+              column: 'product_id',
+              value: productId,
+            ),
+            Filter(
+              column: 'store_id',
+              value: storeId,
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   final String storeId;

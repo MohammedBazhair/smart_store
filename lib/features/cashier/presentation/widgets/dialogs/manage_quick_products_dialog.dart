@@ -5,10 +5,9 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../audio/presentation/controller/audio_provider.dart';
 import '../../../../products/domain/entities/store_product.dart';
-import '../../../../products/presentation/controllers/product_provider.dart';
 import '../../../../products/presentation/widgets/product_card/product_card.dart';
-import '../../../../products/presentation/widgets/products_widgets/product_search_bar.dart';
 import '../../controllers/pos_providers.dart';
+import '../../controllers/quick_products_state.dart';
 
 Future<void> showManageQuickProductsDialog(BuildContext context) {
   return showModalBottomSheet(
@@ -18,20 +17,11 @@ Future<void> showManageQuickProductsDialog(BuildContext context) {
   );
 }
 
-enum QuickTabType {
-  onlyQuick('المنتجات السريعة'),
-  withoutBarcode('بلا باركود');
-
-  const QuickTabType(this.label);
-  final String label;
-}
-
 class ManageQuickProductsDialog extends ConsumerWidget {
   const ManageQuickProductsDialog({super.key});
 
   @override
   Widget build(BuildContext context, ref) {
-    
     return FractionallySizedBox(
       heightFactor: 0.8,
       child: Padding(
@@ -52,29 +42,25 @@ class ManageQuickProductsDialog extends ConsumerWidget {
               ),
             ),
 
-            const ProductSearchBar(),
-
             const _TabsQuick(),
 
             Expanded(
-              child: ref.watch(productSearchProvider).when(
-                        data: _ProductsBody.new,
-                        loading: () {
-                          final fakeProducts = StoreProduct.fakeProducts;
+              child: ref.watch(quickProductsControllerProvider).when(
+                    data: (state) => _ProductsBody(state.displayedProducts),
+                    loading: () {
+                      final fakeProducts = StoreProduct.fakeProducts;
 
-                          return Skeletonizer(
-                            child: _ProductsBody(fakeProducts),
-                          );
-                        },
-                        error: (error, stack) {
-                          return Center(
-                            child: Text(
-                              'حدث خطأ أثناء تحميل المنتجات',
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          );
-                        },
+                      return Skeletonizer(
+                        child: _ProductsBody(fakeProducts),
+                      );
+                    },
+                    error: (error, stack) => Center(
+                      child: Text(
+                        'حدث خطأ أثناء تحميل المنتجات',
+                        style: Theme.of(context).textTheme.bodyLarge,
                       ),
+                    ),
+                  ),
             ),
             // List
           ],
@@ -93,22 +79,20 @@ class _ProductsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final quickProducts = ref.watch(quickProductsProvider);
-
     return ListView.builder(
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
-        final isQuick = quickProducts.containsKey(product.id);
 
         return GestureDetector(
           onLongPress: () {
-            ref.read(quickProductsProvider.notifier).toggleProduct(product);
+            ref
+                .read(quickProductsControllerProvider.notifier)
+                .toggleProduct(product);
             ref.read(audioControllerProvider.notifier).playClick();
           },
           child: ProductCard(
             product: product,
-            isSelected: isQuick,
             onTap: () {
               ref.read(posControllerProvider.notifier).addToCart(product);
             },
@@ -124,7 +108,10 @@ class _TabsQuick extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final selectedType = ref.watch(quickTabProvider);
+    final selectedType = ref.watch(
+      quickProductsControllerProvider
+          .select((s) => s.value?.selectedTab ?? QuickTabType.onlyQuick),
+    );
 
     return Row(
       spacing: 12,
@@ -136,7 +123,7 @@ class _TabsQuick extends ConsumerWidget {
             selected: isSelected,
             onSelected: (newValue) {
               if (!newValue || isSelected) return;
-              ref.read(quickTabProvider.notifier).state = t;
+              ref.read(quickProductsControllerProvider.notifier).changeTab(t);
             },
             labelStyle: TextStyle(
               color: isSelected ? Colors.white : null,
