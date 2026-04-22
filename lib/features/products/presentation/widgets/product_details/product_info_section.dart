@@ -69,9 +69,9 @@ class ProductInfoSection extends ConsumerWidget {
               child: ProductInfoCard(
                 icon: Icons.qr_code,
                 label: 'كود المنتج',
-                value: product.globalProduct.barcode == null
-                    ? '-'
-                    : product.globalProduct.barcode!,
+                value: product.hasBarcode
+                    ? product.globalProduct.barcode!
+                    : 'لا يوجد',
                 detailsType: ProductDetailsType.barcode,
                 iconColor: const Color(0xFF6669F1),
               ),

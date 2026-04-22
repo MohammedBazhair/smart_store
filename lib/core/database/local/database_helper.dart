@@ -121,7 +121,7 @@ class DatabaseHelper {
       CREATE TABLE quick_products (
         product_id TEXT PRIMARY KEY,
         store_id TEXT NOT NULL,
-        FOREIGN KEY (product_id) REFERENCES global_products(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES global_products(id) ON DELETE CASCADE
       );
     ''');
 

@@ -8,6 +8,7 @@ import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
+import '../../../cashier/presentation/controllers/pos_providers.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/models/store_product_key.dart';
 import '../../domain/entities/category.dart';
@@ -104,7 +105,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
     state = state.copyWith(products: copiedProducts);
     await ref.read(audioControllerProvider.notifier).playSuccessResult();
-
+    _refreshRefs();
     return const SuccessState(null);
   }
 
@@ -138,6 +139,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     copiedProducts[newKey] = newProduct;
 
     state = state.copyWith(products: copiedProducts);
+    _refreshRefs();
     return result;
   }
 
@@ -186,6 +188,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       await productRepo.deleteProduct(productKey);
 
       await initialize();
+      _refreshRefs();
       return const SuccessState(null);
     } on AppException catch (e) {
       return ErrorState(e.message);
@@ -193,5 +196,10 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       Logger.debugLog(error: e, stackTrace: st);
       return const ErrorState('حصلت مشكلة أثناء حذف المنتج');
     }
+  }
+
+  void _refreshRefs() {
+    ref.read(productSearchProvider.notifier).reset();
+    ref.refresh(quickProductsControllerProvider);
   }
 }

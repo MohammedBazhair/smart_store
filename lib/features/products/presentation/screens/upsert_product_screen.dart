@@ -135,7 +135,9 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
       id: oldProduct?.globalProduct.id,
       category: _selectedCategory,
       name: _nameController.text.trim(),
-      barcode: _barcodeController.text,
+      barcode: _barcodeController.text.trim().isEmpty
+          ? null
+          : _barcodeController.text.trim(),
       createdAt: oldProduct?.globalProduct.createdAt ?? now,
       updatedAt: now,
     );
@@ -184,7 +186,6 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
       ),
     );
 
-
     _barcodeController.text = barcode ?? _barcodeController.text;
   }
 
@@ -204,7 +205,7 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
     if (result is SuccessState<void>) {
       context.showSnakbar('تم إضافة المنتج بنجاح', type: SnackBarType.success);
       _clearForm();
-    } else if (result is ErrorState<int>) {
+    } else if (result is ErrorState<void>) {
       context.showSnakbar(result.message, type: SnackBarType.error);
     }
 

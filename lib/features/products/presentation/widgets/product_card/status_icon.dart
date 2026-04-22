@@ -11,13 +11,21 @@ class StatusIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Skeleton.leaf(
-      child: CircleAvatar(
-        radius: 22,
-        backgroundColor: status.color,
-        child: Icon(
-          status.icon,
-          color: Colors.white,
-          size: 24,
+      child: ClipOval(
+        child: CircleAvatar(
+          radius: 22,
+          backgroundColor: status.color,
+          child: Icon(
+            status.icon,
+            color: Colors.white,
+            size: 24,
+            shadows: [
+              Shadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 10,
+              ),
+            ],
+          ),
         ),
       ),
     );

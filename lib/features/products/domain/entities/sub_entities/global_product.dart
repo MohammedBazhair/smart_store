@@ -30,6 +30,7 @@ class GlobalProduct extends Product {
   final DateTime updatedAt;
   final bool isDeleted;
 
+
   GlobalProduct copyWith({
     String? id,
     Category? category,

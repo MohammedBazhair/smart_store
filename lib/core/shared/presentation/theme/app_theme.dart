@@ -146,7 +146,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-         margin: const EdgeInsets.all(0),
+        margin: const EdgeInsets.all(0),
       ),
       dividerTheme: DividerThemeData(color: Colors.grey[300]),
       listTileTheme: ListTileThemeData(
@@ -240,7 +240,7 @@ class AppTheme {
         contentTextStyle: const TextStyle(
           color: Colors.white,
           fontSize: 14,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.bold,
         ),
         actionTextColor: Colors.white,
         behavior: SnackBarBehavior.floating,

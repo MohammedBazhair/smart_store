@@ -389,6 +389,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<List<StoreProduct>> getWithoutBarcodeProducts(String storeId) async {
     final result = await _localDatabase.fetchStoreProducts(
       storeId: storeId,
+      includeDeleted: false,
       onlyWithoutBarcode: true,
     );
 

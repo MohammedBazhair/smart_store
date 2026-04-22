@@ -37,6 +37,7 @@ class StoreProduct extends Product {
 
   String get quantityText => quantity?.toString() ?? 'غير محددة';
   String? get id => globalProduct.id;
+  bool get  hasBarcode => globalProduct.barcode?.isNotEmpty??false;
 
   static final fakeProducts = List.generate(8, (_) => StoreProduct.fake());
 
