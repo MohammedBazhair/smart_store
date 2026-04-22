@@ -16,8 +16,6 @@ extension ShowSnackbar on BuildContext {
           msg,
           style: TextStyle(
             color: type.foregroundColor,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
           ),
         ),
         duration: type.duration,

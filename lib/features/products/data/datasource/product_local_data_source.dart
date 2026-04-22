@@ -1,5 +1,4 @@
 import 'package:sqflite/sqflite.dart';
-
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
@@ -79,31 +78,31 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   /// gb  -> global_produucts,
   /// c   -> category
   String _storeProductColumnsAndJoins() => '''
-          sp.store_id       AS store_id,
-          sp.product_id     AS product_id,
-          sp.price          AS price,
-          sp.quantity       AS quantity,
-          sp.expiry_date    AS expiry_date,
-          sp.notes          AS notes,
-          sp.updated_at     AS updated_at,
-          sp.is_deleted     AS is_deleted,
+      sp.store_id       AS store_id,
+      sp.product_id     AS product_id,
+      sp.price          AS price,
+      sp.quantity       AS quantity,
+      sp.expiry_date    AS expiry_date,
+      sp.notes          AS notes,
+      sp.updated_at     AS updated_at,
+      sp.is_deleted     AS is_deleted,
 
-          gp.id             AS global_product_id,
-          gp.name           AS product_name,
-          gp.category_id    AS category_id,
-          gp.barcode        AS barcode,
-          gp.created_at     AS product_created_at,
-          gp.updated_at     AS product_updated_at,
-          gp.is_deleted     AS product_is_deleted,
+      gp.id             AS global_product_id,
+      gp.name           AS product_name,
+      gp.category_id    AS category_id,
+      gp.barcode        AS barcode,
+      gp.created_at     AS product_created_at,
+      gp.updated_at     AS product_updated_at,
+      gp.is_deleted     AS product_is_deleted,
 
-          c.category_id     AS category_id,
-          c.category_name   AS category_name,
-          c.updated_at      AS category_updated_at
-        
-        FROM store_products sp
-        LEFT JOIN global_products gp ON sp.product_id = gp.id
-        LEFT JOIN categories c ON gp.category_id = c.category_id
-  ''';
+      c.category_id     AS category_id,
+      c.category_name   AS category_name,
+      c.updated_at      AS category_updated_at
+
+    FROM store_products sp
+    LEFT JOIN global_products gp ON sp.product_id = gp.id
+    LEFT JOIN categories c ON gp.category_id = c.category_id
+''';
 
   @override
   Future<List<Category>> fetchAllCategories() async {
@@ -228,21 +227,30 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     bool includeDeleted = true,
     bool onlyWithoutBarcode = false,
   }) async {
-    final  barcodeWhereQuery= onlyWithoutBarcode?   'AND gp.barcode IS NULL' : '';
     try {
+      final deletedQuery= includeDeleted? 'AND sp.is_deleted = ?':'';
+      final barcodeQuery= onlyWithoutBarcode ? 'AND gp.barcode IS NULL':'';
+      final query = '''
+      SELECT ${_storeProductColumnsAndJoins()}
+      WHERE sp.store_id = ?
+        $deletedQuery
+        $barcodeQuery
+      ORDER BY sp.expiry_date DESC
+    ''';
+
       final response = await db.rawQuery(
-        query: '''
-    SELECT ${_storeProductColumnsAndJoins()}
-    WHERE sp.store_id = ? AND sp.is_deleted = ? 
-    $barcodeWhereQuery
-    ORDER BY sp.expiry_date DESC
-   ''',
-        arguments: [storeId, includeDeleted.toInt],
+        query: query,
+        arguments: [
+          storeId,
+         if(includeDeleted) includeDeleted.toInt,
+        ],
       );
+
       final products = <String, StoreProductModel>{};
 
       for (final m in response) {
         final product = StoreProductModel.fromLocal(m);
+
         final key = product.globalProduct.barcode ?? product.globalProduct.id!;
         products[key] = product;
       }
@@ -298,8 +306,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         queryRaw.write(' ORDER BY sp.expiry_date DESC');
         break;
     }
-   
-   
+
     final maps = await db.rawQuery(
       query: queryRaw.toString(),
       arguments: [
@@ -609,6 +616,4 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     final category = Category.fromLocal(rows.first);
     return category;
   }
-  
-
 }

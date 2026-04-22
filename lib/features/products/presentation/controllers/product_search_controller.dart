@@ -48,7 +48,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
     });
   }
 
-  Future<void> _reset() async {
+  Future<void> reset() async {
     final _state = await initialState();
     state = AsyncData(_state);
   }
@@ -58,7 +58,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
     ref
         .read(productQueryProvider.notifier)
         .update((c) => c.copyWith(search: ''));
-    await _reset();
+    await reset();
   }
 
   Future<void> clearCategory() async {
@@ -66,7 +66,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
         .read(productQueryProvider.notifier)
         .update((c) => c.copyWith(clearCategory: true));
 
-    await _reset();
+    await reset();
   }
 
   Future<List<StoreProduct>> initialState() async {

@@ -4,7 +4,7 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../printinig_share/entities/invoice.dart';
 import '../../../store/presentation/controller/store_provider.dart';
-import '../../data/repositories/quick_products_repository.dart';
+import '../../data/repositories/quick_products_repository_impl.dart';
 import '../../domain/entities/quantity_selection_item.dart';
 import '../../domain/repositories/quick_products_repository.dart';
 import 'pos_controller.dart';
@@ -49,12 +49,12 @@ final invoiceProvider = Provider.autoDispose<Invoice>((ref) {
   );
 });
 
-final quickProductsControllerProvider =
-    AsyncNotifierProvider<QuickProductsController, QuickProductsState>(() {
+final quickProductsControllerProvider = AsyncNotifierProvider.autoDispose<
+    QuickProductsController, QuickProductsState>(() {
   return QuickProductsController();
 });
 
-final quickProductsRepository= Provider<QuickProductsRepository>((ref) {
+final quickProductsRepository = Provider<QuickProductsRepository>((ref) {
   final localDatabase = ref.read(localDatabaseServiceProvider);
   return QuickProductsRepositoryImpl(localDatabase);
 });
