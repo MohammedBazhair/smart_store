@@ -118,6 +118,14 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
+      CREATE TABLE quick_products (
+        product_id TEXT PRIMARY KEY,
+        store_id TEXT NOT NULL,
+        FOREIGN KEY (product_id) REFERENCES global_products(id) ON DELETE CASCADE,
+      );
+    ''');
+
+    await db.execute('''
       CREATE TABLE sync_changes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         table_name TEXT NOT NULL,
@@ -167,6 +175,9 @@ class DatabaseHelper {
 
       CREATE INDEX idx_store_products_product_id
       ON store_products(product_id);
+      
+      CREATE INDEX idx_quick_products_store_id
+      ON quick_products(store_id);
 ''');
   }
 

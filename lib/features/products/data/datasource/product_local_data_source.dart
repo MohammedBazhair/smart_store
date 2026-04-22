@@ -29,7 +29,9 @@ abstract class ProductLocalDataSource {
   Future<ModelsProductsByIdentifier> fetchStoreProducts({
     required String storeId,
     bool includeDeleted = true,
+    bool onlyWithoutBarcode = false,
   });
+
   Future<StoreProductModel?> fetchStoreProductById(StoreProductKey productKey);
   Future<List<StoreProductModel>> searchStoreProducts({
     required ProductQuery query,
@@ -224,12 +226,15 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   Future<ModelsProductsByIdentifier> fetchStoreProducts({
     required String storeId,
     bool includeDeleted = true,
+    bool onlyWithoutBarcode = false,
   }) async {
+    final  barcodeWhereQuery= onlyWithoutBarcode?   'AND gp.barcode IS NULL' : '';
     try {
       final response = await db.rawQuery(
         query: '''
     SELECT ${_storeProductColumnsAndJoins()}
     WHERE sp.store_id = ? AND sp.is_deleted = ? 
+    $barcodeWhereQuery
     ORDER BY sp.expiry_date DESC
    ''',
         arguments: [storeId, includeDeleted.toInt],
@@ -604,4 +609,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     final category = Category.fromLocal(rows.first);
     return category;
   }
+  
+
 }

@@ -7,8 +7,9 @@ import 'product_filter_dialog.dart';
 
 class ProductSearchBar extends ConsumerWidget {
   const ProductSearchBar({
-    super.key,
+    super.key,  this.showFilter=true,
   });
+  final bool showFilter;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -45,7 +46,7 @@ class ProductSearchBar extends ConsumerWidget {
             },
           ),
         ),
-        const _ProductFilterAction(),
+       if(showFilter) const _ProductFilterAction(),
       ],
     );
   }
