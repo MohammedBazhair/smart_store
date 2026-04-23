@@ -1,32 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/log.dart';
+import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
 import '../../../settings/domain/entities/currence_code.dart';
+import '../../../user/domain/entities/profile.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../data/models/store_member_key.dart';
 import '../../domain/entities/store.dart';
 import '../../domain/entities/store_member.dart';
+import '../../domain/repositories/store_repository.dart';
 import 'store_provider.dart';
 import 'store_state.dart';
 
 class StoreController extends Notifier<StoreEventState> {
   @override
   StoreEventState build() {
-    final cache = ref.read(localCacheServiceProvider);
-    final selectedStoreId = cache.getString(key: 'selected_store_id');
+    final selectedStoreId = _cache.getString(key: AppConstants.lastStoreIdKey);
 
     return InitialStoreEvent(
       state: StoreState(selectedStoreId: selectedStoreId),
     );
   }
 
+  LocalCacheService get _cache => ref.read(localCacheServiceProvider);
+  ProfileEntity get profile => ref.read(userControllerProvider).entity.profile;
+  StoreRepository get storeRepo => ref.read(storeRepositoryProvider);
+
   StoreMember? get meAsCurrentMember {
     try {
       final storeId = state.state.selectedStoreId;
-      final phone = ref.read(userControllerProvider).profile.phone;
+      final phone = profile.phone;
 
       if (storeId == null || phone == null) return null;
 
@@ -43,7 +49,6 @@ class StoreController extends Notifier<StoreEventState> {
     state = LoadinMyStoresEvent(state: state.state);
 
     final repo = ref.read(storeRepositoryProvider);
-    final profile = ref.read(userControllerProvider).profile;
     final stores = await repo.getUserStores(profile.phone ?? '');
 
     final futures = stores.map((s) async {
@@ -56,7 +61,8 @@ class StoreController extends Notifier<StoreEventState> {
 
     final myStores = Map.fromEntries(entries);
 
-    final newState = state.state.copyWith(myStores: myStores);
+    final newState =
+        state.state.copyWith(myStores: myStores, isInitialized: true);
 
     state = LoadMyStoresEvent(state: newState);
   }
@@ -68,7 +74,6 @@ class StoreController extends Notifier<StoreEventState> {
         throw const NoStoreSelectedException('لم يتم اختيار متجر');
       }
 
-      final repo = ref.read(storeRepositoryProvider);
       final now = DateTime.now().toUtc();
 
       final member = StoreMember(
@@ -80,7 +85,7 @@ class StoreController extends Notifier<StoreEventState> {
         isDeleted: false,
       );
 
-      await repo.addStoreMember(member);
+      await storeRepo.addStoreMember(member);
 
       await ref.read(audioControllerProvider.notifier).playScannerBeep();
 
@@ -96,12 +101,11 @@ class StoreController extends Notifier<StoreEventState> {
 
   Future<void> removeStoreMember(String phoneNumber) async {
     try {
-      final repo = ref.read(storeRepositoryProvider);
       final memberKey = StoreMemberKey(
         storeId: state.state.selectedStoreId!,
         memberPhone: phoneNumber,
       );
-      await repo.removeStoreMember(memberKey);
+      await storeRepo.removeStoreMember(memberKey);
     } on AppException catch (e) {
       state = ErrorStoreEvent(state: state.state, error: e.message);
     } catch (e) {
@@ -114,8 +118,6 @@ class StoreController extends Notifier<StoreEventState> {
 
   Future<String?> createStore(String storeName) async {
     try {
-      final repo = ref.read(storeRepositoryProvider);
-      final profile = ref.read(userControllerProvider).profile;
       final now = DateTime.now().toUtc();
 
       final store = Store(
@@ -127,7 +129,7 @@ class StoreController extends Notifier<StoreEventState> {
         isDeleted: false,
       );
 
-      final newStore = await repo.createStore(store);
+      final newStore = await storeRepo.createStore(store);
       final ownerMember = StoreMember(
         primaryKey:
             StoreMemberKey(storeId: newStore.id!, memberPhone: profile.phone!),
@@ -164,8 +166,7 @@ class StoreController extends Notifier<StoreEventState> {
   }
 
   Future<void> selectStore(String storeId) async {
-    final cache = ref.read(localCacheServiceProvider);
-    await cache.setString(key: AppConstants.lastStoreIdKey, value: storeId);
+    await _cache.setString(key: AppConstants.lastStoreIdKey, value: storeId);
     state =
         SelectStoreEvent(state: state.state.copyWith(selectedStoreId: storeId));
   }

@@ -1,16 +1,15 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../app_initializer.dart';
-import '../../features/alerts/data/alert_background_params.dart';
+import '../../features/alerts/data/models/alert_background_params.dart';
 import '../constants/app_constants.dart';
 import '../constants/enums.dart';
+import '../constants/log.dart';
 import '../database/local/cache_service.dart';
-import '../database/local/database_helper.dart';
-import '../shared/providers/core_providers.dart';
-import '../shared/providers/repositories_provider.dart';
+import '../shared/providers/app_provider_class.dart';
 import 'background_utils.dart';
 
 @pragma('vm:entry-point')
@@ -18,18 +17,9 @@ void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     if (taskName.isEmpty) return Future.value(false);
 
-    // تهيئة ProviderContainer في الخلفية
-    await initializeSupabase();
-    final sharedPrefs = await SharedPreferences.getInstance();
-    final database = await DatabaseHelper.instance.database;
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-        databaseProvider.overrideWithValue(database),
-      ],
-    );
+    await configureDependencies();
 
-    final tasksUtils = BackgroundUtils(container);
+    final tasksUtils = BackgroundUtils();
     try {
       final task = BackgroundTask.values.byName(taskName);
 
@@ -49,10 +39,14 @@ void callbackDispatcher() {
           await tasksUtils.addAlertInBackground(backgroundParams);
         case BackgroundTask.syncAllData:
           await tasksUtils.syncAllData();
+        case BackgroundTask.removeOldAlerts:
+          await tasksUtils.removeOldAlerts();
       }
     } catch (e) {
       return Future.value(false);
     } finally {
+      final container = await AppProviders.container;
+
       container.dispose();
     }
     return Future.value(true);
@@ -63,6 +57,11 @@ void callbackDispatcher() {
 void onDidReceiveBackgroundNotificationResponse(
   NotificationResponse details,
 ) async {
+  Logger.debugLog(
+    message: 'Received background notification response: ${details.payload}',
+  );
+  WidgetsFlutterBinding.ensureInitialized();
+
   final productId = details.payload;
   if (productId == null || productId.isEmpty) return;
 

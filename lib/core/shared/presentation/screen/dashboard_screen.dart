@@ -5,14 +5,11 @@ import '../../../../features/alerts/presentation/controllers/alert_provider.dart
 import '../../../../features/alerts/presentation/screens/alerts_screen.dart';
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
-import '../../../../features/products/presentation/screens/product_details_screen.dart';
 import '../../../../features/settings/presentation/controllers/settings_provider.dart';
-import '../../../../features/settings/presentation/screens/settings_screen.dart';
-import '../../../constants/app_constants.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
-import '../../providers/core_providers.dart';
-import '../widgets/dashboard/dashboard_near_expiry_section.dart';
+import '../widgets/common/common_actions.dart';
+import '../widgets/dashboard/dashboard_products_section.dart';
 import '../widgets/dashboard/dashboard_quick_actions.dart';
 import '../widgets/dashboard/dashboard_stats_section.dart';
 import 'permission_denied_screen.dart';
@@ -35,24 +32,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ref.read(settingsControllerProvider.notifier);
     });
 
-    _handleInitialNotification();
     checkPermission();
-  }
-
-  Future<void> _handleInitialNotification() async {
-    final cache = ref.read(localCacheServiceProvider);
-    final productId =
-        cache.getString(key: AppConstants.pendingNotificationPayloadKey);
-    if (productId == null) return;
-
-    await cache.remove(key: AppConstants.pendingNotificationPayloadKey);
-
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        ref.read(currentProductIdProvider.notifier).state = productId;
-        context.pushTo(const ProductDetailsScreen());
-      },
-    );
   }
 
   Future<void> checkPermission() async {
@@ -81,24 +61,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           tooltip: 'التنبيهات',
           icon: const Icon(Icons.notifications_rounded),
           onPressed: () {
-            final allAlerts =
-                ref.read(alertControllerProvider).allAlerts.values;
-
             context.pushTo(
-              AlertsScreen(
+              const AlertsScreen(
                 title: 'التنبيهات',
-                alerts: allAlerts.toList(),
+                alertsScreenType: AlertsScreenType.all,
               ),
             );
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              context.pushTo(const SettingsScreen());
-            },
-          ),
+        actions: const [
+          SettingsActonIcon(),
         ],
       ),
       body: const DashboardBody(),
@@ -116,6 +88,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 }
+
 
 class DashboardBody extends ConsumerWidget {
   const DashboardBody({
@@ -139,7 +112,7 @@ class DashboardBody extends ConsumerWidget {
           children: [
             DashboardStatsSection(),
             DashboardQuickActions(),
-            DashboardNearExpirySection(),
+            DashboardProductsSection(),
           ],
         ),
       ),

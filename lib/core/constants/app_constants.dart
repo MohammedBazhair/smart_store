@@ -22,7 +22,6 @@ class AppConstants {
   static const String profilesTable = 'profiles';
 
   static const String profileUserIdKey = 'profile_user';
-  static const String quickProductsIdsKey = 'quick_products_ids';
 
   static const String pendingNotificationPayloadKey = 'pending_notification_payload';
 }

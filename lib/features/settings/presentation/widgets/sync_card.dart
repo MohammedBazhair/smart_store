@@ -22,22 +22,13 @@ class SyncCard extends StatelessWidget {
             const SizedBox(height: 30),
             Consumer(
               builder: (_, ref, __) {
-                final isLoading = ref.watch(appSyncLoadingProvider);
+                final isLoading = ref.watch(appSyncControllerProvider);
                 return ElevatedButton.icon(
                   onPressed: isLoading
                       ? null
-                      : () async {
-
-                          try {
-                            ref.read(appSyncLoadingProvider.notifier).state =
-                                true;
-
-                            await ref.refresh(appSyncProvider.future);
-                          } finally {
-                            ref.read(appSyncLoadingProvider.notifier).state =
-                                false;
-                          }
-                        },
+                      : () => ref
+                          .read(appSyncControllerProvider.notifier)
+                          .sync(isManual: true),
                   icon: ConditionalBuilder(
                     condition: isLoading,
                     builder: (context) => const Text('جارٍ المزامنة'),

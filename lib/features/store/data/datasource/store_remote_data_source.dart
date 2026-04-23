@@ -60,7 +60,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
 
     final lastSyncedDate = lastSynced?.lastSynced.toIso8601String();
     final result = await (lastSyncedDate != null
-        ? resultResponse.gt('updated_at', lastSyncedDate)
+        ? resultResponse.gte('updated_at', lastSyncedDate)
         : resultResponse.order('created_at', ascending: true));
 
     return result.map(StoreModel.fromMap).toList();
@@ -81,7 +81,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     final lastSyncedDate = lastSynced?.lastSynced.toIso8601String();
 
     final result = await (lastSyncedDate != null
-        ? resultResponse.gt('updated_at', lastSyncedDate)
+        ? resultResponse.gte('updated_at', lastSyncedDate)
         : resultResponse);
 
     return result.map(StoreMemberModel.fromMap).toList();

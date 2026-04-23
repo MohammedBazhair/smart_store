@@ -1,11 +1,11 @@
-import '../../../core/constants/log.dart';
-import '../../../core/database/local/local_database_service.dart';
-import '../../../core/database/local/query_where_builder.dart';
-import '../../../core/extensions/extensions.dart';
-import '../../../errors/result.dart';
-import '../domain/alert.dart';
-import '../domain/alert_repository.dart';
-import 'alert_model.dart';
+import '../../../../core/constants/log.dart';
+import '../../../../core/database/local/local_database_service.dart';
+import '../../../../core/database/local/query_where_builder.dart';
+import '../../../../core/extensions/extensions.dart';
+import '../../../../errors/result.dart';
+import '../../domain/entities/alert.dart';
+import '../../domain/repositories/alert_repository.dart';
+import '../models/alert_model.dart';
 
 /// تنفيذ مستودع التنبيهات
 class AlertRepositoryImpl implements AlertRepository {
@@ -16,7 +16,8 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<Map<int, Alert>> getAllAlerts() async {
     try {
-      final maps = await _db.query(table: 'alerts', orderBy: 'created_at DESC');
+      final maps =
+          await _db.query(table: 'alerts', orderBy: 'days_before_expiry');
 
       final result = <int, AlertModel>{};
 
@@ -44,6 +45,7 @@ class AlertRepositoryImpl implements AlertRepository {
         ),
         orderBy: 'created_at DESC',
       );
+      Logger.debugLog(message: 'maps: $maps');
 
       final result = <int, AlertModel>{};
 
@@ -52,6 +54,7 @@ class AlertRepositoryImpl implements AlertRepository {
         result[alert.id!] = alert;
       }
 
+      Logger.debugLog(message: 'result: $result');
       return result;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
@@ -96,7 +99,6 @@ class AlertRepositoryImpl implements AlertRepository {
     required DateTime expiryDate,
     required int daysBeforeExpiry,
   }) async {
-
     final result = await _db.query(
       table: 'alerts',
       whereParams: WhereQueryParams(
@@ -104,7 +106,10 @@ class AlertRepositoryImpl implements AlertRepository {
           FilterGroup(
             filters: [
               Filter(column: 'product_id', value: productId),
-              Filter(column: 'expiry_date', value: expiryDate.toDateOnly.toUtc().toIso8601String()),
+              Filter(
+                column: 'expiry_date',
+                value: expiryDate.toUtcDateOnly.toIso8601String(),
+              ),
               Filter(column: 'days_before_expiry', value: daysBeforeExpiry),
             ],
           ),
@@ -133,14 +138,22 @@ class AlertRepositoryImpl implements AlertRepository {
   }
 
   @override
-  Future<Result<void>> deleteAllAlerts() async {
-    try {
-      await _db.deleteWhere(table: 'alerts');
-      return const SuccessState(null);
-    } catch (e) {
-      return ErrorState(
-        'فشل في حذف جميع التنبيهات: ${e.toString()}',
-      );
-    }
+  Future<void> deleteOldAlerts() async {
+    final date = DateTime.now().subtract(const Duration(days: 30)).toUtcDateOnly;
+
+    final params = WhereQueryParams(
+      groups: [
+        FilterGroup(
+          filters: [
+            Filter(
+              column: 'expiry_date',
+              value: date.toIso8601String(),
+              operator: FilterOperator.lessOrEqual,
+            ),
+          ],
+        ),
+      ],
+    );
+    await _db.deleteWhere(table: 'alerts', whereParams: params);
   }
 }

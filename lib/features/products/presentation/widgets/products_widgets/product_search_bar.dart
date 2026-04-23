@@ -1,33 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/constants/enums.dart';
+import '../../../../../core/extensions/extensions.dart';
 import '../../controllers/product_provider.dart';
 import 'product_filter_dialog.dart';
 
-class ProductSearchBar extends ConsumerStatefulWidget {
+class ProductSearchBar extends ConsumerWidget {
   const ProductSearchBar({
-    super.key,
+    super.key,  this.showFilter=true,
   });
+  final bool showFilter;
 
   @override
-  ConsumerState<ProductSearchBar> createState() => _ProductSearchBarState();
-}
-
-class _ProductSearchBarState extends ConsumerState<ProductSearchBar> {
-  final _controller = SearchController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ref) {
     return Row(
       children: [
         Expanded(
           child: TextField(
-            controller: _controller,
+            controller:
+                ref.read(productSearchProvider.notifier).searchController,
             decoration: InputDecoration(
               hintText: 'بحث عن منتج...',
               prefixIcon: const Icon(Icons.search),
@@ -38,12 +29,9 @@ class _ProductSearchBarState extends ConsumerState<ProductSearchBar> {
                   return isSearching
                       ? IconButton(
                           icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _controller.clear();
-                            ref
-                                .read(productQueryProvider.notifier)
-                                .update((q) => q.copyWith(search: ''));
-                          },
+                          onPressed: ref
+                              .read(productSearchProvider.notifier)
+                              .clearSearch,
                         )
                       : child!;
                 },
@@ -51,14 +39,14 @@ class _ProductSearchBarState extends ConsumerState<ProductSearchBar> {
               ),
             ),
             onChanged: (value) {
+              final query = ref.read(productQueryProvider);
               ref
-                  .read(productQueryProvider.notifier)
-                  .update((q) => q.copyWith(search: value.trim()));
-              ref.read(productSearchProvider.notifier).search();
+                  .read(productSearchProvider.notifier)
+                  .search(query.copyWith(search: value.trim()));
             },
           ),
         ),
-        const _ProductFilterAction(),
+       if(showFilter) const _ProductFilterAction(),
       ],
     );
   }
@@ -73,10 +61,10 @@ class _ProductFilterAction extends ConsumerWidget {
       builder: (_) => ProductFilterDialog(
         initialCategory: ref.watch(productQueryProvider).category,
         onApply: (category) {
-          ref.read(productQueryProvider.notifier).update(
-                (q) => q.copyWith(category: category),
-              );
-          ref.read(productSearchProvider.notifier).search();
+          final query = ref.read(productQueryProvider);
+          ref
+              .read(productSearchProvider.notifier)
+              .search(query.copyWith(category: category));
         },
       ),
     );
@@ -92,11 +80,14 @@ class _ProductFilterAction extends ConsumerWidget {
           : const Icon(Icons.filter_list_off_rounded),
       onPressed: () {
         if (query.hasCategory) {
-          ref.read(productQueryProvider.notifier).update(
-                (q) => q.copyWith(clearCategory: true),
-              );
+          ref.read(productSearchProvider.notifier).clearCategory();
+          context.showSnakbar(
+            'تم الغاء الفلترة بالفئات',
+            type: SnackBarType.success,
+          );
+        } else {
+          _showFilterDialog(context, ref);
         }
-        _showFilterDialog(context, ref);
       },
     );
   }

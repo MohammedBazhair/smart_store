@@ -21,23 +21,26 @@ class ContinueButtonWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final isLoading = ref.watch(appSyncLoadingProvider);
+    final isLoading = ref.watch(appSyncControllerProvider);
     return CustomButton(
       onPressed: isLoading
           ? null
           : () async {
               if (canContinue) {
-                
-                  ref.read(appSyncLoadingProvider.notifier).state = true;
-                  await ref.refresh(appSyncProvider.future);
-                  ref.read(appSyncLoadingProvider.notifier).state = false;
-    
+                try {
+                  await ref.read(appSyncControllerProvider.notifier).sync();
+
                   await context
                       .pushAndRemoveUntilTo(const StoreSelectionScreen());
-               
+                } catch (e) {
+                  context.showSnakbar(
+                    'حدث خطأ أثناء المزامنة، يرجى المحاولة لاحقاً',
+                    type: SnackBarType.error,
+                  );
+                }
                 return;
               }
-    
+
               try {
                 await UrlUtils.sendWhatsApp(
                   phone: '967776793111',

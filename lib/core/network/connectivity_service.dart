@@ -1,25 +1,37 @@
 import 'dart:async';
-
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 abstract interface class ConnectivityService {
   Future<bool> hasConnection();
-  StreamSubscription<InternetStatus> listenToConnectionChanges(
-    void Function(InternetStatus)? onData,
+  StreamSubscription<List<ConnectivityResult>> listenToConnectionChanges(
+    void Function(List<ConnectivityResult>)? onData,
   );
 }
 
 class ConnectivityServiceImpl implements ConnectivityService {
   ConnectivityServiceImpl(this._connection);
-  final InternetConnection _connection;
+  final Connectivity _connection;
 
   @override
-  Future<bool> hasConnection() => _connection.hasInternetAccess;
+  Future<bool> hasConnection() async {
+    final connectionResult = await _connection.checkConnectivity();
+    if (connectionResult.contains(ConnectivityResult.none)) return false;
+
+    try {
+      final lookup = await InternetAddress.lookup('example.com');
+      if (lookup.isNotEmpty && lookup.first.rawAddress.isNotEmpty) return true;
+
+      return false;
+    } on SocketException catch (_) {
+      return false;
+    }
+  }
 
   @override
-  StreamSubscription<InternetStatus> listenToConnectionChanges(
-    void Function(InternetStatus)? onData,
+  StreamSubscription<List<ConnectivityResult>> listenToConnectionChanges(
+    void Function(List<ConnectivityResult>)? onData,
   ) {
-    return _connection.onStatusChange.listen(onData);
+    return _connection.onConnectivityChanged.listen(onData);
   }
 }

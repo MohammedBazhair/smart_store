@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../../features/alerts/presentation/controllers/alert_provider.dart';
 import '../../../../../features/alerts/presentation/screens/alerts_screen.dart';
 import '../../../../../features/products/presentation/controllers/product_provider.dart';
@@ -15,98 +16,62 @@ class DashboardStatsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.2,
+    return Row(
+      spacing: 12,
       children: [
-        Consumer(
-          builder: (_, ref, __) {
-            final products = ref
-                .watch(
-                  productControllerProvider.select((s) => s.products),
-                )
-                .values;
+        Expanded(
+          child: Consumer(
+            builder: (_, ref, __) {
+              final products = ref
+                  .watch(
+                    productControllerProvider.select((s) => s.products),
+                  )
+                  .values;
 
-            return StatCard(
-              title: 'إجمالي المنتجات',
-              value: products.length.toString(),
-              icon: Icons.inventory_2,
-              color: AppTheme.primaryColor,
-              onTap: () {
-                context.pushTo(
-                  const ProductsScreen(),
-                );
-              },
-            );
-          },
-        ),
-        Consumer(
-          builder: (_, ref, __) {
-            final expiredProducts = ref.watch(
-              productControllerProvider.select((s) => s.expiredProducts),
-            );
-
-            return StatCard(
-              title: 'منتهية الصلاحية',
-              value: expiredProducts.length.toString(),
-              icon: Icons.cancel,
-              color: AppTheme.expiredColor,
-              onTap: () {
-                context.pushTo(
-                  const ProductsScreen(
-                    listType: ProductListType.expired,
-                    title: 'المنتجات منهية الصلاحية',
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        Consumer(
-          builder: (_, ref, __) {
-            final unreadAlerts = ref.watch(
-              alertControllerProvider.select((s) => s.unreadAlerts),
-            );
-
-            return StatCard(
-              title: 'تنبيهات جديدة',
-              value: unreadAlerts.length.toString(),
-              icon: Icons.notifications,
-              color: AppTheme.primaryColor,
-              onTap: () {
-                context.pushTo(
-                  AlertsScreen(
-                    title: 'التنبيهات الجديدة',
-                    alerts: unreadAlerts.values.toList(),
-                  ),
-                );
-              },
-            );
-          },
-        ),
-        Consumer(
-          builder: (_, ref, __) {
-            final nearExpiryProducts = ref.watch(
-              productControllerProvider.select((s) => s.nearbyExpiredProducts),
-            );
-
-            return StatCard(
-              title: 'قريبة من الانتهاء',
-              value: nearExpiryProducts.length.toString(),
-              icon: Icons.warning,
-              color: AppTheme.nearExpiryColor,
-              onTap: () => context.pushTo(
-                const ProductsScreen(
-                  listType: ProductListType.nearExpiry,
-                  title: 'المنتجات قريبة الانتهاء',
+              final isLoading = ref
+                  .watch(productControllerProvider.select((s) => s.isLoading));
+              return Skeletonizer(
+                enabled: isLoading,
+                child: StatCard(
+                  title: 'إجمالي المنتجات',
+                  value: products.length.toString(),
+                  asset: 'assets/icons/products-icon.svg',
+                  iconSize: 40,
+                  color: AppTheme.primaryColor,
+                  onTap: () {
+                    context.pushTo(
+                      const ProductsScreen(),
+                    );
+                  },
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
+        ),
+        Expanded(
+          child: Consumer(
+            builder: (_, ref, __) {
+              final unreadAlertsLength = ref.watch(
+                alertControllerProvider.select((s) => s.unreadAlerts.length),
+              );
+
+              return StatCard(
+                title: 'تنبيهات جديدة',
+                value: unreadAlertsLength.toString(),
+                asset: 'assets/icons/notification-alert-icon.svg',
+                iconSize: 30,
+                color: AppTheme.primaryColor,
+                onTap: () {
+                  context.pushTo(
+                    const AlertsScreen(
+                      title: 'التنبيهات الجديدة',
+                      alertsScreenType: AlertsScreenType.unRead,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );

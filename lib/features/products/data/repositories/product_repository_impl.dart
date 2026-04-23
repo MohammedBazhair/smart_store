@@ -10,7 +10,6 @@ import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/shared/data/models/sync_state_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
-import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/product.dart';
@@ -217,7 +216,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<void> initializeDataFromNetwork() async {
     try {
       final hasConnection = await _connectivity.hasConnection();
-      if (!hasConnection) throw const InternetException();
+      if (!hasConnection) initializeDataFromNetwork();
 
       final isCategoriesDownloaded =
           _localCache.getBool(key: 'isCategoriesDownloaded') ?? false;
@@ -241,7 +240,6 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       final globalProductsChanges =
           await _sync.getTableChanges('global_products');
-      Logger.debugLog(message: globalProductsChanges.toString());
 
       final inserts = <GlobalProductModel>[];
       final updates = <GlobalProductModel>[];
@@ -278,7 +276,8 @@ class ProductRepositoryImpl implements ProductRepository {
 
   Future<void> _pushStoreProductsChanges() async {
     try {
-      final storeProductsChanges = await _sync.getTableChanges('store_products');
+      final storeProductsChanges =
+          await _sync.getTableChanges('store_products');
 
       final inserts = <StoreProductModel>[];
       final updates = <StoreProductModel>[];
@@ -384,5 +383,16 @@ class ProductRepositoryImpl implements ProductRepository {
   @override
   Future<void> deleteProduct(StoreProductKey key) async {
     await _localDatabase.deleteStoreProduct(key);
+  }
+
+  @override
+  Future<List<StoreProduct>> getWithoutBarcodeProducts(String storeId) async {
+    final result = await _localDatabase.fetchStoreProducts(
+      storeId: storeId,
+      includeDeleted: false,
+      onlyWithoutBarcode: true,
+    );
+
+    return result.values.toList();
   }
 }

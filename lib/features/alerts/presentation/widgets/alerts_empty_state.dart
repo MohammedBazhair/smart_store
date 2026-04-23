@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 
 class AlertsEmptyState extends StatelessWidget {
@@ -10,18 +11,33 @@ class AlertsEmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.notifications_none,
-            size: 64,
-            color: AppTheme.textSecondary,
+          SvgPicture.asset(
+            'assets/images/notifications.svg',
+            semanticsLabel: 'لا توجد تنبيهات',
+            width: 200,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'لا توجد تنبيهات',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textSecondary,
-                ),
+            style: TextStyle(
+              color: AppTheme.primaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
+          const SizedBox(
+            height: 20,
+          ),
+          const Text(
+            'ليس لديك أي تنبيهات في الوقت الحالي.\n سنقوم بإخطارك عندما يحدث شيء جديد!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 14,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 50),
         ],
       ),
     );

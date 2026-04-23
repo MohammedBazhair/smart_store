@@ -1,64 +1,94 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_constants.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
-import '../../../../core/database/local/cache_service.dart';
-import '../../../../core/shared/providers/core_providers.dart';
+import '../../../products/data/models/store_product_key.dart';
 import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
+import '../../../store/presentation/controller/store_provider.dart';
+import '../../domain/repositories/quick_products_repository.dart';
+import 'pos_providers.dart';
+import 'quick_products_state.dart';
 
-class QuickProductsController extends Notifier<ProductsByIdentifier> {
-  LocalCacheService get _cacheService => ref.read(localCacheServiceProvider);
+class QuickProductsController extends AsyncNotifier<QuickProductsState> {
+  QuickProductsRepository get _quickRepo => ref.read(quickProductsRepository);
+  String? get _storeId => ref.watch(
+        storeControllerProvider.select(
+          (s) => s.state.selectedStoreId,
+        ),
+      );
 
   @override
-  ProductsByIdentifier build() {
-    _loadQuickProducts();
-    // Re-evaluate if products overall change.
-    ref.listen(productControllerProvider, (prev, next) {
-      if (prev?.products != next.products) {
-        _loadQuickProducts();
-      }
-    });
-    return state;
+  Future<QuickProductsState> build() async {
+    final quickProducts = await _getQuickProducts();
+    final withoutBarcodeProducts = await _getWithoutBarcodeProducts();
+
+    return QuickProductsState(
+      quickProducts: quickProducts,
+      withoutBarcodeProducts: withoutBarcodeProducts,
+    );
   }
 
-  void _loadQuickProducts() {
-    final ids =
-        _cacheService.getStringList(key: AppConstants.quickProductsIdsKey) ??
-            [];
+  Future<ProductsByIdentifier> _getQuickProducts() async {
+    if (_storeId == null) return {};
+
+    final ids = await _quickRepo.getQuickProductsIds(_storeId!);
 
     final allProducts = ref.read(productControllerProvider).products;
 
-    final entries = ids.map((id) => MapEntry(id, allProducts[id]));
-    final quickProducts = entries.where((m) => m.value != null);
+    final quickProducts = <String, StoreProduct>{};
 
-    state = Map.fromIterable(quickProducts);
+    for (final id in ids) {
+      final productKey = StoreProductKey(storeId: _storeId!, productId: id);
+      final product = allProducts[productKey.productId];
+
+      if (product == null) continue;
+
+      quickProducts[productKey.productId] = product;
+    }
+
+    return quickProducts;
+  }
+
+  Future<List<StoreProduct>> _getWithoutBarcodeProducts() async {
+    final repo = ref.read(productRepositoryProvider);
+    if (_storeId == null) return [];
+    return repo.getWithoutBarcodeProducts(_storeId!);
   }
 
   Future<void> toggleProduct(StoreProduct product) async {
-    final ids =
-        _cacheService.getStringList(key: AppConstants.quickProductsIdsKey) ??
-            [];
+    if (_storeId == null || product.id == null) return;
+    final productKey =
+        StoreProductKey(storeId: _storeId!, productId: product.id!);
 
-    final productId = product.id!;
+    final currentState = state.asData?.value;
+    if (currentState == null) return;
 
-    final isTapToAdd = !ids.contains(productId);
+    final copiedProducts = {...currentState.quickProducts};
 
-    isTapToAdd ? ids.add(productId) : ids.remove(productId);
+    final exists = copiedProducts.containsKey(productKey.productId);
 
-    final copiedProducts = {...state};
+    exists
+        ? copiedProducts.remove(productKey.productId)
+        : copiedProducts[productKey.productId] = product;
 
-    if (isTapToAdd) {
-      copiedProducts[productId] = product;
-    } else {
-      copiedProducts.remove(productId);
+    state = AsyncData(currentState.copyWith(quickProducts: copiedProducts));
+
+    try {
+      exists
+          ? await _quickRepo.removeQuickProduct(productKey)
+          : await _quickRepo.addQuickProduct(productKey);
+    } catch (e, st) {
+      state = AsyncData(currentState);
+      Logger.debugLog(error: e, stackTrace: st);
     }
-   
+  }
 
-    state = copiedProducts;
+  Future<void> changeTab(QuickTabType type) async {
+    final currentState = state.asData?.value;
+    if (currentState == null) return;
 
-    await _cacheService.setStringList(
-      key: AppConstants.quickProductsIdsKey,
-      value: ids,
-    );
+    if (currentState.selectedTab != type) {
+      state = AsyncData(currentState.copyWith(selectedTab: type));
+    }
   }
 }

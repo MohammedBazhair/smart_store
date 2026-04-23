@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../products/presentation/screens/product_details_screen.dart';
-import '../../domain/alert.dart';
+import '../../domain/entities/alert.dart';
 import '../controllers/alert_provider.dart';
 
 class AlertCard extends ConsumerWidget {
@@ -14,14 +13,24 @@ class AlertCard extends ConsumerWidget {
 
   final Alert alert;
 
+  Color getColorBackground() {
+    return switch (alert.expiryRemainder.daysBeforeExpiry) {
+      <= 27 => AppTheme.expiredColor,
+      _ => AppTheme.nearExpiryColor,
+    };
+  }
+
+  Icon getIcon() {
+    final iconData = switch (alert.expiryRemainder.daysBeforeExpiry) {
+      <= 27 => Icons.cancel_rounded,
+      _ => Icons.warning_rounded,
+    };
+
+    return Icon(iconData, size: 24);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final importanceColor = alert.importance == Priority.high
-        ? AppTheme.errorColor
-        : alert.importance == Priority.defaultPriority
-            ? AppTheme.warningColor
-            : AppTheme.primaryColor;
-
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: alert.isRead ? 1 : 3,
@@ -29,16 +38,10 @@ class AlertCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: importanceColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            Icons.warning,
-            color: importanceColor,
-          ),
+        leading: CircleAvatar(
+          radius: 20,
+          backgroundColor: getColorBackground(),
+          child: getIcon(),
         ),
         title: Text(
           alert.productName,
@@ -46,53 +49,17 @@ class AlertCard extends ConsumerWidget {
                 fontWeight: alert.isRead ? FontWeight.normal : FontWeight.bold,
               ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            if (alert.expiryDate != null)
-              Text(
-                'ينتهي في ${DateFormat('yyyy-MM-dd').format(alert.expiryDate!)}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: importanceColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    alert.importance.name,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: importanceColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${alert.daysBeforeExpiry} أيام قبل الانتهاء',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ],
+        subtitle: Text(
+          '${alert.expiryRemainder.daysBeforeExpiry} أيام قبل الانتهاء',
+          style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: IconButton(
-          icon: Icon(
-            alert.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
-          ),
-          onPressed: () async {
-            final controller = ref.read(alertControllerProvider.notifier);
-            await controller.markAsRead(alert.id!);
-          },
-        ),
+        trailing: !alert.isRead
+            ? SvgPicture.asset(
+                'assets/icons/fire-alarm-icon.svg',
+                color: getColorBackground(),
+                width: 18,
+              )
+            : null,
         onTap: () {
           ref.read(alertControllerProvider.notifier).markAsRead(alert.id!);
 

@@ -87,32 +87,44 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     );
 
     try {
-      final parent = await _db.rawQuery(
-        query: 'SELECT phone FROM profiles WHERE phone = ?',
-        arguments: [store.ownerPhone],
-      );
+      // Use transaction for atomic insertion
+      await _db.transaction((txn) async {
+        // 1. Check owner profile (Foreign Key)
+        final parent = await txn.rawQuery(
+          'SELECT phone FROM profiles WHERE phone = ?',
+          [store.ownerPhone],
+        );
+        if (parent.isEmpty) {
+          throw Exception('Owner profile (${store.ownerPhone}) not found in local database');
+        }
 
-      if (parent.isEmpty) {
-        throw Exception('Owner profile not found');
-      }
+        // 2. Check currency (Foreign Key)
+        final currencyCheck = await txn.rawQuery(
+          'SELECT currency FROM exchange_rates WHERE currency = ?',
+          [store.currency.name],
+        );
+        if (currencyCheck.isEmpty) {
+          throw Exception('Currency (${store.currency}) not found in exchange_rates');
+        }
 
-      final storeResult =
-          await _db.insertRow(table: 'stores', map: store.toMap());
-      final memberResult =
-          await _db.insertRow(table: 'store_members', map: member.toMap());
+        // 3. Insert Store
+        final storeResult = await txn.insert('stores', store.toMap());
+        isStoreCreated = storeResult != 0;
 
-      isStoreCreated = storeResult != 0;
-      isMemberInserted = memberResult != 0;
+        // 4. Insert Owner Member
+        final memberResult = await txn.insert('store_members', member.toMap());
+        isMemberInserted = memberResult != 0;
+      });
 
       if (skipLocalTracking) return;
 
+      // Tracking changes after successful transaction
       final storeChange = SyncChangeModel(
         tableName: 'stores',
         recordId: store.id!,
         operation: SyncOperation.insert,
         updatedAt: DateTime.now().toUtc(),
       );
-
       if (isStoreCreated) await _sync.addChange(storeChange);
 
       final memberKey = StoreMemberKey(
@@ -125,19 +137,9 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
         operation: SyncOperation.insert,
         updatedAt: DateTime.now().toUtc(),
       );
-
       if (isMemberInserted) await _sync.addChange(memberChange);
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
-
-      final whereParams = WhereQueryParams(
-        groups: [
-          FilterGroup(filters: [Filter(column: 'id', value: store.id!)]),
-        ],
-      );
-      if (isStoreCreated && !isMemberInserted) {
-        await _db.deleteWhere(table: 'stores', whereParams: whereParams);
-      }
     }
   }
 

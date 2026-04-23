@@ -1,61 +1,41 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import '../../../../app_initializer.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/providers/app_provider_class.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
-import '../../../../main.dart';
 import '../../../products/domain/entities/store_product.dart';
-import '../../../products/presentation/controllers/product_provider.dart';
-import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../settings/domain/repository/settings_repository.dart';
-import '../../domain/alert_repository.dart';
-import '../../domain/expiry_reminder.dart';
+import '../../domain/entities/expiry_reminder.dart';
+import '../../domain/repositories/alert_repository.dart';
 import 'alert_controller.dart';
 import 'alert_scheduler.dart';
 import 'notification_service.dart';
 
 /// handle tap on notification
-void onDidReceiveNotificationResponse(NotificationResponse response) async {
+Future<void> onDidReceiveNotificationResponse(
+  NotificationResponse response,
+) async {
   if (response.payload == null || response.payload!.isEmpty) return;
   final storeProductId = response.payload!;
-  final container = AppProviders.container;
 
-  // If navigator is not ready OR we are still in the initialization phase (AuthGate/Splash), cache it.
-  // We check if DashboardScreen is not yet the active screen or if navigator is null.
-  final isReady = navigatorKey.currentState != null;
-  
-  if (!isReady) {
-    final cache = container.read(localCacheServiceProvider);
-    await cache.setString(
-      key: AppConstants.pendingNotificationPayloadKey,
-      value: storeProductId,
-    );
-    return;
-  }
+  final container = await AppProviders.container;
 
-  // Set the current product ID and try to navigate.
-  // Note: if the app is still at AuthGate, this push will happen, 
-  // but if AuthGate then does pushAndRemoveUntilTo, it might be lost.
-  // To be safe, we ALSO set the cache.
-  container.read(currentProductIdProvider.notifier).state = storeProductId;
-  
   final cache = container.read(localCacheServiceProvider);
   await cache.setString(
     key: AppConstants.pendingNotificationPayloadKey,
     value: storeProductId,
   );
-
-  const detatailsScreen = ProductDetailsScreen();
-  await navigatorKey.currentState
-      ?.push(MaterialPageRoute(builder: (_) => detatailsScreen));
 }
 
 class AlertService {
-  AlertService(this.settingsRepo, this.alertRepository, this._notifications, this.alertController);
+  AlertService(
+    this.settingsRepo,
+    this.alertRepository,
+    this._notifications,
+    this.alertController,
+  );
 
   final SettingsRepository settingsRepo;
   final AlertRepository alertRepository;
@@ -73,16 +53,15 @@ class AlertService {
 
     if (product.expiryDate == null) return;
 
-    final alerts = [
-      ExpiryReminder(daysBefore: 30, importance: Priority.high),
-      ExpiryReminder(daysBefore: 15, importance: Priority.high),
-      ExpiryReminder(daysBefore: 7, importance: Priority.max),
-      ExpiryReminder(daysBefore: 0, importance: Priority.max),
+    final alertsTypes = [
+      ExpiryRemainder(daysBeforeExpiry: 30, importance: Priority.high),
+      ExpiryRemainder(daysBeforeExpiry: 15, importance: Priority.high),
+      ExpiryRemainder(daysBeforeExpiry: 7, importance: Priority.max),
+      ExpiryRemainder(daysBeforeExpiry: 0, importance: Priority.max),
     ];
 
-    for (final alert in alerts) {
-      final days = alert.daysBefore;
-      final importance = alert.importance;
+    for (final type in alertsTypes) {
+      final days = type.daysBeforeExpiry;
       final isNearExpired =
           DateTimeUtils.isNearExpiry(product.expiryDate!, days);
 
@@ -96,75 +75,67 @@ class AlertService {
 
       await _scheduleAlert(
         product: product,
-        daysBefore: days,
-        importance: importance,
+        remainder: type,
       );
     }
   }
 
   Future<void> showNotification({
     required StoreProduct product,
-    required int daysBefore,
+    required ExpiryRemainder remainder,
   }) async {
     final payload = product.globalProduct.id;
 
-    final formattedDate = product.expiryDate!.formattedDate;
+    final remainingDays =
+        DateTimeUtils.daysUntilExpiry(product.expiryDate) ?? 0;
+    final String timeMsg =
+        remainingDays <= 0 ? 'منتهي الصلاحية' : 'باقي $remainingDays يوم';
+
     await _notifications.show(
-      id: AlertUtils.notificationId(product, daysBefore),
+      id: AlertUtils.notificationId(product, remainder.daysBeforeExpiry),
       title: 'تنبيه صلاحية: ${product.globalProduct.name}',
-      body:
-          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"} ($formattedDate)',
+      body: '${product.globalProduct.name} ($timeMsg)',
       payload: payload,
     );
 
     await alertController.addAlert(
       product: product,
-      daysBeforeExpiry: daysBefore,
-      importance: _getPriorityFrom(daysBefore),
+      expiryRemainder: remainder,
     );
-  }
-
-  Priority _getPriorityFrom(int daysBefore) {
-    final alerts = {
-      30: Priority.high,
-      15: Priority.high,
-      7: Priority.max,
-      0: Priority.max,
-    };
-
-    return alerts[daysBefore] ?? Priority.defaultPriority;
   }
 
   Future<void> _scheduleAlert({
     required StoreProduct product,
-    required int daysBefore,
-    required Priority importance,
+    required ExpiryRemainder remainder,
   }) async {
     if (product.expiryDate == null) return;
-    final alertDate = product.expiryDate!.subtract(Duration(days: daysBefore));
+    final alertDate = product.expiryDate!
+        .subtract(Duration(days: remainder.daysBeforeExpiry));
 
     if (alertDate.isBefore(DateTime.now())) {
       // إذا كان التاريخ في الماضي، أرسل التنبيه فورًا
       await showNotification(
         product: product,
-        daysBefore: daysBefore,
+        remainder: remainder,
       );
       return;
     }
     final payload = product.globalProduct.id?.toString();
 
-    final formattedDate = product.expiryDate!.formattedDate;
+    final String timeMsg = remainder.daysBeforeExpiry == 0
+        ? 'منتهي الصلاحية'
+        : 'باقي ${remainder.daysBeforeExpiry} يوم';
+
     await _notifications.schedule(
-      id: AlertUtils.notificationId(product, daysBefore),
+      id: AlertUtils.notificationId(product, remainder.daysBeforeExpiry),
       title: 'تنبيه صلاحية',
-      body:
-          '${product.globalProduct.name} ${daysBefore == 0 ? "منتهي" : "سينتهي خلال $daysBefore أيام"} ($formattedDate)',
+      body: '${product.globalProduct.name} ($timeMsg)',
       date: alertDate,
       payload: payload,
     );
 
     final delay = alertDate.difference(DateTime.now());
-    await scheduleWorkManagerAlert(product, daysBefore, delay);
+    await scheduleWorkManagerAlert(product, remainder.daysBeforeExpiry, delay);
   }
 
   Future<void> cancelProductAlerts(StoreProduct product) async {

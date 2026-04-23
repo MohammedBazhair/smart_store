@@ -16,13 +16,13 @@ class AppTheme {
   static const Color textSecondary = Color(0xFF475569);
   static const Color textTertiary = Color(0xFF94A3B8);
 
-  static const Color errorColor = Color.fromARGB(235, 212, 62, 62);
-  static const Color warningColor = Color(0xFFD97706);
-  static const Color successColor = Color(0xE108C388);
+  static const Color errorColor = Color(0xFFF95956);
+  static const Color warningColor = Color(0xFFF8C129);
+  static const Color successColor = Color(0xFF53DB6F);
 
-  static const Color expiredColor = Color(0xFFDC2626);
-  static const Color nearExpiryColor = Color(0xFFD97706);
-  static const Color validColor = Color(0xFF059669);
+  static const Color expiredColor = errorColor;
+  static const Color nearExpiryColor = warningColor;
+  static const Color validColor = successColor;
 
   /// الثيم الفاتح
   static ThemeData get lightTheme {
@@ -133,9 +133,12 @@ class AppTheme {
           color: textPrimary,
           fontSize: 12,
         ),
+        side: const BorderSide(
+          color: Colors.grey,
+          width: 0.2,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Colors.transparent),
         ),
         elevation: 1.5,
         shadowColor: const Color(0x42ECECEC),
@@ -146,6 +149,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
+        margin: const EdgeInsets.all(0),
       ),
       dividerTheme: DividerThemeData(color: Colors.grey[300]),
       listTileTheme: ListTileThemeData(
@@ -239,7 +243,7 @@ class AppTheme {
         contentTextStyle: const TextStyle(
           color: Colors.white,
           fontSize: 14,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.bold,
         ),
         actionTextColor: Colors.white,
         behavior: SnackBarBehavior.floating,

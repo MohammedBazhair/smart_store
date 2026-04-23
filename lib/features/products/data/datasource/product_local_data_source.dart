@@ -1,5 +1,4 @@
 import 'package:sqflite/sqflite.dart';
-
 import '../../../../core/constants/enums.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
@@ -29,7 +28,9 @@ abstract class ProductLocalDataSource {
   Future<ModelsProductsByIdentifier> fetchStoreProducts({
     required String storeId,
     bool includeDeleted = true,
+    bool onlyWithoutBarcode = false,
   });
+
   Future<StoreProductModel?> fetchStoreProductById(StoreProductKey productKey);
   Future<List<StoreProductModel>> searchStoreProducts({
     required ProductQuery query,
@@ -77,31 +78,31 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   /// gb  -> global_produucts,
   /// c   -> category
   String _storeProductColumnsAndJoins() => '''
-          sp.store_id       AS store_id,
-          sp.product_id     AS product_id,
-          sp.price          AS price,
-          sp.quantity       AS quantity,
-          sp.expiry_date    AS expiry_date,
-          sp.notes          AS notes,
-          sp.updated_at     AS updated_at,
-          sp.is_deleted     AS is_deleted,
+      sp.store_id       AS store_id,
+      sp.product_id     AS product_id,
+      sp.price          AS price,
+      sp.quantity       AS quantity,
+      sp.expiry_date    AS expiry_date,
+      sp.notes          AS notes,
+      sp.updated_at     AS updated_at,
+      sp.is_deleted     AS is_deleted,
 
-          gp.id             AS global_product_id,
-          gp.name           AS product_name,
-          gp.category_id    AS category_id,
-          gp.barcode        AS barcode,
-          gp.created_at     AS product_created_at,
-          gp.updated_at     AS product_updated_at,
-          gp.is_deleted     AS product_is_deleted,
+      gp.id             AS global_product_id,
+      gp.name           AS product_name,
+      gp.category_id    AS category_id,
+      gp.barcode        AS barcode,
+      gp.created_at     AS product_created_at,
+      gp.updated_at     AS product_updated_at,
+      gp.is_deleted     AS product_is_deleted,
 
-          c.category_id     AS category_id,
-          c.category_name   AS category_name,
-          c.updated_at      AS category_updated_at
-        
-        FROM store_products sp
-        LEFT JOIN global_products gp ON sp.product_id = gp.id
-        LEFT JOIN categories c ON gp.category_id = c.category_id
-  ''';
+      c.category_id     AS category_id,
+      c.category_name   AS category_name,
+      c.updated_at      AS category_updated_at
+
+    FROM store_products sp
+    LEFT JOIN global_products gp ON sp.product_id = gp.id
+    LEFT JOIN categories c ON gp.category_id = c.category_id
+''';
 
   @override
   Future<List<Category>> fetchAllCategories() async {
@@ -143,6 +144,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   Future<List<GlobalProductModel>> fetchGlobalProducts({
     bool includeDeleted = true,
   }) async {
+    final queryDeleted = includeDeleted ? '' : 'WHERE gp.is_deleted = 0';
     final rows = await db.rawQuery(
       query: '''
     SELECT
@@ -153,10 +155,10 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       gp.updated_at     AS product_updated_at
 
     FROM global_products gp 
-    LEFT JOIN categories c ON gp.category_id = c.category_id
-    WHERE gp.is_deleted = ?
+    LEFT JOIN categories c 
+    ON gp.category_id = c.category_id
+    $queryDeleted
   ''',
-      arguments: [includeDeleted.toInt],
     );
 
     return rows.map(GlobalProductModel.fromLocal).toList();
@@ -224,20 +226,29 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   Future<ModelsProductsByIdentifier> fetchStoreProducts({
     required String storeId,
     bool includeDeleted = true,
+    bool onlyWithoutBarcode = false,
   }) async {
     try {
+      final deletedQuery = includeDeleted ? '' : 'AND sp.is_deleted = 0';
+      final barcodeQuery = onlyWithoutBarcode ? 'AND gp.barcode IS NULL' : '';
+      final query = '''
+      SELECT ${_storeProductColumnsAndJoins()}
+      WHERE sp.store_id = ?
+        $deletedQuery
+        $barcodeQuery
+      ORDER BY sp.expiry_date ASC
+    ''';
+
       final response = await db.rawQuery(
-        query: '''
-    SELECT ${_storeProductColumnsAndJoins()}
-    WHERE sp.store_id = ? AND sp.is_deleted = ? 
-   ''',
-        arguments: [storeId, includeDeleted.toInt],
+        query: query,
+        arguments: [storeId],
       );
+
       final products = <String, StoreProductModel>{};
 
       for (final m in response) {
-        Logger.debugLog(message: m.toString());
         final product = StoreProductModel.fromLocal(m);
+
         final key = product.globalProduct.barcode ?? product.globalProduct.id!;
         products[key] = product;
       }
@@ -263,8 +274,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     );
     if (response.isEmpty) return null;
     final map = response.first;
-    Logger.debugLog(message: 'response:');
-    Logger.debugLog(message: response.toString());
     return StoreProductModel.fromLocal(map);
   }
 
@@ -281,6 +290,21 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
     if (query.hasCategory) queryRaw.write(' AND c.category_id = ?');
     if (query.isSearching) queryRaw.write(' AND LOWER(gp.name) LIKE LOWER(?)');
+    switch (query.sortType) {
+      case ProductSortType.quantityAsc:
+        queryRaw.write(' ORDER BY sp.quantity ASC');
+        break;
+      case ProductSortType.quantityDesc:
+        queryRaw.write(' ORDER BY sp.quantity DESC');
+        break;
+      case ProductSortType.expiryAsc:
+        queryRaw.write(' ORDER BY sp.expiry_date ASC');
+        break;
+      case ProductSortType.expiryDesc:
+        queryRaw.write(' ORDER BY sp.expiry_date DESC');
+        break;
+    }
+
     final maps = await db.rawQuery(
       query: queryRaw.toString(),
       arguments: [
@@ -372,7 +396,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     ''',
             [key.storeId, key.productId, true.toInt],
           );
-          Logger.debugLog(message: 'result: $result');
           return result.isNotEmpty;
         }
 

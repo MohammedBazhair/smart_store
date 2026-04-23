@@ -16,13 +16,12 @@ extension ShowSnackbar on BuildContext {
           msg,
           style: TextStyle(
             color: type.foregroundColor,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
           ),
         ),
         duration: type.duration,
         action: action,
         backgroundColor: type.backgroundColor,
+        elevation: 2,
       ),
     );
   }
@@ -30,6 +29,8 @@ extension ShowSnackbar on BuildContext {
 
 extension RoutesNavigators on BuildContext {
   Future<T?> pushTo<T extends Object?>(Widget screen) {
+    if (!mounted) return Future.value();
+
     return Navigator.push(
       this,
       MaterialPageRoute(builder: (context) => screen),
@@ -39,6 +40,7 @@ extension RoutesNavigators on BuildContext {
   Future<T?> pushReplacementTo<T extends Object?, TO extends Object?>(
     Widget screen,
   ) {
+    if (!mounted) return Future.value();
     return Navigator.pushReplacement(
       this,
       MaterialPageRoute(builder: (context) => screen),
@@ -46,6 +48,7 @@ extension RoutesNavigators on BuildContext {
   }
 
   Future<T?> pushAndRemoveUntilTo<T extends Object?>(Widget screen) {
+    if (!mounted) return Future.value();
     return Navigator.pushAndRemoveUntil(
       this,
       MaterialPageRoute(builder: (context) => screen),
@@ -54,6 +57,7 @@ extension RoutesNavigators on BuildContext {
   }
 
   void pop<T extends Object?>([T? result]) {
+    if (!mounted) return;
     Navigator.pop(this, result);
   }
 }
@@ -76,7 +80,7 @@ extension DateFormating on DateTime {
     return DateFormat('hh:mm a').format(this);
   }
 
-  DateTime get toDateOnly => DateTime(year, month, day);
+  DateTime get toUtcDateOnly => DateTime.utc(year, month, day);
 }
 
 extension BoolToInt on bool {

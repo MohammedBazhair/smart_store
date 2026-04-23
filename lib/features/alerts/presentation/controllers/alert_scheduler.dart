@@ -2,7 +2,7 @@ import 'package:workmanager/workmanager.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../products/data/models/store_product_model.dart';
 import '../../../products/domain/entities/store_product.dart';
-import '../../data/alert_background_params.dart';
+import '../../data/models/alert_background_params.dart';
 
 Future<void> scheduleWorkManagerAlert(
   StoreProduct product,
@@ -18,6 +18,7 @@ Future<void> scheduleWorkManagerAlert(
     '${product.globalProduct.id}_$daysBefore',
     BackgroundTask.addProductAlert.name,
     initialDelay: delay,
+    existingWorkPolicy: ExistingWorkPolicy.replace,
     inputData: alertParams.toMap(),
   );
 }

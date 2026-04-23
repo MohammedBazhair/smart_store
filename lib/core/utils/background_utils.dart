@@ -1,68 +1,48 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../errors/result.dart';
-import '../../features/alerts/data/alert_background_params.dart';
-import '../../features/alerts/domain/alert.dart';
+import '../../features/alerts/data/models/alert_background_params.dart';
+import '../../features/alerts/data/models/alert_model.dart';
+import '../../features/alerts/domain/entities/expiry_reminder.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
-import '../../features/products/domain/entities/store_product.dart';
 import '../../features/products/presentation/controllers/product_provider.dart';
 import '../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../features/store/presentation/controller/store_provider.dart';
+import '../constants/log.dart';
+import '../shared/providers/app_provider_class.dart';
 import '../shared/providers/core_providers.dart';
 import '../shared/providers/repositories_provider.dart';
 import 'date_utils.dart';
 
 class BackgroundUtils {
-  factory BackgroundUtils(ProviderContainer container) =>
-      _instance ??= BackgroundUtils._(container);
-  BackgroundUtils._(this.container);
+  factory BackgroundUtils() => _instance ??= BackgroundUtils._();
+  BackgroundUtils._();
 
   static BackgroundUtils? _instance;
-
-  final ProviderContainer container;
 
   Future<Result<int>> addAlertInBackground(
     AlertBackgroundParams params,
   ) async {
     final product = params.product;
-    final repository = container.read(alertRepositoryProvider);
-    final alert = Alert(
+  final container = await AppProviders.container;
+
+    final repository =container.read(alertRepositoryProvider);
+    final alert = AlertModel(
       productId: product.globalProduct.id!,
-      daysBeforeExpiry: params.daysBeforeExpire,
-      importance: Priority.high,
+      expiryRemainder: ExpiryRemainder(daysBeforeExpiry: params.daysBeforeExpire, importance: Priority.high),
       isRead: false,
       createdAt: DateTime.now(),
-      expiryDate: product.expiryDate,
+      expiryDate:
+          product.expiryDate ?? DateTime.now().add(const Duration(days: 365)),
       productName: product.globalProduct.name,
     );
     final result = await repository.addAlert(alert);
 
-    // When the app is terminated, this Workmanager task is what fires at the due
-    // time. We must show a local notification here as well.
-    final productId = product.globalProduct.id;
-    if (productId != null) {
-      await _showExpiryLocalNotification(
-        product: product,
-        daysBefore: params.daysBeforeExpire,
-      );
-    }
-
     return result;
   }
 
-  Future<void> _showExpiryLocalNotification({
-    required StoreProduct product,
-    required int daysBefore,
-  }) async {
-    final service = container.read(alertServiceProvider);
-
-    await service.initialize(false);
-
-    await service.showNotification(product: product, daysBefore: daysBefore);
-  }
-
   Future<void> dailyExpiryCheck() async {
+  final container = await AppProviders.container;
+
     final repository = container.read(productRepositoryProvider);
     final cache = container.read(localCacheServiceProvider);
     final storeId = cache.getString(key: 'selected_store_id');
@@ -87,25 +67,42 @@ class BackgroundUtils {
     await Future.wait(futures);
   }
 
-  Future<void> syncAllData([ProviderContainer? c]) async {
-    final container = c ?? this.container;
+  Future<void> syncAllData() async {
+  final container = await AppProviders.container;
+
     final productRepo = container.read(productRepositoryProvider);
     final storesRepo = container.read(storeRepositoryProvider);
     final userRepo = container.read(userRepositoryProvider);
     final settingsRepo = container.read(settingsRepositoryProvider);
 
-    // Initial essentials
-    final profile = await userRepo.syncAllProfiles();
+    try {
+      // 1. لازم يكون هذا أول شيء (أساسي لكل النظام)
+      final profile = await userRepo.syncAllProfiles();
 
-    await Future.wait([
-      settingsRepo.getExchangeRates(),
-      storesRepo.syncAll(profile.phone!),
-      productRepo.syncAllCategories(),
-    ]);
-    
-    await Future.wait([
-      productRepo.syncAllProducts(),
-      dailyExpiryCheck(),
-    ]);
+      // 2. بيانات أساسية
+      await Future.wait([
+        settingsRepo.getExchangeRates(),
+        productRepo.syncAllCategories(),
+      ]);
+
+      // 3. stores تعتمد على profile → لازم بعده مباشرة
+      await storesRepo.syncAll(profile.phone!);
+
+      // 4. باقي البيانات بالتوازي بعد ضمان الأساسيات
+      await Future.wait([
+        productRepo.syncAllProducts(),
+        dailyExpiryCheck(),
+      ]);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  Future<void> removeOldAlerts() async {
+  final container = await AppProviders.container;
+
+    final repo = container.read(alertRepositoryProvider);
+    await repo.deleteOldAlerts();
   }
 }

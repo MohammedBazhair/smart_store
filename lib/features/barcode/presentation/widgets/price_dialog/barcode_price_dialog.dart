@@ -12,6 +12,7 @@ Future<void> showProductPriceDialog({
     context: context,
     builder: (_) => ProviderScope(
       child: ProductPriceDialog(scanResult: scanResult),
+
     ),
   );
 }
@@ -26,6 +27,7 @@ class ProductPriceDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
+      
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: scanResult.isStoreProduct

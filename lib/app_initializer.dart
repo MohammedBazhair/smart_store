@@ -1,64 +1,25 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../core/constants/enums.dart';
 import '../../core/utils/top_level_fuctions.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
-import 'core/constants/app_constants.dart';
-import 'core/database/local/database_helper.dart';
 import 'core/extensions/extensions.dart';
-import 'core/shared/providers/core_providers.dart';
-import 'core/shared/providers/repositories_provider.dart';
-import 'features/products/presentation/controllers/product_provider.dart';
+import 'core/shared/providers/app_provider_class.dart';
 import 'features/products/presentation/screens/init_screen.dart';
-import 'features/products/presentation/screens/product_details_screen.dart';
 import 'main.dart';
 
-class AppProviders {
-  AppProviders._();
-  static late ProviderContainer container;
-}
-
-Future<ProviderContainer> configureDependencies() async {
-  final results = await Future.wait([
-    initializeDateFormatting('ar'),
-    initializeSupabase(),
-    SharedPreferences.getInstance(),
-    DatabaseHelper.instance.database,
-  ]);
-
-  final sharedPrefs = results[2] as SharedPreferences;
-  final database = results[3] as Database;
-
-  final container = ProviderContainer(
-    overrides: [
-      sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-      databaseProvider.overrideWithValue(database),
-    ],
-  );
-
-  await _initializeServices(container);
-
-  return container;
-}
-
-Future<void> _initializeServices(ProviderContainer container) async {
+Future<void> configureDependencies() async {
   await Future.wait([
-    _initializeAlertService(container),
+    _initializeAlertService(),
     _initializeWorkManager(),
     _initializePushNotification(),
   ]);
 }
 
-Future<void> _initializeAlertService(
-  ProviderContainer container,
-) async {
+Future<void> _initializeAlertService() async {
+  final container = await AppProviders.container;
   final alertService = container.read(alertServiceProvider);
   await alertService.initialize();
 }
@@ -72,7 +33,7 @@ Future<void> _registerBackgroundTasks() async {
   await Workmanager().registerPeriodicTask(
     'dailyExpiryTask',
     BackgroundTask.checkDailyExpiry.name,
-    frequency: const Duration(hours: 24),
+    frequency: const Duration(days: 1),
     existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
     backoffPolicy: BackoffPolicy.linear,
     backoffPolicyDelay: const Duration(minutes: 5),
@@ -81,11 +42,20 @@ Future<void> _registerBackgroundTasks() async {
   await Workmanager().registerPeriodicTask(
     'syncAllDataTask',
     BackgroundTask.syncAllData.name,
-    frequency: const Duration(hours: 2),
+    frequency: const Duration(hours: 3),
     existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
     backoffPolicy: BackoffPolicy.linear,
     backoffPolicyDelay: const Duration(minutes: 5),
     constraints: Constraints(networkType: NetworkType.connected),
+  );
+
+  await Workmanager().registerPeriodicTask(
+    'removeOldAlertsTask',
+    BackgroundTask.removeOldAlerts.name,
+    frequency: const Duration(days: 15),
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
+    backoffPolicy: BackoffPolicy.linear,
+    backoffPolicyDelay: const Duration(minutes: 5),
   );
 }
 
@@ -105,27 +75,13 @@ Future<void> _initializePushNotification() async {
 
   OneSignal.Notifications.addClickListener((event) async {
     final notification = event.notification;
-    final productId = notification.additionalData?['product_id']?.toString();
 
     if (notification.title?.contains('تم تفعيل حسابك') ?? false) {
-      await navigatorKey.currentContext?.pushAndRemoveUntilTo(const InitScreen());
-      return;
-    }
-
-    if (productId != null) {
-      final container = AppProviders.container;
-      final cache = container.read(localCacheServiceProvider);
-      await cache.setString(
-        key: AppConstants.pendingNotificationPayloadKey,
-        value: productId,
-      );
-
-      if (navigatorKey.currentState != null) {
-        container.read(currentProductIdProvider.notifier).state = productId;
-        await navigatorKey.currentState?.push(
-          MaterialPageRoute(builder: (_) => const ProductDetailsScreen()),
-        );
+      if (navigatorKey.currentContext != null) {
+        await navigatorKey.currentContext
+            ?.pushAndRemoveUntilTo(const InitScreen());
       }
+      return;
     }
   });
 }

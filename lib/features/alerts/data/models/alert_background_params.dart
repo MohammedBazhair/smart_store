@@ -1,4 +1,4 @@
-import '../../products/data/models/store_product_model.dart';
+import '../../../products/data/models/store_product_model.dart';
 
 class AlertBackgroundParams {
   AlertBackgroundParams({

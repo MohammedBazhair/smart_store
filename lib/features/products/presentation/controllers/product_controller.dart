@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/shared/domain/entities/permission.dart';
@@ -9,6 +8,7 @@ import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
+import '../../../cashier/presentation/controllers/pos_providers.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/models/store_product_key.dart';
 import '../../domain/entities/category.dart';
@@ -29,6 +29,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
   }
 
   Future<void> initialize() async {
+    state = state.copyWith(isLoading: true);
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
     await productRepo.syncAllCategories();
@@ -37,20 +38,10 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final categories = await getCategories();
     final products = await getStoreProducts();
 
-    Logger.debugLog(message: products.toString());
-
-    final expiredProducts = storeId != null
-        ? await productRepo.getExpiredProducts(storeId)
-        : <StoreProduct>[];
-    final nearbyExpiredProducts = storeId != null
-        ? await productRepo.getNearExpiryProducts(storeId, 30)
-        : <StoreProduct>[];
-
     state = state.copyWith(
       products: products,
-      expiredProducts: expiredProducts,
-      nearbyExpiredProducts: nearbyExpiredProducts,
       categories: categories,
+      isLoading: false,
     );
   }
 
@@ -114,7 +105,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
     state = state.copyWith(products: copiedProducts);
     await ref.read(audioControllerProvider.notifier).playSuccessResult();
-
+    _refreshRefs();
     return const SuccessState(null);
   }
 
@@ -148,6 +139,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     copiedProducts[newKey] = newProduct;
 
     state = state.copyWith(products: copiedProducts);
+    _refreshRefs();
     return result;
   }
 
@@ -196,6 +188,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       await productRepo.deleteProduct(productKey);
 
       await initialize();
+      _refreshRefs();
       return const SuccessState(null);
     } on AppException catch (e) {
       return ErrorState(e.message);
@@ -203,5 +196,10 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       Logger.debugLog(error: e, stackTrace: st);
       return const ErrorState('حصلت مشكلة أثناء حذف المنتج');
     }
+  }
+
+  void _refreshRefs() {
+    ref.read(productSearchProvider.notifier).reset();
+    ref.refresh(quickProductsControllerProvider);
   }
 }

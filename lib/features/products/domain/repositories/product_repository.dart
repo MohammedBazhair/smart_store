@@ -14,6 +14,7 @@ abstract class ProductRepository {
   Future<GlobalProduct?> getGlobalProductByBarcode(String barcode);
 
   Future<ProductsByIdentifier> getStoreProducts(String storeId);
+  Future<List<StoreProduct>> getWithoutBarcodeProducts(String storeId);
   Future<StoreProduct?> getStoreProductById(StoreProductKey key);
   Future<List<StoreProduct>> searchProducts({
     required ProductQuery query,

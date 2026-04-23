@@ -1,31 +1,58 @@
 import '../../domain/entities/profile.dart';
 
-sealed class UserState {
-  UserState(this.profile);
+class UserStateEntity {
+  UserStateEntity({
+    required this.profile,
+    this.isLogged = false,
+    this.isInitilized = false,
+  });
+
   final ProfileEntity profile;
+  final bool isLogged;
+  final bool isInitilized;
+
+  UserStateEntity copyWith({
+    ProfileEntity? profile,
+    bool? isLogged,
+    bool? isInitilized,
+  }) {
+    return UserStateEntity(
+      profile: profile ?? this.profile,
+      isLogged: isLogged ?? this.isLogged,
+      isInitilized: isInitilized ?? this.isInitilized,
+    );
+  }
+}
+
+sealed class UserState {
+  UserState(this.entity);
+  final UserStateEntity entity;
 }
 
 class UserInitialState extends UserState {
-  UserInitialState() : super(ProfileEntity.guest());
+  UserInitialState(super.entity);
 }
 
 class UserUpdatedProfileState extends UserState {
-  UserUpdatedProfileState(super.profile);
+  UserUpdatedProfileState(super.entity);
 }
 
 class UserLoadingProfileState extends UserState {
-  UserLoadingProfileState(super.profile);
+  UserLoadingProfileState(super.entity);
 }
 
 class UserLoadedProfileState extends UserState {
-  UserLoadedProfileState(super.profile);
+  UserLoadedProfileState(super.entity);
 }
 
 class UserMoreInfoProfileState extends UserState {
-  UserMoreInfoProfileState(super.profile);
+  UserMoreInfoProfileState(super.entity);
 }
 
 class UserErrorState extends UserState {
-  UserErrorState(super.profile, this.message);
+  UserErrorState(
+    super.entity, {
+    required this.message,
+  });
   final String message;
 }

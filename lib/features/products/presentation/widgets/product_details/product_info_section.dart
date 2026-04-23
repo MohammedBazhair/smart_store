@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../../core/constants/log.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/utils/date_utils.dart' as date_utils;
 import '../../../../settings/domain/entities/currence_code.dart';
@@ -20,7 +19,6 @@ class ProductInfoSection extends ConsumerWidget {
         date_utils.DateTimeUtils.timeUntilExpiry(product.expiryDate);
     final isExpired = date_utils.DateTimeUtils.isExpired(product.expiryDate);
     const spacing = 10.0;
-    Logger.debugLog(message: '(${product.notes.trim()})');
 
     final (:price, :currency) =
         ref.read(settingsControllerProvider.notifier).convert(
@@ -71,9 +69,9 @@ class ProductInfoSection extends ConsumerWidget {
               child: ProductInfoCard(
                 icon: Icons.qr_code,
                 label: 'كود المنتج',
-                value: product.globalProduct.barcode == null
-                    ? '-'
-                    : product.globalProduct.barcode!,
+                value: product.hasBarcode
+                    ? product.globalProduct.barcode!
+                    : 'لا يوجد',
                 detailsType: ProductDetailsType.barcode,
                 iconColor: const Color(0xFF6669F1),
               ),
@@ -133,6 +131,7 @@ class ProductInfoSection extends ConsumerWidget {
             value: product.notes,
             detailsType: ProductDetailsType.notes,
             iconColor: const Color(0xFF9CA3AF),
+            subtitleMaxLines: 10,
           ),
       ],
     );

@@ -13,8 +13,6 @@ class ProductDetailsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final productAsync = ref.watch(currentProductProvider);
 
-   
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('تفاصيل المنتج'),
@@ -45,7 +43,7 @@ class ProductDetailsBody extends ConsumerWidget {
     }
 
     return RefreshIndicator(
-      onRefresh: () async{
+      onRefresh: () async {
         final productId = product?.globalProduct.id;
         if (productId == null) return;
         await ref.refresh(productByIdProvider(productId).future);

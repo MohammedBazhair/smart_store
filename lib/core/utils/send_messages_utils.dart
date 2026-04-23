@@ -12,7 +12,6 @@ Future<void> sendPushNotification({
   required String message,
 }) async {
   if (playerIds.isEmpty) {
-    Logger.debugLog(message: 'No player IDs provided');
     return;
   }
 

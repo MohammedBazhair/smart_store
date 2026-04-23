@@ -1,8 +1,7 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,25 +13,23 @@ import '../../../../features/user/data/datasources/user_remote_data_source.dart'
 import '../../../../features/user/data/repositories/user_repository_impl.dart';
 import '../../../../features/user/presentation/controllers/user_controller.dart';
 import '../../../../features/user/presentation/controllers/user_state.dart';
-import '../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../features/store/presentation/controller/store_provider.dart';
 import '../../../features/user/domain/entities/role.dart';
-import '../../constants/log.dart';
 import '../../database/local/cache_service.dart';
 import '../../database/local/local_database_service.dart';
 import '../../database/remote/remote_database_service.dart';
 import '../../network/connectivity_service.dart';
 import '../../network/network_clinet.dart';
-import '../../utils/background_utils.dart';
 import '../datasources/sync_local_data_source.dart';
 import '../domain/services/permission_service.dart';
+import '../presentation/controllers/sync_controller.dart';
 import 'repositories_provider.dart';
 
 final databaseProvider =
     Provider<Database>((ref) => throw UnimplementedError());
 
 final networkProvider = Provider((_) {
-  return ConnectivityServiceImpl(InternetConnection());
+  return ConnectivityServiceImpl(Connectivity());
 });
 
 final supabaseProvider = Provider((ref) {
@@ -113,16 +110,10 @@ final userRemoteDataSourceProvider = Provider((ref) {
   );
 });
 
-final _userControllerProvider = Provider((ref) {
-  final repo = ref.read(userRepositoryProvider);
 
-  return UserController(repo);
-});
-
-final userControllerProvider = StateNotifierProvider<UserController, UserState>(
-  (ref) {
-    final controller = ref.read(_userControllerProvider);
-    return controller;
+final userControllerProvider = NotifierProvider<UserController, UserState>(
+  () {
+    return UserController();
   },
 );
 
@@ -143,7 +134,7 @@ final tokenRefreshProvider = Provider((ref) {
   final supabase = ref.watch(supabaseAuthProvider);
   // استمع لتغييرات الاتصال
   final subscription = network.listenToConnectionChanges((status) async {
-    if (status == InternetStatus.connected) {
+    if (await network.hasConnection()) {
       try {
         // جدد التوكن فقط عند الاتصال الأول
         final session = supabase.currentSession;
@@ -159,38 +150,16 @@ final tokenRefreshProvider = Provider((ref) {
   ref.onDispose(subscription.cancel);
 });
 
-final appSyncProvider = FutureProvider((ref) async {
-  try {
-    final network = ref.read(networkProvider);
-
-    Future<void> loadLocalAndNotify() async {
-      await ref.read(userControllerProvider.notifier).loadProfile();
-      await ref.read(storeControllerProvider.notifier).loadMyStores();
-      await ref.read(productControllerProvider.notifier).initialize();
-    }
-
-    // Load local data first to make UI responsive immediately
-    await loadLocalAndNotify();
-
-    if (!await network.hasConnection()) return;
-
-    final backgroundUtils = BackgroundUtils(ref.container);
-    await backgroundUtils.syncAllData();
-
-    await loadLocalAndNotify();
-  } catch (e, st) {
-    Logger.debugLog(error: e, stackTrace: st);
-  }
-});
-
-final appSyncLoadingProvider = StateProvider<bool>((ref) => false);
-
 final permissionServiceProvider = Provider((ref) {
-  final accountStatus = ref.watch(userControllerProvider).profile.accountStatus;
+  final accountStatus = ref.watch(userControllerProvider).entity.profile.accountStatus;
 
   ref.watch(storeControllerProvider);
   final member = ref.read(storeControllerProvider.notifier).meAsCurrentMember;
   final role = member?.role ?? Role.guest;
 
   return PermissionService(role: role, accountStatus: accountStatus);
+});
+
+final appSyncControllerProvider = NotifierProvider<AppSyncController, bool>(() {
+  return AppSyncController();
 });

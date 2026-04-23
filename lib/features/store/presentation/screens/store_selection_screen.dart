@@ -36,10 +36,10 @@ class StoreSelectionScreen extends ConsumerWidget {
       body: RefreshIndicator(
         edgeOffset: 100,
         onRefresh: () async {
-          await ref.refresh(appSyncProvider.future);
+          await ref.read(appSyncControllerProvider.notifier).sync(isManual: true);
         },
         child: CustomScrollView(
-          physics: const NeverScrollableScrollPhysics(),
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             const SliverAppBar(
               toolbarHeight: 60,
@@ -94,13 +94,13 @@ class StoreSelectionScreen extends ConsumerWidget {
             ),
 
             /// STORES GRID
-            SliverPadding(
-              padding: const EdgeInsetsGeometry.all(24),
-              sliver: stores.isEmpty
-                  ? const SliverFillRemaining(
-                      child: _EmptyStoresView(),
-                    )
-                  : SliverList.separated(
+            stores.isEmpty
+                ? const SliverFillRemaining(
+                    child: _EmptyStoresView(),
+                  )
+                : SliverPadding(
+                    padding: const EdgeInsets.all(24),
+                    sliver: SliverList.separated(
                       itemCount: stores.length,
                       separatorBuilder: (context, index) =>
                           const SizedBox(height: 20),
@@ -112,7 +112,7 @@ class StoreSelectionScreen extends ConsumerWidget {
                         );
                       },
                     ),
-            ),
+                  ),
           ],
         ),
       ),
@@ -298,6 +298,7 @@ class _EmptyStoresView extends StatelessWidget {
     );
     return Center(
       child: ListView(
+        padding: const EdgeInsets.all(24),
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         children: [
@@ -336,27 +337,26 @@ class _EmptyStoresView extends StatelessWidget {
             width: 220,
             height: 50,
             child: Consumer(
-              builder: (_,  ref, __) {
+              builder: (_, ref, __) {
                 return ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-            
-                            showCreateStoreDialog(context);
-                          },
-                          icon: const Icon(Icons.add, size: 20),
-                          label: const Text(
-                            'إنشاء متجر جديد',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: () {
+                    showCreateStoreDialog(context);
+                  },
+                  icon: const Icon(Icons.add, size: 20),
+                  label: const Text(
+                    'إنشاء متجر جديد',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
               },
             ),
           ),

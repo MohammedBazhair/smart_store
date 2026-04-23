@@ -79,6 +79,7 @@ class ProductInfoCard extends ConsumerWidget {
     required this.value,
     this.detailsType,
     required this.iconColor,
+    this.subtitleMaxLines = 1,
   });
 
   final IconData icon;
@@ -86,6 +87,7 @@ class ProductInfoCard extends ConsumerWidget {
   final String value;
   final ProductDetailsType? detailsType;
   final Color iconColor;
+  final int? subtitleMaxLines;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -126,12 +128,12 @@ class ProductInfoCard extends ConsumerWidget {
         ),
         subtitle: Text(
           value,
-          maxLines: 1,
-          style: const TextStyle(
+          maxLines: subtitleMaxLines,
+          style:  TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
             height: 1.8,
-            overflow: TextOverflow.ellipsis,
+            overflow:subtitleMaxLines == null ? null : TextOverflow.ellipsis,
             letterSpacing: 0.6,
           ),
         ),
