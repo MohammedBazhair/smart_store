@@ -16,7 +16,8 @@ class ProductsTabs extends ConsumerWidget {
     return SizedBox(
       height: 50,
       child: ListView.separated(
-        key: const PageStorageKey('products_tabs_scroll'),        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        key: const PageStorageKey('products_tabs_scroll'),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         scrollDirection: Axis.horizontal,
         itemCount: ProductSortType.values.length,
         itemBuilder: (context, index) {
@@ -24,7 +25,6 @@ class ProductsTabs extends ConsumerWidget {
           final isSelected = query.sortType == type;
 
           return ChoiceChip(
-            key: PageStorageKey(type.name),
             label: Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 5,

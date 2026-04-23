@@ -133,9 +133,12 @@ class AppTheme {
           color: textPrimary,
           fontSize: 12,
         ),
+        side: const BorderSide(
+          color: Colors.grey,
+          width: 0.2,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Colors.transparent),
         ),
         elevation: 1.5,
         shadowColor: const Color(0x42ECECEC),

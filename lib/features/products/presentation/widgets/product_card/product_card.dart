@@ -45,16 +45,10 @@ class ProductCard extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: isSelected
-                ? AppTheme.primaryColor.withOpacity(0.3)
-                : Colors.transparent,
-            width: 0.2,
+            color: Colors.grey.withOpacity(0.1),
           ),
         ),
-        shadowColor: isSelected
-            ? AppTheme.primaryColor.withOpacity(0.2)
-            : const Color(0x33000000),
-       
+        shadowColor: const Color(0x33000000),
         child: ListTile(
           onTap: onTap ??
               () {
@@ -68,23 +62,30 @@ class ProductCard extends ConsumerWidget {
             spacing: 10,
             children: [
               Expanded(child: ProductTitle(product.globalProduct.name)),
-              Row(
-                spacing: 4,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.category,
-                    size: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                  Text(
-                    product.globalProduct.category.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
+              if (isSelected)
+                const Icon(
+                  Icons.favorite_rounded,
+                  color: AppTheme.primaryColor,
+                  size: 17,
+                )
+              else
+                Row(
+                  spacing: 4,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.category,
+                      size: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                    Text(
+                      product.globalProduct.category.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
             ],
           ),
           subtitle: Padding(

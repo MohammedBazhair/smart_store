@@ -64,18 +64,18 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     SyncStateModel? lastSynced,
     bool includeDeleted = true,
   }) async {
-    final response = _client.client.from('global_products').select(
+    final baseQuery = _client.client.from('global_products').select(
           '*, categories(*)',
         );
 
-    final reponseResult = includeDeleted
-        ? response
-        : response.eq('is_deleted', includeDeleted.toInt);
+    final responseResult =
+        includeDeleted ? baseQuery : baseQuery.eq('is_deleted', 0);
 
     final lastDate = lastSynced?.lastSynced.toIso8601String();
+
     final results = lastDate != null
-        ? reponseResult.gt('updated_at', lastDate)
-        : reponseResult;
+        ? responseResult.gte('updated_at', lastDate)
+        : responseResult;
     final rows = await results;
 
     return rows.map(GlobalProductModel.fromRemote).toList();
@@ -126,14 +126,14 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
         )
         .eq('store_id', storeId);
 
-    final reponseResult = includeDeleted
+    final responseResult = includeDeleted
         ? response
-        : response.eq('is_deleted', includeDeleted.toInt);
+        : response.eq('is_deleted', 0);
 
     final lastDate = lastSynced?.lastSynced.toIso8601String();
     final result = lastDate != null
-        ? reponseResult.gt('updated_at', lastDate)
-        : reponseResult;
+        ? responseResult.gte('updated_at', lastDate)
+        : responseResult;
     final rows = await result;
     final products = <String, StoreProductModel>{};
 
