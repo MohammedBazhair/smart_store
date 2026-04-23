@@ -144,6 +144,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   Future<List<GlobalProductModel>> fetchGlobalProducts({
     bool includeDeleted = true,
   }) async {
+    final queryDeleted = includeDeleted ? '' : 'WHERE gp.is_deleted = 0';
     final rows = await db.rawQuery(
       query: '''
     SELECT
@@ -154,10 +155,10 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       gp.updated_at     AS product_updated_at
 
     FROM global_products gp 
-    LEFT JOIN categories c ON gp.category_id = c.category_id
-    WHERE gp.is_deleted = ?
+    LEFT JOIN categories c 
+    ON gp.category_id = c.category_id
+    $queryDeleted
   ''',
-      arguments: [includeDeleted.toInt],
     );
 
     return rows.map(GlobalProductModel.fromLocal).toList();
@@ -228,22 +229,19 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     bool onlyWithoutBarcode = false,
   }) async {
     try {
-      final deletedQuery= includeDeleted? 'AND sp.is_deleted = ?':'';
-      final barcodeQuery= onlyWithoutBarcode ? 'AND gp.barcode IS NULL':'';
+      final deletedQuery = includeDeleted ? '' : 'AND sp.is_deleted = 0';
+      final barcodeQuery = onlyWithoutBarcode ? 'AND gp.barcode IS NULL' : '';
       final query = '''
       SELECT ${_storeProductColumnsAndJoins()}
       WHERE sp.store_id = ?
         $deletedQuery
         $barcodeQuery
-      ORDER BY sp.expiry_date DESC
+      ORDER BY sp.expiry_date ASC
     ''';
 
       final response = await db.rawQuery(
         query: query,
-        arguments: [
-          storeId,
-         if(includeDeleted) includeDeleted.toInt,
-        ],
+        arguments: [storeId],
       );
 
       final products = <String, StoreProductModel>{};

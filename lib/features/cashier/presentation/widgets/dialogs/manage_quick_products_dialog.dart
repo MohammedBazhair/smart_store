@@ -79,11 +79,16 @@ class _ProductsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    return ListView.builder(
+    return ListView.separated(
       itemCount: products.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final product = products[index];
-
+        final isQuick = ref.watch(
+          quickProductsControllerProvider.select(
+            (s) => s.value?.quickProducts.containsKey(product.id) ?? false,
+          ),
+        );
         return GestureDetector(
           onLongPress: () {
             ref
@@ -93,6 +98,7 @@ class _ProductsBody extends ConsumerWidget {
           },
           child: ProductCard(
             product: product,
+            isSelected: isQuick,
             onTap: () {
               ref.read(posControllerProvider.notifier).addToCart(product);
             },
