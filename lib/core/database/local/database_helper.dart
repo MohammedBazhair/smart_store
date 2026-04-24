@@ -2,7 +2,9 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../../../errors/exceptions.dart';
 import '../../constants/app_constants.dart';
+import '../../constants/log.dart';
 
 /// مساعد قاعدة البيانات
 class DatabaseHelper {
@@ -182,8 +184,15 @@ class DatabaseHelper {
   }
 
   Future<void> close() async {
-    final db = await database;
-    await db.close();
+    try {
+      final db = await database;
+      await db.close();
+
+      _database = null;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      throw const CloseDatabaseException();
+    }
   }
 
   Future<String> getDatabaseFilePath() async {

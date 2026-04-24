@@ -3,8 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../features/alerts/data/repositories/alert_repository_impl.dart';
 import '../../../features/alerts/domain/repositories/alert_repository.dart';
-import '../../../features/backup/data/backup_repository_impl.dart';
-import '../../../features/backup/domain/backup_repository.dart';
 import 'core_providers.dart';
 
 // مزود SharedPreferences
@@ -23,7 +21,3 @@ final alertRepositoryProvider = Provider<AlertRepository>((ref) {
 });
 
 
-/// Provider لمستودع النسخ الاحتياطي
-final backupRepositoryProvider = Provider<BackupRepository>((ref) {
-  return BackupRepositoryImpl();
-});

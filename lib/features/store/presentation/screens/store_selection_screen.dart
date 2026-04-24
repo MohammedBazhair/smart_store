@@ -224,7 +224,7 @@ class _StoreCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            store.createdAt.formattedDate,
+                            store.createdAt.formattedDate(),
                             style: const TextStyle(
                               fontSize: 13,
                               color: AppTheme.textSecondary,

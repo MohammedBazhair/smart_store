@@ -18,6 +18,7 @@ import '../../../features/user/domain/entities/role.dart';
 import '../../database/local/cache_service.dart';
 import '../../database/local/local_database_service.dart';
 import '../../database/remote/remote_database_service.dart';
+import '../../database/remote/remote_storage_service.dart';
 import '../../network/connectivity_service.dart';
 import '../../network/network_clinet.dart';
 import '../datasources/sync_local_data_source.dart';
@@ -34,6 +35,11 @@ final networkProvider = Provider((_) {
 
 final supabaseProvider = Provider((ref) {
   return Supabase.instance;
+});
+
+final remoteStorageServiceProvider = Provider((ref) {
+  final _storage = ref.read(supabaseProvider).client.storage;
+  return RemoteStorageServiceImpl(_storage);
 });
 
 final supabaseAuthProvider = Provider((ref) {

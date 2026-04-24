@@ -39,7 +39,7 @@ class ProductMetaColumn extends ConsumerWidget {
                 color: AppTheme.textSecondary,
               ),
               Text(
-                product.expiryDate!.formattedDate,
+                product.expiryDate!.formattedDate(),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],

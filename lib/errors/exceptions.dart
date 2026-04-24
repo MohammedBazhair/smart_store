@@ -1,6 +1,9 @@
 abstract class AppException implements Exception {
   const AppException(this.message);
   final String message;
+
+  @override
+  String toString() => message;
 }
 
 class DuplicateBarcodeException extends AppException {
@@ -58,4 +61,22 @@ class NoStoreSelectedException extends AppException {
 
 class CannotLaunchWhatsAppException extends AppException {
   const CannotLaunchWhatsAppException(super.message);
+}
+
+class DownloadFileException extends AppException {
+  const DownloadFileException(
+    super.message,
+  );
+}
+
+class CloseDatabaseException extends AppException {
+  const CloseDatabaseException([
+    super.message = 'فشل في إغلاق قاعدة البيانات',
+  ]);
+}
+
+class ReplaceDatabaseFileException extends AppException {
+  const ReplaceDatabaseFileException([
+    super.message = 'فشل في استبدال ملف قاعدة البيانات',
+  ]);
 }
