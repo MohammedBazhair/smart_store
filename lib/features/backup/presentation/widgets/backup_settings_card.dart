@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
 import '../controllers/backup_providers.dart';
 import 'confirmation_restore_dialog.dart';
@@ -41,7 +40,6 @@ class BackupSettingsCard extends ConsumerWidget {
   }
 
   Future<void> _showMessage(BuildContext context, Result<String> result) async {
-    
     switch (result) {
       case SuccessState<String>(:final data):
         context.showSnakbar(
@@ -55,7 +53,9 @@ class BackupSettingsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final isLoading = ref.read(isLoadingProvider(IsLoading.backup));
+    final isLoading = ref.read(backupControllerProvider.select((s)=>s.isLoading));
+
+    final theme = Theme.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -66,7 +66,7 @@ class BackupSettingsCard extends ConsumerWidget {
             children: [
               Text(
                 'النسخ الاحتياطي & الاستعادة',
-                style: Theme.of(context).textTheme.titleLarge,
+                style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: 30),
               const CurrentBackupInfo(),
@@ -80,7 +80,11 @@ class BackupSettingsCard extends ConsumerWidget {
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
+                  foregroundColor: theme.colorScheme.primary,
+                  side: BorderSide(
+                    color: theme.colorScheme.primary,
+                  ),
+                  elevation: 0,
                 ),
                 onPressed: () => _restoreBackup(ref, context),
                 icon: const Icon(Icons.restore_rounded),

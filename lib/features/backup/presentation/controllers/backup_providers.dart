@@ -6,9 +6,10 @@ import '../../../../core/shared/providers/core_providers.dart';
 import '../../data/datasources/local_backup_datasource_impl.dart';
 import '../../data/datasources/remote_backup_datasource_impl.dart';
 import '../../data/repositories/backup_repository_impl.dart';
-import '../../domain/entities/backup_state.dart';
+import '../../domain/entities/backup_type.dart';
 import '../../domain/repositories/backup_repository.dart';
 import 'backup_controller.dart';
+import 'backup_ui_state.dart';
 
 final localBackupDatasourceProvider = Provider((ref) {
   final _dbHelper = DatabaseHelper.instance;
@@ -38,7 +39,7 @@ final backupRepositoryProvider = Provider<BackupRepository>((ref) {
 });
 
 final backupControllerProvider =
-    NotifierProvider<BackupController, BackupState?>(() {
+    NotifierProvider<BackupController, BackupUiState>(() {
   return BackupController();
 });
 
@@ -46,4 +47,4 @@ final backupTypeProvider =
     StateProvider.autoDispose<BackupType>((ref) => BackupType.hybrid);
     
 final restoreSourceProvider =
-    StateProvider.autoDispose<BackupType>((ref) => BackupType.local);
+    StateProvider.autoDispose<RestoreBackupType>((ref) => RestoreBackupType.cloud);

@@ -1,20 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-
 import '../../../../core/extensions/extensions.dart';
+import 'backup_type.dart';
 
-enum BackupType {
-  local(icon: Icons.devices_rounded, label: 'محلي'),
-  cloud(icon: Icons.backup, label: 'سيرفر'),
-  hybrid(icon: Icons.cloud_circle, label: 'محلي + سيرفر');
 
-  const BackupType({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-}
 
 class BackupState {
   BackupState({

@@ -12,6 +12,7 @@ import '../../../../errors/result.dart';
 import '../../domain/datasources/remote_backup_datasource.dart';
 import '../../domain/entities/backup_result.dart';
 import '../../domain/entities/backup_state.dart';
+import '../../domain/entities/backup_type.dart';
 
 class RemoteBackupDatasourceImpl extends RemoteBackupDatasource {
   RemoteBackupDatasourceImpl(

@@ -4,7 +4,7 @@ import '../../../../errors/result.dart';
 import '../../domain/datasources/local_backup_datasource.dart';
 import '../../domain/datasources/remote_backup_datasource.dart';
 import '../../domain/entities/backup_result.dart';
-import '../../domain/entities/backup_state.dart';
+import '../../domain/entities/backup_type.dart';
 import '../../domain/repositories/backup_repository.dart';
 
 class BackupRepositoryImpl implements BackupRepository {
@@ -61,14 +61,12 @@ class BackupRepositoryImpl implements BackupRepository {
   }
 
   @override
-  Future<Result<BackupResult>> restoreBackup(BackupType backupType) async {
-    switch (backupType) {
-      case BackupType.local:
+  Future<Result<BackupResult>> restoreBackup(RestoreBackupType source)  {
+    switch (source) {
+      case RestoreBackupType.local:
         return _localBackup.restoreDb();
-      case BackupType.cloud:
+      case RestoreBackupType.cloud:
         return _remoteBackup.restoreDb();
-      case BackupType.hybrid:
-        return const ErrorState('لا يمكن ارجاع نسختين في نفس الوقت');
     }
   }
 }

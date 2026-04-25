@@ -143,6 +143,11 @@ class AppTheme {
         elevation: 1.5,
         shadowColor: const Color(0x42ECECEC),
       ),
+      radioTheme:const RadioThemeData(
+        side: BorderSide(color: Colors.grey),
+        fillColor: WidgetStatePropertyAll(primaryColor),
+        
+      ),
       cardTheme: CardThemeData(
         shadowColor: const Color(0x8DFFFFFF),
         elevation: 1.2,

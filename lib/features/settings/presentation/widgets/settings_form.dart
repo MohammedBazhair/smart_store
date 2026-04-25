@@ -9,8 +9,8 @@ import '../../domain/entities/settings.dart';
 import '../controllers/settings_provider.dart';
 import 'account_info_card.dart';
 import 'change_phone_card.dart';
-import 'change_store_selection_card.dart';
 import 'currency_settings_card.dart';
+import 'manage_store_selection_card.dart';
 import 'notifications_settings_card.dart';
 import 'sync_card.dart';
 
@@ -70,7 +70,7 @@ class _SettingsFormState extends ConsumerState<SettingsForm> {
               onChanged: _updateSettings,
             ),
             const SizedBox(height: 16),
-            const ChangeStoreSelectionCard(),
+            const ManageStoreSelectionCard(),
             const SizedBox(height: 16),
             const BackupSettingsCard(),
             const SizedBox(height: 16),

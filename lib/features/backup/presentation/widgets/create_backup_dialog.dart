@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
-import '../../domain/entities/backup_state.dart';
+import '../../domain/entities/backup_type.dart';
 import '../controllers/backup_providers.dart';
 
 Future<bool?> showCreateBackupDialog(BuildContext context) {
   return showModalBottomSheet<bool?>(
     context: context,
+    isScrollControlled: true,
     builder: (context) => const CreateBackupDialog(),
   );
 }
@@ -19,21 +20,29 @@ class CreateBackupDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    return Column(
-      spacing: 12,
-      children: [
-        const Text('اختر نوع النسخة الاحتياطية'),
-        const Text('حدد المكان الذي تود حفظ النسخة الاحتياطية فيه'),
-        const BackupTypeSelection(),
-        CustomButton(
-          onPressed: ()  {
-            
-
-            context.pop<bool>(true);
-          },
-          child: const Text('إنشاء نسخة احتياطية'),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        spacing: 10,
+        children: [
+          Text(
+            'اختر نوع النسخة الاحتياطية',
+            style: TextTheme.of(context).titleLarge,
+          ),
+          const Text('حدد المكان الذي تود حفظ النسخة الاحتياطية فيه'),
+          const SizedBox(height: 12),
+          const BackupTypeSelection(),
+          const SizedBox(height: 12),
+          CustomButton(
+            onPressed: () {
+              context.pop<bool>(true);
+            },
+            child: const Text('إنشاء نسخة احتياطية'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -50,29 +59,47 @@ class BackupTypeSelection extends ConsumerWidget {
         if (value == null) return;
         ref.read(backupTypeProvider.notifier).state = value;
       },
-      child: Column(
-        children: BackupType.values.map(
-          (type) {
-            final isSelected = selectedType == type;
-            return RadioListTile(
-              value: type,
-              title: Text(type.label),
-              secondary: Icon(isSelected ? Icons.check_circle : type.icon),
-              fillColor: isSelected
-                  ? WidgetStateProperty.all(
-                      AppTheme.primaryColor.withOpacity(0.2),
-                    )
-                  : null,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: isSelected ? AppTheme.primaryColor : Colors.grey,
-                  width: isSelected ? 2 : 1,
-                ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        itemCount: BackupType.values.length,
+        itemBuilder: (context, index) {
+          final type = BackupType.values.elementAt(index);
+          final (:title, :subtitle) = type.uiInfoBackup;
+          final isSelected = selectedType == type;
+          return RadioListTile(
+            value: type,
+            title: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                height: 2,
               ),
-            );
-          },
-        ).toList(),
+            ),
+              subtitle: Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+            secondary: Icon(
+              type.icon,
+              color: AppTheme.primaryColor,
+            ),
+          
+            contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color:
+                    isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -11,6 +11,7 @@ import '../../../../errors/result.dart';
 import '../../domain/datasources/local_backup_datasource.dart';
 import '../../domain/entities/backup_result.dart';
 import '../../domain/entities/backup_state.dart';
+import '../../domain/entities/backup_type.dart';
 
 class LocalBackupDatasourceImpl extends LocalBackupDatasource {
   LocalBackupDatasourceImpl(this._dbHelper);
@@ -30,7 +31,7 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
 
       if (outPath == null) return const ErrorState('يجب اختيار مسار للحفظ');
       final fileName = p.basename(dbFilePath);
-      final resultBackupFilePath = '$outPath/$fileName';
+      final resultBackupFilePath = p.join(outPath,fileName);
       await tempDbFile.copy(resultBackupFilePath);
 
       final backupState =
@@ -67,7 +68,7 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
       final dir = await getTemporaryDirectory();
       final outPath = dir.path;
 
-      final backupFilePath = '$outPath/$_backupName';
+      final backupFilePath =p.join( outPath,_backupName);
 
       await dbFile.copy(backupFilePath);
 
