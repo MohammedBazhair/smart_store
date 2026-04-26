@@ -1,9 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/database_helper.dart';
 import '../../../../core/extensions/extensions.dart';
@@ -17,25 +15,32 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
   LocalBackupDatasourceImpl(this._dbHelper);
   final DatabaseHelper _dbHelper;
 
+  String get _backupName {
+    final date = DateTime.now().formattedDate('-');
+    return 'نسخة احتياطية للمتجر الذكي بتاريخ ($date).db';
+  }
+
   @override
   Future<Result<BackupResult>> backupDb() async {
     try {
-      final dbFilePath = await createTempBackupDb();
-      if (dbFilePath == null) {
-        return const ErrorState('حصلت مشكلة اثناء حفظ نسخة محلية');
+      final dbFileBytes = await readOriginalDbBytes();
+      if (dbFileBytes == null) {
+        return const ErrorState(
+          'حصلت مشكلة اثناء قراءة نسخة من بيانات المحلية',
+        );
       }
 
-      final tempDbFile = File(dbFilePath);
-
-      final outPath = await FilePicker.platform.getDirectoryPath();
+      final outPath = await FilePicker.platform.saveFile(
+        allowedExtensions: ['db'],
+        bytes: dbFileBytes,
+        type: FileType.custom,
+        fileName: _backupName,
+      );
 
       if (outPath == null) return const ErrorState('يجب اختيار مسار للحفظ');
-      final fileName = p.basename(dbFilePath);
-      final resultBackupFilePath = p.join(outPath,fileName);
-      await tempDbFile.copy(resultBackupFilePath);
 
       final backupState =
-          BackupState.from(file: tempDbFile, type: BackupType.local);
+          BackupState.fromBytes(bytes: dbFileBytes, type: BackupType.local);
 
       final backupResult = BackupResult(
         state: backupState,
@@ -51,13 +56,8 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
     }
   }
 
-  String get _backupName {
-    final date = DateTime.now().formattedDate('-');
-    return 'نسخة احتياطية للمتجر الذكي بتاريخ ($date).db';
-  }
-
   @override
-  Future<String?> createTempBackupDb() async {
+  Future<Uint8List?> readOriginalDbBytes() async {
     try {
       await _dbHelper.close();
       final dbPath = await _dbHelper.getDatabaseFilePath();
@@ -65,14 +65,7 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
 
       if (!await dbFile.exists()) return null;
 
-      final dir = await getTemporaryDirectory();
-      final outPath = dir.path;
-
-      final backupFilePath =p.join( outPath,_backupName);
-
-      await dbFile.copy(backupFilePath);
-
-      return backupFilePath;
+      return await dbFile.readAsBytes();
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
       return null;
@@ -93,17 +86,16 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
       }
 
       final backupFile = File(backupFilePath);
+      final backupBytes = await backupFile.readAsBytes();
       final dbFilePath = await _dbHelper.getDatabaseFilePath();
       final target = File(dbFilePath);
 
       await _dbHelper.close();
 
-      if (await target.exists()) await target.delete();
-
-      await backupFile.copy(dbFilePath);
+      await target.writeAsBytes(backupBytes);
 
       final backupState =
-          BackupState.from(file: backupFile, type: BackupType.local);
+          BackupState.fromBytes(bytes: backupBytes, type: BackupType.local);
       final backupResult = BackupResult(
         state: backupState,
         message: 'تم استعادة النسخة الاحتياطية محليا',

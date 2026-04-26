@@ -1,8 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:path_provider/path_provider.dart';
-
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/database_helper.dart';
 import '../../../../core/database/remote/remote_storage_service.dart';
@@ -32,17 +29,18 @@ class RemoteBackupDatasourceImpl extends RemoteBackupDatasource {
   String get _backupPathInBucket => '$userPhone/$_backupName';
 
   @override
-  Future<Result<BackupResult>> backupDb(String tempFilePath) async {
+  Future<Result<BackupResult>> backupDb() async {
     try {
+     final dbFilePath= await _dbHelper.getDatabaseFilePath();
       await _remoteStorage.uploadFile(
         fileName: _backupName,
-        filePath: tempFilePath,
+        filePath: dbFilePath,
         storageBucket: _storageBucket,
         userPhone: userPhone,
       );
 
-      final backupState = BackupState.from(
-        file: File(tempFilePath),
+      final backupState = BackupState.fromFile(
+        file: File(dbFilePath),
         type: BackupType.cloud,
       );
       final backupResult = BackupResult(
@@ -76,33 +74,22 @@ class RemoteBackupDatasourceImpl extends RemoteBackupDatasource {
     }
   }
 
-  Future<String> _createTempFileFromBytes(Uint8List fileBytes) async {
-    final dir = await getTemporaryDirectory();
-    final tempFilePath = '${dir.path}/$_backupName';
-
-    final tempFile = File(tempFilePath);
-    await tempFile.writeAsBytes(fileBytes);
-    return tempFilePath;
-  }
-
   @override
   Future<Result<BackupResult>> restoreDb() async {
     try {
       final fileBytes = await _downloadFileBytes();
-      final tempFilePath = await _createTempFileFromBytes(fileBytes);
 
       final dbFilePath = await _dbHelper.getDatabaseFilePath();
       await _dbHelper.close();
 
-      final tempFile = File(tempFilePath);
       final target = File(dbFilePath);
 
       if (await target.exists()) await target.delete();
 
-      await tempFile.copy(dbFilePath);
+      await target.writeAsBytes(fileBytes);
 
       final backupState =
-          BackupState.from(file: tempFile, type: BackupType.cloud);
+          BackupState.fromBytes(bytes: fileBytes, type: BackupType.cloud);
       final backupResult = BackupResult(
         state: backupState,
         message: 'تم استعادة النسخة الاحتياطية من السحابة',

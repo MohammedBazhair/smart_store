@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import '../../../../core/extensions/extensions.dart';
 import 'backup_type.dart';
-
-
 
 class BackupState {
   BackupState({
@@ -26,16 +24,29 @@ class BackupState {
     return BackupState.fromMap(map);
   }
 
-  factory BackupState.from({
+  factory BackupState.fromFile({
     required File file,
     required BackupType type,
   }) {
     final sizeInBytes = file.lengthSync();
-    final sizeInMega = sizeInBytes / (1024 * 1024);
     final updatedAt = DateTime.now();
 
     return BackupState(
-      sizeInMega: sizeInMega,
+      sizeInMega: sizeInBytes.bytesToMb,
+      updatedAt: updatedAt,
+      type: type,
+    );
+  }
+
+  factory BackupState.fromBytes({
+    required Uint8List bytes,
+    required BackupType type,
+  }) {
+    final sizeInBytes = bytes.lengthInBytes;
+    final updatedAt = DateTime.now();
+
+    return BackupState(
+      sizeInMega: sizeInBytes.bytesToMb,
       updatedAt: updatedAt,
       type: type,
     );

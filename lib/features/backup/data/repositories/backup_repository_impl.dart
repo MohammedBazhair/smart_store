@@ -32,17 +32,13 @@ class BackupRepositoryImpl implements BackupRepository {
         result = await _localBackup.backupDb();
 
       case BackupType.cloud:
-        final tempDbFilePath = await _localBackup.createTempBackupDb();
-        if (tempDbFilePath == null) {
-          return const ErrorState('لم يتم انشاء النسخة الاحتياطية المحلية');
-        }
-        result = await _remoteBackup.backupDb(tempDbFilePath);
+        result = await _remoteBackup.backupDb();
 
       case BackupType.hybrid:
         final localState = await _localBackup.backupDb();
 
-        if (localState case SuccessState<BackupResult>(:final data)) {
-          result = await _remoteBackup.backupDb(data.message);
+        if (localState case SuccessState<BackupResult>()) {
+          result = await _remoteBackup.backupDb();
         } else {
           result = localState;
         }
