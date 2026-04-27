@@ -7,12 +7,16 @@ import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../domain/entities/backup_type.dart';
 import '../controllers/backup_providers.dart';
 
-Future<bool?> showCreateBackupDialog(BuildContext context) {
-  return showModalBottomSheet<bool?>(
+Future<void> showCreateBackupDialog(BuildContext context, WidgetRef ref) async {
+  final shouldCreate = await showModalBottomSheet<bool?>(
     context: context,
     isScrollControlled: true,
     builder: (context) => const CreateBackupDialog(),
   );
+
+  if (shouldCreate != true) return;
+
+  await ref.read(backupControllerProvider.notifier).createBackup();
 }
 
 class CreateBackupDialog extends ConsumerWidget {
@@ -23,22 +27,27 @@ class CreateBackupDialog extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 10,
         children: [
           Text(
             'اختر نوع النسخة الاحتياطية',
             style: TextTheme.of(context).titleLarge,
           ),
-          const Text('حدد المكان الذي تود حفظ النسخة الاحتياطية فيه'),
+          const Text(
+            'حدد المكان الذي تود حفظ النسخة الاحتياطية فيه',
+            style: TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 12,
+              height: 1.7,
+            ),
+          ),
           const SizedBox(height: 12),
           const BackupTypeSelection(),
           const SizedBox(height: 12),
           CustomButton(
-            onPressed: () {
-              context.pop<bool>(true);
-            },
+            onPressed: () => context.pop(true),
             child: const Text('إنشاء نسخة احتياطية'),
           ),
         ],
@@ -77,7 +86,7 @@ class BackupTypeSelection extends ConsumerWidget {
                 height: 2,
               ),
             ),
-              subtitle: Text(
+            subtitle: Text(
               subtitle,
               style: const TextStyle(
                 fontSize: 12,
@@ -88,7 +97,6 @@ class BackupTypeSelection extends ConsumerWidget {
               type.icon,
               color: AppTheme.primaryColor,
             ),
-          
             contentPadding: const EdgeInsets.symmetric(horizontal: 15),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

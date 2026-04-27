@@ -143,10 +143,9 @@ class AppTheme {
         elevation: 1.5,
         shadowColor: const Color(0x42ECECEC),
       ),
-      radioTheme:const RadioThemeData(
+      radioTheme: const RadioThemeData(
         side: BorderSide(color: Colors.grey),
         fillColor: WidgetStatePropertyAll(primaryColor),
-        
       ),
       cardTheme: CardThemeData(
         shadowColor: const Color(0x8DFFFFFF),
@@ -168,6 +167,7 @@ class AppTheme {
         color: primaryColor,
         circularTrackColor: Colors.white,
         strokeWidth: 2,
+        strokeCap: StrokeCap.round,
       ),
       scrollbarTheme: ScrollbarThemeData(
         thumbVisibility: const MaterialStatePropertyAll(false),

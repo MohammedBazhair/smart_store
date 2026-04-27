@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/enums.dart';
 import '../../../../core/database/local/cache_service.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/result.dart';
@@ -24,8 +25,11 @@ class BackupController extends Notifier<BackupUiState> {
     return BackupUiState(backupState: backupState);
   }
 
-  Future<Result<String>> createBackup() async {
-    state = state.copyWith(isLoading: true);
+  Future<void> createBackup() async {
+    state = state.copyWith(
+      isLoading: true,
+      currentOperation: BackupOperationType.backup,
+    );
 
     final selectedType = ref.read(backupTypeProvider);
 
@@ -34,27 +38,39 @@ class BackupController extends Notifier<BackupUiState> {
     return _emitState(result);
   }
 
-  Future<Result<String>> restoreBackup() async {
-    state = state.copyWith(isLoading: true);
-
+  Future<void> restoreBackup() async {
+    state = state.copyWith(
+      isLoading: true,
+      currentOperation: BackupOperationType.restore,
+    );
 
     final selectedType = ref.read(restoreSourceProvider);
-
     final result = await _backupRepository.restoreBackup(selectedType);
 
     return _emitState(result);
   }
 
-  Future<Result<String>> _emitState(Result<BackupResult> result) async {
+  Future<void> _emitState(Result<BackupResult> result) async {
     switch (result) {
       case SuccessState<BackupResult>(:final data):
-        state = state.copyWith(backupState:  data.state,isLoading: false);
+        state = state.copyWith(
+          backupState: data.state,
+          isLoading: false,
+          message: data.message,
+          messageType: SnackBarType.success,
+        );
         // ignore: unawaited_futures
-        _cacheService.setString(key: _keyBackup, value: state.backupState!.toJson());
+        _cacheService.setString(
+          key: _keyBackup,
+          value: state.backupState!.toJson(),
+        );
 
-        return SuccessState(data.message);
       case ErrorState<BackupResult>(:final message):
-        return ErrorState(message);
+        state = state.copyWith(
+          isLoading: false,
+          message: message,
+          messageType: SnackBarType.error,
+        );
     }
   }
 }

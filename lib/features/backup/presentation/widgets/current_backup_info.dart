@@ -18,14 +18,16 @@ class CurrentBackupInfo extends ConsumerWidget {
       children: [
         InfoRow(
           icon: Icons.date_range,
-          title: 'اخر تحديث',
+          title: 'التاريخ',
           value: state.updatedAt.formattedDate(),
         ),
+        const Divider(),
         InfoRow(
           icon: state.type.icon,
           title: 'نوع النسخة الاحتياطية',
           value: state.type.uiInfoBackup.title,
         ),
+        const Divider(),
         InfoRow(
           icon: Icons.storage,
           title: 'حجم النسخة',

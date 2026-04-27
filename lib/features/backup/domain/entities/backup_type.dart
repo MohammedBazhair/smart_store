@@ -25,16 +25,16 @@ enum BackupType {
   ({String title, String subtitle}) get uiInfoBackup {
     return switch (this) {
       local => (
-          title: 'حفظ على الجهاز',
+          title: 'محلية',
           subtitle: 'تخزين بياناتك محليا داخل ذاكرة هذا الجهاز.',
         ),
       cloud => (
-          title: 'حفظ على السحابة',
+          title: 'على السحابة',
           subtitle:
               'يتم رفع نسخة احتياطية إلى الخادم مع إمكانية استعادتها من أي جهاز.',
         ),
       hybrid => (
-          title: 'نسخة محلية + سحابية',
+          title: 'محلية + سحابية',
           subtitle: 'يتم حفظ نسخة احتياطية على الجهاز وعلى الخادم معًا.',
         ),
     };

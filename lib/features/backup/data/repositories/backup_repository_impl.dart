@@ -30,17 +30,16 @@ class BackupRepositoryImpl implements BackupRepository {
     switch (backupType) {
       case BackupType.local:
         result = await _localBackup.backupDb();
-
       case BackupType.cloud:
         result = await _remoteBackup.backupDb();
 
       case BackupType.hybrid:
-        final localState = await _localBackup.backupDb();
+        result = await _localBackup.backupDb();
 
-        if (localState case SuccessState<BackupResult>()) {
-          result = await _remoteBackup.backupDb();
+        if (result case SuccessState<BackupResult>(:final data)) {
+          result = await _remoteBackup.backupDb(data.dbFilePath);
         } else {
-          result = localState;
+          return result;
         }
     }
 
@@ -57,7 +56,7 @@ class BackupRepositoryImpl implements BackupRepository {
   }
 
   @override
-  Future<Result<BackupResult>> restoreBackup(RestoreBackupType source)  {
+  Future<Result<BackupResult>> restoreBackup(RestoreBackupType source) {
     switch (source) {
       case RestoreBackupType.local:
         return _localBackup.restoreDb();

@@ -18,13 +18,12 @@ final localBackupDatasourceProvider = Provider((ref) {
 
 final remoteBackupDatasourceProvider = Provider((ref) {
   final _remoteStorage = ref.read(remoteStorageServiceProvider);
-  final userPhone =
-      ref.watch(userControllerProvider).entity.profile.phone ?? '-';
+  final userId = ref.watch(userControllerProvider).entity.profile.userId;
   final _networkClient = ref.read(networkCilientProvider);
   final _dbHelper = DatabaseHelper.instance;
   return RemoteBackupDatasourceImpl(
     _remoteStorage,
-    userPhone,
+    userId,
     _networkClient,
     _dbHelper,
   );
@@ -34,8 +33,8 @@ final remoteBackupDatasourceProvider = Provider((ref) {
 final backupRepositoryProvider = Provider<BackupRepository>((ref) {
   final localDb = ref.read(localBackupDatasourceProvider);
   final remoteDb = ref.read(remoteBackupDatasourceProvider);
-  final connectivityService= ref.read(networkProvider);
-  return BackupRepositoryImpl(localDb, remoteDb,connectivityService);
+  final connectivityService = ref.read(networkProvider);
+  return BackupRepositoryImpl(localDb, remoteDb, connectivityService);
 });
 
 final backupControllerProvider =
@@ -45,6 +44,7 @@ final backupControllerProvider =
 
 final backupTypeProvider =
     StateProvider.autoDispose<BackupType>((ref) => BackupType.hybrid);
-    
-final restoreSourceProvider =
-    StateProvider.autoDispose<RestoreBackupType>((ref) => RestoreBackupType.cloud);
+
+final restoreSourceProvider = StateProvider<RestoreBackupType>(
+  (ref) => RestoreBackupType.cloud,
+);
