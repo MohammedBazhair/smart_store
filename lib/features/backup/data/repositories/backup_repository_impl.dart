@@ -6,6 +6,7 @@ import '../../domain/datasources/remote_backup_datasource.dart';
 import '../../domain/entities/backup_result.dart';
 import '../../domain/entities/backup_type.dart';
 import '../../domain/repositories/backup_repository.dart';
+import '../backup_file.helper.dart';
 
 class BackupRepositoryImpl implements BackupRepository {
   BackupRepositoryImpl(
@@ -19,7 +20,7 @@ class BackupRepositoryImpl implements BackupRepository {
   final ConnectivityService _connectivityService;
 
   @override
-  Future<Result<BackupResult>> createBackup(BackupType backupType) async {
+  Future<Result<BackupResult>> createBackup(BackupType backupType, OnProgress onPregress) async {
     final hasConnection = await _connectivityService.hasConnection();
     if (!hasConnection) return const ErrorState('يجب الاتصال بالانترنت');
 
@@ -29,15 +30,15 @@ class BackupRepositoryImpl implements BackupRepository {
 
     switch (backupType) {
       case BackupType.local:
-        result = await _localBackup.backupDb();
+        result = await _localBackup.backupDb(onPregress);
       case BackupType.cloud:
         result = await _remoteBackup.backupDb();
 
       case BackupType.hybrid:
-        result = await _localBackup.backupDb();
+        result = await _localBackup.backupDb(onPregress);
 
         if (result case SuccessState<BackupResult>(:final data)) {
-          result = await _remoteBackup.backupDb(data.dbFilePath);
+          result = await _remoteBackup.backupDb(data.dbFilePath,onPregress);
         } else {
           return result;
         }
@@ -56,12 +57,12 @@ class BackupRepositoryImpl implements BackupRepository {
   }
 
   @override
-  Future<Result<BackupResult>> restoreBackup(RestoreBackupType source) {
+  Future<Result<BackupResult>> restoreBackup(RestoreBackupType source, OnProgress onPregress) {
     switch (source) {
       case RestoreBackupType.local:
-        return _localBackup.restoreDb();
+        return _localBackup.restoreDb(onPregress);
       case RestoreBackupType.cloud:
-        return _remoteBackup.restoreDb();
+        return _remoteBackup.restoreDb(onPregress);
     }
   }
 }

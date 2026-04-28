@@ -32,8 +32,9 @@ class RemoteBackupDatasourceImpl extends RemoteBackupDatasource {
   final _backupName = 'DB Backup.s';
   String get _backupPathInBucket => '$userId/$_backupName';
 
-  Future<String> _createTempFile() async {
-    final dbFileBytes = await BackupFileHelper.readOriginalDbBytes();
+  Future<String> _createTempFile(OnProgress onProgress) async {
+    final dbFileBytes =
+        await BackupFileHelper.readDbBytes(onProgress: onProgress);
 
     if (dbFileBytes == null) throw Exception();
 
@@ -49,9 +50,13 @@ class RemoteBackupDatasourceImpl extends RemoteBackupDatasource {
   }
 
   @override
-  Future<Result<BackupResult>> backupDb([String? filePath]) async {
+  Future<Result<BackupResult>> backupDb([
+    String? filePath,
+    OnProgress? onProgress,
+  ]) async {
     try {
-      final dbFilePath = filePath ?? await _createTempFile();
+      final dbFilePath =
+          filePath ?? await _createTempFile(onProgress ?? (_) {});
 
       await _remoteStorage.uploadFile(
         fileName: _backupName,
@@ -96,20 +101,19 @@ class RemoteBackupDatasourceImpl extends RemoteBackupDatasource {
   }
 
   @override
-  Future<Result<BackupResult>> restoreDb() async {
+  Future<Result<BackupResult>> restoreDb(OnProgress onProgress) async {
     try {
       final rawBytes = await _downloadFileBytes();
       final fileBytes = BackupFileHelper.removeBackupHeader(rawBytes);
 
-      final dbFilePath = await _dbHelper.getDatabaseFilePath();
-      await _dbHelper.close();
-
-      final target = File(dbFilePath);
-
-      await target.writeAsBytes(fileBytes, flush: true);
+      await BackupFileHelper.writeBytesToDb(
+        bytes: fileBytes,
+        onProgress: onProgress,
+      );
 
       final backupState =
           BackupState.fromBytes(bytes: fileBytes, type: BackupType.cloud);
+      final dbFilePath = await _dbHelper.getDatabaseFilePath();
       final backupResult = BackupResult(
         state: backupState,
         dbFilePath: dbFilePath,

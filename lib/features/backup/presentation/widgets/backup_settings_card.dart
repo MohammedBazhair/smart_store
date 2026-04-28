@@ -38,10 +38,10 @@ class BackupSettingsCard extends ConsumerWidget {
         if (!state.hasMessage) return;
 
         context.showSnakbar(state.message!, type: state.messageType!);
-        
+
         if (state.messageType == SnackBarType.success) {
           context.pushReplacementTo(const BackupSuccessScreen());
-        } else {
+        } else if (state.messageType == SnackBarType.error) {
           context.pop();
         }
       },

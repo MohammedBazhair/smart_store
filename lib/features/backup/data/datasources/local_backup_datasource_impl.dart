@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import '../../../../core/constants/log.dart';
@@ -21,15 +22,20 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
   }
 
   @override
-  Future<Result<BackupResult>> backupDb() async {
+  Future<Result<BackupResult>> backupDb(OnProgress onPregress) async {
     try {
-      final dbFileBytes = await BackupFileHelper.readOriginalDbBytes();
+      final dbFileBytes =
+          await BackupFileHelper.readDbBytes(onProgress: onPregress);
+
       if (dbFileBytes == null) {
         return const ErrorState(
           'حصلت مشكلة اثناء قراءة نسخة من بيانات المحلية',
         );
       }
-      final encryptedDbBytes = BackupFileHelper.addBackupHeader(dbFileBytes);
+      final encryptedDbBytes =
+          BackupFileHelper.addBackupHeader(Uint8List.fromList(dbFileBytes));
+
+      onPregress(1.0);
       final outPath = await FilePicker.platform.saveFile(
         bytes: encryptedDbBytes,
         fileName: _backupName,
@@ -58,7 +64,7 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
   }
 
   @override
-  Future<Result<BackupResult>> restoreDb() async {
+  Future<Result<BackupResult>> restoreDb(OnProgress onProgress) async {
     try {
       final result = await FilePicker.platform.pickFiles();
 
@@ -71,26 +77,31 @@ class LocalBackupDatasourceImpl extends LocalBackupDatasource {
 
       final extension = p.extension(backupFilePath);
 
-      if (extension != '.s') {
+      if (extension.toLowerCase() != '.s') {
         return const ErrorState('يجب اختيار ملف بامتداد مناسب');
       }
 
-      final backupFile = File(backupFilePath);
-      final encryptedBackupBytes = await backupFile.readAsBytes();
-      final backupBytes =
-          BackupFileHelper.removeBackupHeader(encryptedBackupBytes);
-      final dbFilePath = await _dbHelper.getDatabaseFilePath();
-      final target = File(dbFilePath);
+      final file = File(backupFilePath);
+      final totalBytes = await file.length();
 
-      await _dbHelper.close();
+      if (totalBytes == 0) {
+        return const ErrorState('ملف النسخة الاحتياطية فارغ');
+      }
 
-      await target.writeAsBytes(backupBytes, flush: true);
+      final encryptedBackupStream =
+          BackupFileHelper.readDbStream(backupFilePath);
+
+      await BackupFileHelper.writeStreamToDb(
+        totalBytes: totalBytes,
+        dbStream: encryptedBackupStream,
+        onProgress: onProgress,
+      );
 
       final backupState =
-          BackupState.fromBytes(bytes: backupBytes, type: BackupType.local);
+          BackupState.fromFile(file: file, type: BackupType.local);
       final backupResult = BackupResult(
         state: backupState,
-        dbFilePath: dbFilePath,
+        dbFilePath: await _dbHelper.getDatabaseFilePath(),
         message: 'تم استعادة النسخة الاحتياطية محليا',
       );
 

@@ -8,10 +8,13 @@ import '../../domain/entities/backup_state.dart';
 import '../../domain/repositories/backup_repository.dart';
 import 'backup_providers.dart';
 import 'backup_ui_state.dart';
+import 'progress_controller.dart';
 
 class BackupController extends Notifier<BackupUiState> {
   LocalCacheService get _cacheService => ref.read(localCacheServiceProvider);
   BackupRepository get _backupRepository => ref.read(backupRepositoryProvider);
+  ProgressController get _progressController =>
+      ref.read(progressControllerProvider.notifier);
 
   final _keyBackup = 'db_backup';
 
@@ -33,7 +36,12 @@ class BackupController extends Notifier<BackupUiState> {
 
     final selectedType = ref.read(backupTypeProvider);
 
-    final result = await _backupRepository.createBackup(selectedType);
+    _progressController.setStage('جاري التجهيز...');
+
+    final result = await _backupRepository.createBackup(
+      selectedType,
+      _progressController.update,
+    );
 
     return _emitState(result);
   }
@@ -45,7 +53,12 @@ class BackupController extends Notifier<BackupUiState> {
     );
 
     final selectedType = ref.read(restoreSourceProvider);
-    final result = await _backupRepository.restoreBackup(selectedType);
+    _progressController.setStage('جاري الرفع...');
+
+    final result = await _backupRepository.restoreBackup(
+      selectedType,
+     _progressController.update,
+    );
 
     return _emitState(result);
   }
