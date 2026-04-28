@@ -1,4 +1,5 @@
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -11,6 +12,8 @@ import 'features/products/presentation/screens/init_screen.dart';
 import 'main.dart';
 
 Future<void> configureDependencies() async {
+  await Permission.storage.request();
+  
   await Future.wait([
     _initializeAlertService(),
     _initializeWorkManager(),

@@ -8,6 +8,7 @@ import 'core/shared/providers/app_provider_class.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
+
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);

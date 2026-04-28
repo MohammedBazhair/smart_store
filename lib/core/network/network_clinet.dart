@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
 
 import 'network_response.dart';
@@ -10,6 +12,10 @@ abstract class NetworkClient {
   });
 
   Future<NetworkResponse> get(String url, {Map<String, String>? headers});
+  Future<Uint8List> downloadFile(
+    String url, {
+    Map<String, String>? headers,
+  });
 }
 
 class NetworkClientImpl implements NetworkClient {
@@ -46,5 +52,16 @@ class NetworkClientImpl implements NetworkClient {
       statusCode: response.statusCode,
       body: response.body,
     );
+  }
+
+  @override
+  Future<Uint8List> downloadFile(
+    String url, {
+    Map<String, String>? headers,
+  }) {
+    final uri = Uri.parse(url);
+    
+    
+    return _client.readBytes(uri, headers: headers);
   }
 }

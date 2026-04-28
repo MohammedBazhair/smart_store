@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../store/presentation/screens/store_selection_screen.dart';
 
-class ChangeStoreSelectionCard extends StatelessWidget {
-  const ChangeStoreSelectionCard({super.key});
+class ManageStoreSelectionCard extends StatelessWidget {
+  const ManageStoreSelectionCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class ChangeStoreSelectionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'اختيار متجر جديد',
+              'ادارة المتاجر',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 30),
@@ -24,11 +24,10 @@ class ChangeStoreSelectionCard extends StatelessWidget {
               builder: (_, ref, __) {
                 return ElevatedButton.icon(
                   onPressed: () {
-
                     context.pushTo(const StoreSelectionScreen());
                   },
                   icon: const Icon(Icons.store),
-                  label: const Text('تغيير'),
+                  label: const Text('ادارة المتاجر'),
                 );
               },
             ),
