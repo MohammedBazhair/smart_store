@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/presentation/controllers/app_ui_event_controller.dart';
 import '../controllers/backup_providers.dart';
 import '../controllers/backup_ui_state.dart';
 import '../dialogs/create_backup_dialog.dart';
@@ -30,18 +29,15 @@ class BackupSettingsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    listenToUiEvents(context, ref);
     ref.listen(
       backupControllerProvider,
       (_, state) {
         if (state.isLoading) goLoadingScreen(context, state.currentOperation);
 
-        if (!state.hasMessage) return;
-
-        context.showSnakbar(state.message!, type: state.messageType!);
-
-        if (state.messageType == SnackBarType.success) {
+        if (state.isSuccess) {
           context.pushReplacementTo(const BackupSuccessScreen());
-        } else if (state.messageType == SnackBarType.error) {
+        } else {
           context.pop();
         }
       },

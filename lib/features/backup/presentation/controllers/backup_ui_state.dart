@@ -1,4 +1,3 @@
-import '../../../../core/constants/enums.dart';
 import '../../domain/entities/backup_state.dart';
 
 enum BackupOperationType {
@@ -10,32 +9,26 @@ class BackupUiState {
   BackupUiState({
     this.backupState,
     this.isLoading = false,
-    this.message,
-    this.messageType,
     this.currentOperation,
+    this.isSuccess = false,
   });
 
   final BackupState? backupState;
   final bool isLoading;
-  final String? message;
-  final SnackBarType? messageType;
   final BackupOperationType? currentOperation;
-
-  bool get hasMessage => message != null && messageType != null;
+  final bool isSuccess;
 
   BackupUiState copyWith({
     BackupState? backupState,
     bool? isLoading,
-    String? message,
-    SnackBarType? messageType,
+    bool? isSuccess,
     BackupOperationType? currentOperation,
   }) {
     return BackupUiState(
       backupState: backupState ?? this.backupState,
       isLoading: isLoading ?? this.isLoading,
-      message: message,
-      messageType: messageType,
-      currentOperation: currentOperation,
+      currentOperation: currentOperation ?? this.currentOperation,
+      isSuccess: isSuccess ?? this.isSuccess,
     );
   }
 }

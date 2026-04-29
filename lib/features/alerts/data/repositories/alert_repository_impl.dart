@@ -7,7 +7,6 @@ import '../../domain/entities/alert.dart';
 import '../../domain/repositories/alert_repository.dart';
 import '../models/alert_model.dart';
 
-/// تنفيذ مستودع التنبيهات
 class AlertRepositoryImpl implements AlertRepository {
   AlertRepositoryImpl(this._db);
 
@@ -121,8 +120,7 @@ class AlertRepositoryImpl implements AlertRepository {
   }
 
   @override
-  Future<Result<void>> deleteAlert(int id) async {
-    try {
+  Future<void> deleteAlert(int id) async {
       await _db.deleteWhere(
         table: 'alerts',
         whereParams: WhereQueryParams(
@@ -131,24 +129,18 @@ class AlertRepositoryImpl implements AlertRepository {
           ],
         ),
       );
-      return const SuccessState(null);
-    } catch (e) {
-      return ErrorState('فشل في حذف التنبيه: ${e.toString()}');
-    }
+  
   }
 
   @override
-  Future<void> deleteOldAlerts() async {
-    final date = DateTime.now().subtract(const Duration(days: 30)).toUtcDateOnly;
-
-    final params = WhereQueryParams(
+  Future<void> deleteReadAlerts() async {
+    const params = WhereQueryParams(
       groups: [
         FilterGroup(
           filters: [
             Filter(
-              column: 'expiry_date',
-              value: date.toIso8601String(),
-              operator: FilterOperator.lessOrEqual,
+              column: 'is_read',
+              value: 1,
             ),
           ],
         ),

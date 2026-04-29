@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/shared/providers/app_provider_class.dart';
 import '../../../../core/shared/providers/core_providers.dart';
@@ -9,8 +10,8 @@ import '../../../products/domain/entities/store_product.dart';
 import '../../../settings/domain/repository/settings_repository.dart';
 import '../../domain/entities/expiry_reminder.dart';
 import '../../domain/repositories/alert_repository.dart';
-import 'alert_controller.dart';
 import 'alert_scheduler.dart';
+import 'alerts_controller.dart';
 import 'notification_service.dart';
 
 /// handle tap on notification
@@ -39,7 +40,7 @@ class AlertService {
 
   final SettingsRepository settingsRepo;
   final AlertRepository alertRepository;
-  final AlertController alertController;
+  final AlertsController alertController;
   final NotificationService _notifications;
 
   Future<void> initialize([bool requestPermissions = true]) async {
