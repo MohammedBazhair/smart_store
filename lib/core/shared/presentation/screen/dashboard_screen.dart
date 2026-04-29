@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../errors/result.dart';
 import '../../../../features/alerts/presentation/controllers/alert_provider.dart';
-import '../../../../features/alerts/presentation/screens/alerts_screen.dart';
+import '../../../../features/alerts/presentation/widgets/notification_icon_button.dart';
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/settings/presentation/controllers/settings_provider.dart';
@@ -57,18 +57,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('لوحة التحكم'),
-        leading: IconButton(
-          tooltip: 'التنبيهات',
-          icon: const Icon(Icons.notifications_rounded),
-          onPressed: () {
-            context.pushTo(
-              const AlertsScreen(
-                title: 'التنبيهات',
-                alertsScreenType: AlertsScreenType.all,
-              ),
-            );
-          },
-        ),
+        leading: const NotificationIconButton(),
         actions: const [
           SettingsActonIcon(),
         ],
@@ -89,7 +78,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-
 class DashboardBody extends ConsumerWidget {
   const DashboardBody({
     super.key,
@@ -101,7 +89,7 @@ class DashboardBody extends ConsumerWidget {
       onRefresh: () async {
         final controller = ref.read(productControllerProvider.notifier);
         await controller.initialize();
-        await ref.read(alertControllerProvider.notifier).loadAlerts();
+        await ref.read(alertsControllerProvider.notifier).loadAlerts();
       },
       child: const SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(),

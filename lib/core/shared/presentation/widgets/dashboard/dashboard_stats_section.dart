@@ -52,7 +52,7 @@ class DashboardStatsSection extends StatelessWidget {
           child: Consumer(
             builder: (_, ref, __) {
               final unreadAlertsLength = ref.watch(
-                alertControllerProvider.select((s) => s.unreadAlerts.length),
+                alertsControllerProvider.select((s) => s.unreadAlerts.length),
               );
 
               return StatCard(
@@ -64,7 +64,6 @@ class DashboardStatsSection extends StatelessWidget {
                 onTap: () {
                   context.pushTo(
                     const AlertsScreen(
-                      title: 'التنبيهات الجديدة',
                       alertsScreenType: AlertsScreenType.unRead,
                     ),
                   );

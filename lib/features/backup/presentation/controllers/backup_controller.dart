@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/enums.dart';
 import '../../../../core/database/local/cache_service.dart';
+import '../../../../core/shared/presentation/controllers/app_ui_event_controller.dart';
 import '../../../../core/shared/providers/core_providers.dart';
+import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
 import '../../domain/entities/backup_result.dart';
 import '../../domain/entities/backup_state.dart';
@@ -15,6 +16,8 @@ class BackupController extends Notifier<BackupUiState> {
   BackupRepository get _backupRepository => ref.read(backupRepositoryProvider);
   ProgressController get _progressController =>
       ref.read(progressControllerProvider.notifier);
+  AppUiEventController get _uiController =>
+      ref.read(appUiEventProvider.notifier);
 
   final _keyBackup = 'db_backup';
 
@@ -57,7 +60,7 @@ class BackupController extends Notifier<BackupUiState> {
 
     final result = await _backupRepository.restoreBackup(
       selectedType,
-     _progressController.update,
+      _progressController.update,
     );
 
     return _emitState(result);
@@ -69,9 +72,9 @@ class BackupController extends Notifier<BackupUiState> {
         state = state.copyWith(
           backupState: data.state,
           isLoading: false,
-          message: data.message,
-          messageType: SnackBarType.success,
+          isSuccess: true,
         );
+        _uiController.showSuccess(data.message);
         // ignore: unawaited_futures
         _cacheService.setString(
           key: _keyBackup,
@@ -81,9 +84,9 @@ class BackupController extends Notifier<BackupUiState> {
       case ErrorState<BackupResult>(:final message):
         state = state.copyWith(
           isLoading: false,
-          message: message,
-          messageType: SnackBarType.error,
+          isSuccess: false,
         );
+        _uiController.showError(message);
     }
   }
 }
