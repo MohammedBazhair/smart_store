@@ -86,7 +86,7 @@ class ProductInfoSection extends ConsumerWidget {
                 child: ProductInfoCard(
                   icon: Icons.calendar_today,
                   label: 'تاريخ الانتهاء',
-                  value: product.expiryDate!.formattedDate,
+                  value: product.expiryDate!.formattedDate(),
                   detailsType: ProductDetailsType.expiryDate,
                   iconColor: const Color(0xFFF97316),
                 ),
@@ -118,7 +118,7 @@ class ProductInfoSection extends ConsumerWidget {
               child: ProductInfoCard(
                 icon: Icons.manage_history,
                 label: 'اخر تحديث',
-                value: product.updatedAt.formattedDate,
+                value: product.updatedAt.formattedDate(),
                 iconColor: const Color(0xFFF166BC),
               ),
             ),

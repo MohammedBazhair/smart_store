@@ -46,7 +46,7 @@ class AccountDetailsWidget extends StatelessWidget {
             DetailRowWidget(
               icon: Icons.calendar_today_outlined,
               label: 'تاريخ الإنشاء',
-              value: profile.createdAt!.formattedDate,
+              value: profile.createdAt!.formattedDate(),
             ),
         ],
       ),

@@ -31,7 +31,7 @@ final invoiceProvider = Provider.autoDispose<Invoice>((ref) {
   return Invoice(
     storeName: storeName,
     invoiceNumber: invoiceId,
-    date: now.formattedDate,
+    date: now.formattedDate(),
     time: now.formattedTime,
     subTotal: posState.totalPrice.formatDouble,
     taxAmount: '0.00',

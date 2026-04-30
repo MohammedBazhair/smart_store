@@ -23,12 +23,15 @@ class BackgroundUtils {
     AlertBackgroundParams params,
   ) async {
     final product = params.product;
-  final container = await AppProviders.container;
+    final container = await AppProviders.container;
 
-    final repository =container.read(alertRepositoryProvider);
+    final repository = container.read(alertRepositoryProvider);
     final alert = AlertModel(
       productId: product.globalProduct.id!,
-      expiryRemainder: ExpiryRemainder(daysBeforeExpiry: params.daysBeforeExpire, importance: Priority.high),
+      expiryRemainder: ExpiryRemainder(
+        daysBeforeExpiry: params.daysBeforeExpire,
+        importance: Priority.high,
+      ),
       isRead: false,
       createdAt: DateTime.now(),
       expiryDate:
@@ -41,7 +44,7 @@ class BackgroundUtils {
   }
 
   Future<void> dailyExpiryCheck() async {
-  final container = await AppProviders.container;
+    final container = await AppProviders.container;
 
     final repository = container.read(productRepositoryProvider);
     final cache = container.read(localCacheServiceProvider);
@@ -68,7 +71,7 @@ class BackgroundUtils {
   }
 
   Future<void> syncAllData() async {
-  final container = await AppProviders.container;
+    final container = await AppProviders.container;
 
     final productRepo = container.read(productRepositoryProvider);
     final storesRepo = container.read(storeRepositoryProvider);
@@ -100,9 +103,9 @@ class BackgroundUtils {
   }
 
   Future<void> removeOldAlerts() async {
-  final container = await AppProviders.container;
+    final container = await AppProviders.container;
 
     final repo = container.read(alertRepositoryProvider);
-    await repo.deleteOldAlerts();
+    await repo.deleteReadAlerts();
   }
 }

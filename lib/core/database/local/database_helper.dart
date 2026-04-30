@@ -2,7 +2,9 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../../../errors/exceptions.dart';
 import '../../constants/app_constants.dart';
+import '../../constants/log.dart';
 
 /// مساعد قاعدة البيانات
 class DatabaseHelper {
@@ -12,7 +14,7 @@ class DatabaseHelper {
 
   /// الحصول على قاعدة البيانات
   Future<Database> get database async {
-    if (_database != null) return _database!;
+    if (_database != null && _database!.isOpen) return _database!;
     _database = await _initDB(AppConstants.databaseName);
     return _database!;
   }
@@ -69,7 +71,7 @@ class DatabaseHelper {
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         is_deleted INTEGER NOT NULL DEFAULT 0,
-        FOREIGN KEY (owner_phone) REFERENCES profiles(phone) ON UPDATE CASCADE
+        FOREIGN KEY (owner_phone) REFERENCES profiles(phone) ON UPDATE CASCADE,
         FOREIGN KEY (currency) REFERENCES exchange_rates(currency) ON UPDATE CASCADE
       );
     ''');
@@ -181,11 +183,6 @@ class DatabaseHelper {
 ''');
   }
 
-  Future<void> close() async {
-    final db = await database;
-    await db.close();
-  }
-
   Future<String> getDatabaseFilePath() async {
     try {
       final dbPath = await getExternalStorageDirectory();
@@ -194,6 +191,19 @@ class DatabaseHelper {
     } catch (e) {
       final dbPath = await getDatabasesPath();
       return join(dbPath, AppConstants.databaseName);
+    }
+  }
+
+  Future<void> close() async {
+    try {
+      if (_database != null && _database!.isOpen) {
+        await _database!.close();
+      }
+
+      _database = null;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      throw const CloseDatabaseException();
     }
   }
 }

@@ -1,7 +1,7 @@
 name: smart_store
 description: "تطبيق احترافي لإدارة المنتجات مع مسح الباركود ونظام الصلاحية والتنبيهات"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.0.0
@@ -14,47 +14,55 @@ dependencies:
 
   # State Management
   flutter_riverpod: ^3.2.1
+  equatable: ^2.0.8
 
-  # Database
+  # Local Storage & Database
   sqflite: ^2.3.3+1
   path: ^1.9.0
   path_provider: ^2.1.2
+  shared_preferences: ^2.5.4
 
-  # Barcode Scanner
+  # Cloud & Backend
+  supabase_flutter: ^2.12.0
+  http: any
+
+  # Authentication
+  google_sign_in: ^7.2.0
+
+  # Scanner & Permissions
   mobile_scanner: ^7.2.0
   permission_handler: ^12.0.1
   app_settings: ^7.0.0
 
-  # Local Notifications
+  # Notifications & Background Tasks
   flutter_local_notifications: ^20.1.0
+  onesignal_flutter: ^5.4.1
+  workmanager: ^0.9.0+3
   timezone: ^0.10.1
   flutter_timezone: ^5.0.1
 
-  # File Management
+  # Files & Sharing
   file_picker: ^10.3.10
   share_plus: ^12.0.2
+  printing: ^5.14.3
 
-  # UI & Animations
+  # UI & UX
   skeletonizer: ^2.1.2
+  flutter_svg: ^2.2.4
   intl: ^0.20.2
+  audioplayers: ^6.6.0
+
+  # Connectivity & Links
+  connectivity_plus: ^7.1.1
+  url_launcher: ^6.3.2
 
   # Utilities
-  equatable: ^2.0.8
-  workmanager: ^0.9.0+3
-  rename: ^3.1.0
-  shared_preferences: ^2.5.4
-  flutter_native_splash: ^2.4.7
-  supabase_flutter: ^2.12.0
-  google_sign_in: ^7.2.0
-
-  http: any
-  url_launcher: ^6.3.2
-  onesignal_flutter: ^5.4.1
   uuid: ^4.5.3
-  audioplayers: ^6.6.0
-  printing: ^5.14.3
-  connectivity_plus: ^7.1.1
-  flutter_svg: ^2.2.4
+  rename: ^3.1.0
+
+  # Development Tools
+  flutter_native_splash: ^2.4.7
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:
