@@ -195,6 +195,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
 
   @override
   Future<GlobalProductModel?> getGlobalProductByBarcode(String barcode) async {
+    if (barcode.trim().isEmpty) return null;
     try {
       final response = await db.rawQuery(
         query: '''
@@ -236,7 +237,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       WHERE sp.store_id = ?
         $deletedQuery
         $barcodeQuery
-      ORDER BY sp.expiry_date ASC
+      ORDER BY sp.expiry_date ASC NULLS LAST
     ''';
 
       final response = await db.rawQuery(
@@ -292,16 +293,16 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     if (query.isSearching) queryRaw.write(' AND LOWER(gp.name) LIKE LOWER(?)');
     switch (query.sortType) {
       case ProductSortType.quantityAsc:
-        queryRaw.write(' ORDER BY sp.quantity ASC');
+        queryRaw.write(' ORDER BY sp.quantity ASC NULLS LAST');
         break;
       case ProductSortType.quantityDesc:
-        queryRaw.write(' ORDER BY sp.quantity DESC');
+        queryRaw.write(' ORDER BY sp.quantity DESC NULLS LAST');
         break;
       case ProductSortType.expiryAsc:
-        queryRaw.write(' ORDER BY sp.expiry_date ASC');
+        queryRaw.write(' ORDER BY sp.expiry_date ASC NULLS LAST');
         break;
       case ProductSortType.expiryDesc:
-        queryRaw.write(' ORDER BY sp.expiry_date DESC');
+        queryRaw.write(' ORDER BY sp.expiry_date DESC NULLS LAST');
         break;
     }
 
@@ -431,6 +432,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       });
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
+      rethrow;
     }
 
     if (skipLocalTracking) return product;

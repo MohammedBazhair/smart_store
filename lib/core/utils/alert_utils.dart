@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../features/products/domain/entities/store_product.dart';
@@ -5,11 +8,38 @@ import '../../features/products/domain/entities/store_product.dart';
 class AlertUtils {
   AlertUtils._();
 
+  static String _buildNotificationKey(StoreProduct product, int daysBefore) {
+    final productId = product.id ?? '';
+    return '${productId}_$daysBefore';
+  }
+
+  static List<int> _generateMd5Bytes(String input) {
+    final bytes = utf8.encode(input);
+    final digest = md5.convert(bytes);
+    return digest.bytes;
+  }
+
+  static int _bytesToPositiveInt(List<int> bytes) {
+    const mask = 0x7fffffff;
+
+    final value = bytes.take(4).fold<int>(0, (result, byte) {
+      /* Shift the current result 8 bits to the left 
+         (make room for next byte)
+         then add the new byte using bitwise OR to build a 32-bit integer 
+      */
+      return (result << 8) | byte;
+    });
+
+    return value & mask;
+  }
+
   static int notificationId(StoreProduct product, int daysBefore) {
-    final productId = product.globalProduct.id!;
-    final notificationId = '${productId}_$daysBefore';
-    const t = 0x7fffffff; // رقم موجب فقط
-    return notificationId.hashCode & t;
+    final uniqueKey = _buildNotificationKey(product, daysBefore);
+
+    final hashBytes = _generateMd5Bytes(uniqueKey);
+    final id = _bytesToPositiveInt(hashBytes);
+
+    return id;
   }
 
   /// Converts the calculated alert date to a timezone-aware datetime

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
+import '../../../../core/utils/background_utils.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/products/presentation/screens/product_details_screen.dart';
 import '../../../../features/store/presentation/controller/store_provider.dart';
@@ -28,6 +29,7 @@ class _AuthGateState extends ConsumerState<AuthGate> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!ref.read(userControllerProvider).entity.isLogged) return;
 
+      BackgroundUtils().dailyExpiryCheck();
       ref.read(appSyncControllerProvider.notifier).sync();
       _handleNotificationAppLaunch();
     });
