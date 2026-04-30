@@ -1,12 +1,16 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/app_provider_class.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../../../core/utils/permissions.dart';
+import '../../../../main.dart';
 import '../../../products/domain/entities/store_product.dart';
+import '../../../products/presentation/controllers/product_provider.dart';
+import '../../../products/presentation/screens/product_details_screen.dart';
 import '../../../settings/domain/repository/settings_repository.dart';
 import '../../domain/entities/expiry_reminder.dart';
 import '../../domain/repositories/alert_repository.dart';
@@ -23,11 +27,16 @@ Future<void> onDidReceiveNotificationResponse(
 
   final container = await AppProviders.container;
 
-  final cache = container.read(localCacheServiceProvider);
-  await cache.setString(
-    key: AppConstants.pendingNotificationPayloadKey,
-    value: storeProductId,
-  );
+  if (navigatorKey.currentContext != null) {
+    container.read(currentProductIdProvider.notifier).state = storeProductId;
+    await navigatorKey.currentContext!.pushTo(const ProductDetailsScreen());
+  } else {
+    final cache = container.read(localCacheServiceProvider);
+    await cache.setString(
+      key: AppConstants.pendingNotificationPayloadKey,
+      value: storeProductId,
+    );
+  }
 }
 
 class AlertService {
