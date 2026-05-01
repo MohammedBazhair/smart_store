@@ -80,7 +80,7 @@ class BackgroundUtils {
   Future<void> syncAllData() async {
     final container = await AppProviders.container;
 
-    final productRepo = container.read(productRepositoryProvider);
+    final syncRepo = container.read(syncProductRepositoryProvider);
     final storesRepo = container.read(storeRepositoryProvider);
     final userRepo = container.read(userRepositoryProvider);
     final settingsRepo = container.read(settingsRepositoryProvider);
@@ -92,7 +92,7 @@ class BackgroundUtils {
       // 2. بيانات أساسية
       await Future.wait([
         settingsRepo.getExchangeRates(),
-        productRepo.syncAllCategories(),
+        syncRepo.syncAllCategories(),
       ]);
 
       // 3. stores تعتمد على profile → لازم بعده مباشرة
@@ -100,7 +100,7 @@ class BackgroundUtils {
 
       // 4. باقي البيانات بالتوازي بعد ضمان الأساسيات
       await Future.wait([
-        productRepo.syncAllProducts(),
+        syncRepo.syncAllProducts(),
         dailyExpiryCheck(),
       ]);
     } catch (e, st) {

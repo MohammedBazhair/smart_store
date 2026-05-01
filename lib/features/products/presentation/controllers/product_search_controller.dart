@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
-import '../../domain/repositories/product_repository.dart';
+import '../../domain/repositories/search_product_repository.dart';
 import 'product_provider.dart';
 
 class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
-  ProductRepository get productRepo => ref.read(productRepositoryProvider);
+  SearchProductRepository get searchProductRepo => ref.read(searchProductRepositoryProvider);
 
   final searchController = SearchController();
 
@@ -40,7 +40,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
       if (storeId == null) return;
 
       state = await AsyncValue.guard(() {
-        return productRepo.searchProducts(
+        return searchProductRepo.searchStoreProducts(
           query: newQuery,
           storeId: storeId,
         );
@@ -73,7 +73,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
     if (storeId == null) return <StoreProduct>[];
-    return productRepo.searchProducts(
+    return searchProductRepo.searchStoreProducts(
       query: const ProductQuery(),
       storeId: storeId,
     );
