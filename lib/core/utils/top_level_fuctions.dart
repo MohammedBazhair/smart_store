@@ -32,7 +32,7 @@ void callbackDispatcher() {
 
           final backgroundParams = AlertBackgroundParams.fromMap(inputData!);
 
-          if (backgroundParams.product.globalProduct.id == null) {
+          if (backgroundParams.product.id == null) {
             return Future.value(false);
           }
 

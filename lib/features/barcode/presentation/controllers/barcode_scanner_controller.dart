@@ -41,10 +41,7 @@ class BarcodeScannerController extends Notifier<BarcodeScannerState> {
   }
 
   /// معالجة الباركود الممسوح
-  Future<BarcodeScanResult?> processBarcode(
-    String barcode, [
-    bool isPop = false,
-  ]) async {
+  Future<BarcodeScanResult?> processBarcode(String barcode) async {
     if (!_permissionService.can(PermissionTask.scanBarcodeViewPrice)) {
       state = state.copyWith(
         error: 'لا توجد لديك صلاحية مسح المنتجات عبر الباركود',
@@ -61,12 +58,7 @@ class BarcodeScannerController extends Notifier<BarcodeScannerState> {
 
     _debounce = Timer(const Duration(milliseconds: 700), () async {
       try {
-        if (isPop) {
-          await ref.read(audioControllerProvider.notifier).playScannerBeep();
-
-          completer.complete(null);
-          return;
-        }
+        await ref.read(audioControllerProvider.notifier).playScannerBeep();
 
         final product = await ref
             .read(productControllerProvider.notifier)

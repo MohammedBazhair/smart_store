@@ -147,7 +147,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final storeProduct = state.products[barcode];
     if (storeProduct != null) return storeProduct;
 
-    // التحقق من وجود المنتج
     final globalProduct = await productRepo.getGlobalProductByBarcode(
       barcode,
     );
