@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/enums.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
@@ -185,7 +186,7 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
         isPopRequired: true,
       ),
     );
-
+    Logger.debugLog(message: '$result');
     if (result == null) return;
     _initializeFields(result.product);
   }

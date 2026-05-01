@@ -25,7 +25,7 @@ class BarcodeScannerScreen extends StatelessWidget {
       final controller = ref.read(barcodeControllerProvider.notifier);
       await controller.stop();
 
-      final result = await controller.processBarcode(barcode, isPopRequired);
+      final result = await controller.processBarcode(barcode);
 
       if (isPopRequired) {
         context.pop(result);
