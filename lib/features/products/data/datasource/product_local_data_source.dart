@@ -204,7 +204,11 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           gp.name           AS product_name,
           gp.barcode        AS barcode,
           gp.created_at     AS product_created_at,
-          gp.updated_at     AS product_updated_at
+          gp.updated_at     AS product_updated_at,
+
+          c.category_id     AS category_id,
+          c.category_name   AS category_name,
+          c.updated_at      AS category_updated_at
 
         FROM global_products gp
         LEFT JOIN categories c ON gp.category_id = c.category_id
@@ -218,7 +222,8 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       final globalMap = response.first;
       final globalProduct = GlobalProductModel.fromLocal(globalMap);
       return globalProduct;
-    } catch (e) {
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return null;
     }
   }

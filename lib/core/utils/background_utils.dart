@@ -1,5 +1,4 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import '../../errors/result.dart';
 import '../../features/alerts/data/models/alert_background_params.dart';
 import '../../features/alerts/data/models/alert_model.dart';
 import '../../features/alerts/domain/entities/expiry_reminder.dart';
@@ -19,13 +18,24 @@ class BackgroundUtils {
 
   static BackgroundUtils? _instance;
 
-  Future<Result<int>> addAlertInBackground(
+  Future<void> addAlertInBackground(
     AlertBackgroundParams params,
   ) async {
     final product = params.product;
     final container = await AppProviders.container;
-
     final repository = container.read(alertRepositoryProvider);
+    if (product.expiryDate == null || product.id == null) {
+      return;
+    }
+
+    final isAlertDuplicated = await repository.isAlertDuplicated(
+      productId: product.id!,
+      expiryDate: product.expiryDate!,
+      daysBeforeExpiry: params.daysBeforeExpire,
+    );
+
+    if (isAlertDuplicated) return;
+
     final alert = AlertModel(
       productId: product.globalProduct.id!,
       expiryRemainder: ExpiryRemainder(
@@ -34,13 +44,10 @@ class BackgroundUtils {
       ),
       isRead: false,
       createdAt: DateTime.now(),
-      expiryDate:
-          product.expiryDate ?? DateTime.now().add(const Duration(days: 365)),
+      expiryDate: product.expiryDate!,
       productName: product.globalProduct.name,
     );
-    final result = await repository.addAlert(alert);
-
-    return result;
+    await repository.addAlert(alert);
   }
 
   Future<void> dailyExpiryCheck() async {
