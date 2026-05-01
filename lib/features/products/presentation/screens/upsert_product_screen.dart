@@ -7,6 +7,7 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
+import '../../../barcode/domain/barcode_scan_result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../settings/domain/entities/currence_code.dart';
 import '../../../settings/presentation/controllers/settings_provider.dart';
@@ -70,7 +71,7 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
         ref.read(settingsControllerProvider).value?.defaultCurrency ??
             CurrencyCode.theDefault;
 
-    _initializeFields();
+    _initializeFields(widget.product);
     _requestFocusAfterEdit();
   }
 
@@ -85,10 +86,9 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
     super.dispose();
   }
 
-  void _initializeFields() {
-    if (widget.product == null) return;
+  void _initializeFields(Product? product) {
+    if (product == null) return;
 
-    final product = widget.product!;
     if (product is StoreProduct) {
       _nameController.text = product.globalProduct.name;
       _barcodeController.text = product.globalProduct.barcode ?? '';
@@ -179,14 +179,15 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
   }
 
   Future<void> _scanBarcode() async {
-    final barcode = await showModalBottomSheet(
+    final result = await showModalBottomSheet<BarcodeScanResult?>(
       context: context,
       builder: (context) => const BarcodeScannerScreen(
         isPopRequired: true,
       ),
     );
 
-    _barcodeController.text = barcode ?? _barcodeController.text;
+    if (result == null) return;
+    _initializeFields(result.product);
   }
 
   Future<void> _onAddProduct() async {
@@ -281,12 +282,12 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 8,
               children: [
-                ProductNameField(controller: _nameController),
-                ProductQuantityField(controller: _quantityController),
                 ProductBarcodeField(
                   controller: _barcodeController,
                   onScan: _scanBarcode,
                 ),
+                ProductNameField(controller: _nameController),
+                ProductQuantityField(controller: _quantityController),
                 ProductPriceField(
                   controller: _priceController,
                   currency: _selectedCurrency,

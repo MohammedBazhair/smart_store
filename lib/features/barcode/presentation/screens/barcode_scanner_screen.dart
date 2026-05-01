@@ -23,14 +23,12 @@ class BarcodeScannerScreen extends StatelessWidget {
   ) async {
     try {
       final controller = ref.read(barcodeControllerProvider.notifier);
-      Logger.debugLog(message: '1');
       await controller.stop();
-      Logger.debugLog(message: '2');
 
       final result = await controller.processBarcode(barcode, isPopRequired);
-      Logger.debugLog(message: '$result');
+
       if (isPopRequired) {
-        if (context.mounted) Navigator.pop(context, barcode);
+        context.pop(result);
         return;
       }
 
@@ -44,11 +42,11 @@ class BarcodeScannerScreen extends StatelessWidget {
         await controller.start();
 
         return;
-      } 
-        context.showSnakbar(
-          'المنتج غير موجود قم بتسجيله',
-          type: SnackBarType.error,
-        );
+      }
+      context.showSnakbar(
+        'المنتج غير موجود قم بتسجيله',
+        type: SnackBarType.error,
+      );
 
       await context.pushTo(
         UpsertProductScreen(
