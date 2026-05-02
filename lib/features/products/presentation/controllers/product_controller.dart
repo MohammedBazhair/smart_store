@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/shared/domain/entities/permission.dart';
@@ -8,7 +9,6 @@ import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
 import '../../../alerts/presentation/controllers/alert_provider.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
-import '../../../cashier/presentation/controllers/pos_providers.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../data/models/product_change_type.dart';
 import '../../data/models/store_product_key.dart';
@@ -17,8 +17,8 @@ import '../../domain/entities/product.dart';
 import '../../domain/entities/store_product.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/sync_product_repository.dart';
+import 'product_management_state.dart';
 import 'product_provider.dart';
-import 'product_state.dart';
 
 class ProductManagementController extends Notifier<ProductManagementState> {
   PermissionService get _permissionService =>
@@ -161,11 +161,15 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       await alertService.scheduleProductAlerts(newProduct);
     }
 
-    final oldKey = oldProduct.id!;
-    final newKey = newProduct.id!;
+    final productId = newProduct.id!;
 
-    final copiedProducts = {...state.products}..remove(oldKey);
-    copiedProducts[newKey] = newProduct;
+    final copiedProducts = {...state.products};
+
+    copiedProducts.update(
+      productId,
+      (value) => newProduct,
+      ifAbsent: () => newProduct,
+    );
 
     state = state.copyWith(products: copiedProducts);
     _refreshRefs();
@@ -219,6 +223,5 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
   void _refreshRefs() {
     ref.read(productSearchControllerProvider.notifier).reset();
-    ref.refresh(quickProductsControllerProvider);
   }
 }

@@ -17,8 +17,8 @@ import '../../domain/entities/store_product.dart';
 import '../../domain/repositories/product_repository.dart';
 import 'expiry_date_controller.dart';
 import 'product_controller.dart';
+import 'product_management_state.dart';
 import 'product_search_controller.dart';
-import 'product_state.dart';
 
 final storeProductLocalDataSourceProvider = Provider((ref) {
   final db = ref.read(localDatabaseServiceProvider);
@@ -101,12 +101,17 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
   );
 });
 
+final homePreviewProductsProvider = Provider<List<StoreProduct>>((ref) {
+  final products = ref.watch(productControllerProvider).products;
+  return products.values.take(2).toList();
+});
+
 final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
   (ref) => const ProductQuery(),
 );
 
-final productSearchControllerProvider = AsyncNotifierProvider.autoDispose<
-    ProductSearchController, List<StoreProduct>>(
+final productSearchControllerProvider =
+    AsyncNotifierProvider<ProductSearchController, List<StoreProduct>>(
   ProductSearchController.new,
 );
 

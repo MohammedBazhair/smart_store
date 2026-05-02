@@ -84,7 +84,7 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
       for (final m in response) {
         final product = StoreProductModel.fromLocal(m);
 
-        final key = product.globalProduct.barcode ?? product.globalProduct.id!;
+        final key = product.id!;
         products[key] = product;
       }
 

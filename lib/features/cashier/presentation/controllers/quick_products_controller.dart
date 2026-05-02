@@ -11,6 +11,7 @@ import 'quick_products_state.dart';
 
 class QuickProductsController extends AsyncNotifier<QuickProductsState> {
   QuickProductsRepository get _quickRepo => ref.read(quickProductsRepository);
+
   String? get _storeId => ref.watch(
         storeControllerProvider.select(
           (s) => s.state.selectedStoreId,
@@ -33,17 +34,16 @@ class QuickProductsController extends AsyncNotifier<QuickProductsState> {
 
     final ids = await _quickRepo.getQuickProductsIds(_storeId!);
 
-    final allProducts = ref.read(productControllerProvider).products;
+    final allProducts = ref.watch(productControllerProvider).products;
 
     final quickProducts = <String, StoreProduct>{};
 
     for (final id in ids) {
-      final productKey = StoreProductKey(storeId: _storeId!, productId: id);
-      final product = allProducts[productKey.productId];
+      final product = allProducts[id];
 
       if (product == null) continue;
 
-      quickProducts[productKey.productId] = product;
+      quickProducts[id] = product;
     }
 
     return quickProducts;

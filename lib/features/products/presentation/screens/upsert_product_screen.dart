@@ -277,13 +277,14 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
       body: GestureDetector(
         onTap: FocusScope.of(context).unfocus,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 8,
               children: [
+                
                 ProductBarcodeField(
                   controller: _barcodeController,
                   onScan: _scanBarcode,

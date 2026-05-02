@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../features/products/domain/entities/product_query.dart';
 import '../../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../../features/products/presentation/screens/products_screen.dart';
+import '../../../../../features/products/presentation/widgets/products_widgets/products_view.dart';
 import '../../../../extensions/extensions.dart';
 
 class DashboardProductsSection extends ConsumerWidget {
@@ -42,7 +43,7 @@ class DashboardProductsSection extends ConsumerWidget {
         const SizedBox(height: 12),
         const SizedBox(
           height: 300,
-          child: ProductsBody(showSimpleCount: true),
+          child: ProductsView(isPreviewMode: true),
         ),
       ],
     );

@@ -26,10 +26,9 @@ class ProductNameField extends ConsumerWidget {
       fieldViewBuilder: (_, textEditingController, focusNode, __) {
         return ValueListenableBuilder(
           valueListenable: controller,
-          
           builder: (context, value, child) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (controller.text.isEmpty) textEditingController.clear();
+              textEditingController.text = value.text;
             });
             return child!;
           },

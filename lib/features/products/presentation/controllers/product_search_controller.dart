@@ -79,8 +79,17 @@ class ProductSearchController extends AsyncNotifier<List<StoreProduct>> {
   }
 
   Future<void> reset() async {
-    final _state = await initialState();
-    state = AsyncData(_state);
+    try {
+      if (!ref.mounted) return;
+
+      state = const AsyncValue.loading();
+
+      if (!ref.mounted) return;
+      final _state = await initialState();
+      state = AsyncData(_state);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+    }
   }
 
   Future<void> clearSearch() async {
