@@ -1,5 +1,6 @@
 import '../../../../core/constants/typedef.dart';
 import '../../../../errors/result.dart';
+import '../../data/models/product_change_type.dart';
 import '../../data/models/store_product_key.dart';
 import '../entities/category.dart';
 import '../entities/store_product.dart';
@@ -19,7 +20,7 @@ abstract class ProductRepository {
   Future<List<StoreProduct>> getNearExpiryProducts(String storeId, int days);
 
   Future<Result<StoreProduct>> addProduct(StoreProduct product);
-  Future<Result<void>> updateProduct(StoreProduct product );
+  Future<Result<void>> updateProduct(StoreProduct product , ProductChangeType changeType);
 
   Future<void> deleteProduct(StoreProductKey key);
 }

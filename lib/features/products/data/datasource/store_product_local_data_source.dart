@@ -29,10 +29,11 @@ abstract class StoreProductLocalDataSource {
     bool skipLocalTracking = false,
   ]);
 
-  Future<void> updateStoreProduct(
-    StoreProductModel product, [
+  Future<void> updateStoreProduct({
+    required StoreProductModel product,
     bool skipLocalTracking = false,
-  ]);
+    Transaction? transaction,
+  });
 
   Future<void> setStoreProducts(List<StoreProductModel> products);
 
@@ -52,8 +53,8 @@ abstract class StoreProductLocalDataSource {
 }
 
 class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
-  StoreProductLocalDataSourceImpl(this.db, this._sync);
-  final LocalDatabaseService db;
+  StoreProductLocalDataSourceImpl(this._db, this._sync);
+  final LocalDatabaseService _db;
   final SyncLocalDataSource _sync;
 
   @override
@@ -73,7 +74,7 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
       ORDER BY sp.expiry_date ASC NULLS LAST
     ''';
 
-      final response = await db.rawQuery(
+      final response = await _db.rawQuery(
         query: query,
         arguments: [storeId],
       );
@@ -98,7 +99,7 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
   Future<StoreProductModel?> fetchStoreProductById(
     StoreProductKey productKey,
   ) async {
-    final response = await db.rawQuery(
+    final response = await _db.rawQuery(
       query: '''
           SELECT ${ProductQueryBuilder.storeProductColumnsAndJoins}
           WHERE sp.store_id = ? AND sp.product_id = ?
@@ -116,7 +117,7 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
     String storeId,
   ) async {
     final today = DateTime.now().toUtc().toIso8601String();
-    final maps = await db.rawQuery(
+    final maps = await _db.rawQuery(
       query: '''
           SELECT ${ProductQueryBuilder.storeProductColumnsAndJoins}
           WHERE sp.store_id = ?
@@ -136,7 +137,7 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
   ) async {
     final now = DateTime.now().toUtc();
     final near = now.add(Duration(days: days)).toIso8601String();
-    final maps = await db.rawQuery(
+    final maps = await _db.rawQuery(
       query: '''
           SELECT ${ProductQueryBuilder.storeProductColumnsAndJoins}
           WHERE sp.store_id = ?
@@ -161,7 +162,7 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
       productId: product.globalProduct.id!,
     );
     try {
-      await db.transaction((txn) async {
+      await _db.transaction((txn) async {
         Future<bool> _isProductSoftDeleted(StoreProductKey key) async {
           final result = await txn.rawQuery(
             '''
@@ -230,10 +231,11 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
   }
 
   @override
-  Future<void> updateStoreProduct(
-    StoreProductModel product, [
+  Future<void> updateStoreProduct({
+    required StoreProductModel product,
     bool skipLocalTracking = false,
-  ]) async {
+    Transaction? transaction,
+  }) async {
     final updated = product.toMap();
     final whereParams = WhereQueryParams(
       groups: [
@@ -246,13 +248,20 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
       ],
     );
 
-    await db.update(
-      updated: updated,
-      whereParams: whereParams,
-      table: 'store_products',
-    );
-
-  
+    if (transaction != null) {
+      await transaction.update(
+        'store_products',
+        updated,
+        where: 'store_id = ? AND product_id = ?',
+        whereArgs: [product.storeId, product.globalProduct.id],
+      );
+    } else {
+      await _db.update(
+        updated: updated,
+        whereParams: whereParams,
+        table: 'store_products',
+      );
+    }
 
     if (skipLocalTracking) return;
 
@@ -268,14 +277,14 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
       updatedAt: DateTime.now().toUtc(),
     );
 
-    await _sync.addChange(storeProductChange);
+    await _sync.addChange(storeProductChange,transaction);
   }
 
   @override
   Future<void> setStoreProducts(
     List<StoreProductModel> products,
   ) async {
-    final batch = db.batch;
+    final batch = _db.batch;
     for (final product in products) {
       batch.insert(
         'store_products',
@@ -302,7 +311,7 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
       ],
     );
 
-    await db.update(
+    await _db.update(
       updated: {
         'is_deleted': true.toInt,
         'updated_at': DateTime.now().toUtc().toIso8601String(),

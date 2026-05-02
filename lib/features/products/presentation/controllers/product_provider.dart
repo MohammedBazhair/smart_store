@@ -77,7 +77,6 @@ final syncProductRepositoryProvider = Provider((ref) {
   );
 });
 
-
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final _remoteDatabase = ref.read(_productRemoteDataSourceProvider);
   final _localCache = ref.read(localCacheServiceProvider);
@@ -87,6 +86,7 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
   final _localCategoryDb = ref.read(categoryLocalDataSourceProvider);
   final _localStoreProductDb = ref.read(storeProductLocalDataSourceProvider);
   final _syncRepo = ref.read(syncProductRepositoryProvider);
+  final _db = ref.read(localDatabaseServiceProvider);
 
   return ProductRepositoryImpl(
     _connectivity,
@@ -97,6 +97,7 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
     _remoteDatabase,
     _sync,
     _syncRepo,
+    _db,
   );
 });
 
@@ -104,9 +105,9 @@ final productQueryProvider = StateProvider.autoDispose<ProductQuery>(
   (ref) => const ProductQuery(),
 );
 
-final productSearchProvider = AsyncNotifierProvider.autoDispose<
-    ProductSearchNotifier, List<StoreProduct>>(
-  ProductSearchNotifier.new,
+final productSearchControllerProvider = AsyncNotifierProvider.autoDispose<
+    ProductSearchController, List<StoreProduct>>(
+  ProductSearchController.new,
 );
 
 final focusNodesProvider =

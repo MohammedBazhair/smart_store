@@ -49,7 +49,7 @@ class ProductsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    final productsSearchAsync = ref.watch(productSearchProvider);
+    final productsSearchAsync = ref.watch(productSearchControllerProvider);
     final simpleProducts =
         ref.watch(productControllerProvider.select((s) => s.simpleProducts));
     return PageStorage(

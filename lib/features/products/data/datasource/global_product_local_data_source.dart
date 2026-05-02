@@ -22,10 +22,11 @@ abstract class GlobalProductLocalDataSource {
     bool skipLocalTracking = false,
   ]);
 
-  Future<void> updateGlobalProduct(
-    GlobalProductModel product, [
+  Future<void> updateGlobalProduct({
+    required GlobalProductModel product,
     bool skipLocalTracking = false,
-  ]);
+    Transaction? transaction,
+  });
 
   Future<void> setGlobalProducts(List<GlobalProductModel> products);
 }
@@ -145,22 +146,32 @@ class GlobalProductLocalDataSourceImpl implements GlobalProductLocalDataSource {
   }
 
   @override
-  Future<void> updateGlobalProduct(
-    GlobalProductModel product, [
+  Future<void> updateGlobalProduct({
+    required GlobalProductModel product,
     bool skipLocalTracking = false,
-  ]) async {
+    Transaction? transaction,
+  }) async {
     final updated = product.toMap();
     updated.remove('id');
 
-    await _db.update(
-      updated: updated,
-      whereParams: WhereQueryParams(
-        groups: [
-          FilterGroup(filters: [Filter(column: 'id', value: product.id!)]),
-        ],
-      ),
-      table: 'global_products',
-    );
+    if (transaction != null) {
+      await transaction.update(
+        'global_products',
+        updated,
+        where: 'id = ?',
+        whereArgs: [product.id],
+      );
+    } else {
+      await _db.update(
+        updated: updated,
+        whereParams: WhereQueryParams(
+          groups: [
+            FilterGroup(filters: [Filter(column: 'id', value: product.id!)]),
+          ],
+        ),
+        table: 'global_products',
+      );
+    }
 
     if (skipLocalTracking) return;
 
@@ -171,7 +182,7 @@ class GlobalProductLocalDataSourceImpl implements GlobalProductLocalDataSource {
       updatedAt: DateTime.now().toUtc(),
     );
 
-    await _sync.addChange(globalProductChange);
+    await _sync.addChange(globalProductChange,transaction);
   }
 
   @override
@@ -188,5 +199,4 @@ class GlobalProductLocalDataSourceImpl implements GlobalProductLocalDataSource {
     }
     await batch.commit(noResult: true);
   }
-
 }

@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/constants/typedef.dart';
 import '../../../../core/database/local/cache_service.dart';
+import '../../../../core/database/local/local_database_service.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
 import '../../../../errors/result.dart';
@@ -15,6 +16,7 @@ import '../datasource/global_product_local_data_source.dart';
 import '../datasource/product_remote_data_source.dart';
 import '../datasource/store_product_local_data_source.dart';
 import '../models/global_product_model.dart';
+import '../models/product_change_type.dart';
 import '../models/store_product_key.dart';
 import '../models/store_product_model.dart';
 
@@ -28,6 +30,7 @@ class ProductRepositoryImpl implements ProductRepository {
     this._remoteDatabase,
     this._syncLocal,
     this._syncRepo,
+    this._db,
   );
 
   final ConnectivityService _connectivity;
@@ -38,6 +41,7 @@ class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource _remoteDatabase;
   final SyncLocalDataSource _syncLocal;
   final SyncProductRepository _syncRepo;
+  final LocalDatabaseService _db;
 
   @override
   Future<List<Category>> getAllCategories() async {
@@ -62,7 +66,7 @@ class ProductRepositoryImpl implements ProductRepository {
       );
 
       // ignore: unawaited_futures
-     _syncRepo.syncAllProducts();
+      _syncRepo.syncAllProducts();
       return products;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
@@ -106,7 +110,6 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
-
   @override
   Future<List<StoreProduct>> getExpiredProducts(
     String storeId,
@@ -132,22 +135,24 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
-// TODO: Make sure correct logic
   @override
   Future<Result<StoreProduct>> addProduct(StoreProduct product) async {
-    final barcode = product.globalProduct.barcode ?? '';
-    final globalProduct = await getGlobalProductByBarcode(barcode);
-    final globalProductId = globalProduct?.id ?? const Uuid().v4();
-
-    final newProduct = product.copyWith(
-      globalProduct: product.globalProduct.copyWith(id: globalProductId),
-    );
-
-    final storeProductModel = StoreProductModel.fromEntity(newProduct);
-    final globalProductModel =
-        GlobalProductModel.fromEntity(newProduct.globalProduct);
     try {
-      await _localGlobalProductDb.addGlobalProduct(globalProductModel);
+      final barcode = product.globalProduct.barcode;
+      String globalProductId = const Uuid().v4();
+
+      if (product.hasBarcode) {
+        final existing = await getGlobalProductByBarcode(barcode!);
+
+        if (existing != null) globalProductId = existing.id!;
+      }
+
+      final newProduct = product.copyWith(
+        globalProduct: product.globalProduct.copyWith(id: globalProductId),
+      );
+
+      final storeProductModel = StoreProductModel.fromEntity(newProduct);
+
       await _localStoreProductDb.addStoreProduct(storeProductModel);
 
       return SuccessState(newProduct);
@@ -157,22 +162,40 @@ class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
-// TODO: Make sure correct logic
   @override
-  Future<Result<void>> updateProduct(StoreProduct product) async {
+  Future<Result<void>> updateProduct(
+    StoreProduct product,
+    ProductChangeType changeType,
+  ) async {
     try {
+      final now = DateTime.now().toUtc();
+
       final updatedProduct =
-          product.copyWith(updatedAt: DateTime.now().toUtc());
+          changeType.storeChanged ? product.copyWith(updatedAt: now) : product;
       final updatedProductModel = StoreProductModel.fromEntity(updatedProduct);
 
-      await _localStoreProductDb.updateStoreProduct(updatedProductModel);
-      final updatedGlobalProduct =
-          product.copyWith(updatedAt: DateTime.now().toUtc()).globalProduct;
-      final updatedGlobalProductModel =
-          GlobalProductModel.fromEntity(updatedGlobalProduct);
+      final globalProduct = changeType.globalChanged
+          ? product.globalProduct.copyWith(updatedAt: now)
+          : product.globalProduct;
+      final globalProductModel = GlobalProductModel.fromEntity(globalProduct);
 
-      await _localGlobalProductDb
-          .updateGlobalProduct(updatedGlobalProductModel);
+      await _db.transaction(
+        (txn) async {
+          if (changeType.globalChanged) {
+            await _localGlobalProductDb.updateGlobalProduct(
+              product: globalProductModel,
+              transaction: txn,
+            );
+          }
+
+          if (changeType.storeChanged) {
+            await _localStoreProductDb.updateStoreProduct(
+              product: updatedProductModel,
+              transaction: txn,
+            );
+          }
+        },
+      );
 
       return const SuccessState(null);
     } catch (e) {
