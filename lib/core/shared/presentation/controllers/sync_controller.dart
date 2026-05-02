@@ -63,4 +63,9 @@ class AppSyncController extends Notifier<bool> {
     await ref.read(storeControllerProvider.notifier).loadMyStores();
     await ref.read(productControllerProvider.notifier).initialize();
   }
+
+  Future<void> resetCacheFlags() async {
+    await ref.read(syncProductRepositoryProvider).resetCacheFlags();
+    state = false;
+  }
 }

@@ -67,6 +67,10 @@ class SelectStoreEvent extends StoreEventState {
   const SelectStoreEvent({required super.state});
 }
 
+class UnSelectStoreEvent extends StoreEventState {
+  const UnSelectStoreEvent({required super.state});
+}
+
 class AddStoreMemberEvent extends StoreEventState {
   const AddStoreMemberEvent({required super.state, required this.member});
   final StoreMember member;

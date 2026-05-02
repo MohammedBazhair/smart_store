@@ -24,26 +24,34 @@ class ProductNameField extends ConsumerWidget {
         controller.text = option;
       },
       fieldViewBuilder: (_, textEditingController, focusNode, __) {
-       WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (textEditingController.text != controller.text) {
-            textEditingController.text = controller.text;
-          }
-        });
-        return TextFormField(
-          focusNode: focusNode,
-          controller: textEditingController,
-          textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
-            labelText: 'اسم المنتج *',
-            prefixIcon: Icon(Icons.inventory_2),
-            helperText: '',
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'يرجى إدخال اسم المنتج';
-            }
-            return null;
+        return ValueListenableBuilder(
+          valueListenable: controller,
+          
+          builder: (context, value, child) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (controller.text.isEmpty) textEditingController.clear();
+            });
+            return child!;
           },
+          child: TextFormField(
+            focusNode: focusNode,
+            controller: textEditingController,
+            textInputAction: TextInputAction.next,
+            onChanged: (value) {
+              controller.text = value;
+            },
+            decoration: const InputDecoration(
+              labelText: 'اسم المنتج *',
+              prefixIcon: Icon(Icons.inventory_2),
+              helperText: '',
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'يرجى إدخال اسم المنتج';
+              }
+              return null;
+            },
+          ),
         );
       },
     );

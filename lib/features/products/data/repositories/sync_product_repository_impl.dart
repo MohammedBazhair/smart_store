@@ -227,4 +227,13 @@ class SyncProductRepositoryImpl implements SyncProductRepository {
       Logger.debugLog(error: e, stackTrace: st);
     }
   }
+
+  @override
+  Future<void> resetCacheFlags() async {
+        // 1️⃣ Reset cache flags
+      await _localCache.remove(key: 'isCategoriesDownloaded');
+      await _localCache.remove(key: 'isProductsDownloaded');
+
+    
+  }
 }

@@ -73,8 +73,9 @@ extension FilesSizes on num {
 
 extension DateFormating on DateTime {
   /// convert format into yyyy/MM/dd
-  String  formattedDate([String seperator='/']) {
-    return DateFormat('yyyy${seperator}MM${seperator}dd').format(this);
+  String formattedDate([String seperator = '/']) {
+    final dateFormat = DateFormat('yyyy${seperator}MM${seperator}dd');
+    return dateFormat.format(this);
   }
 
   String get formattedTime {
