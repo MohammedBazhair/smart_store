@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../domain/entities/product_details.dart';
 import '../../controllers/product_provider.dart';
 
 class ProductNameField extends ConsumerWidget {
@@ -11,18 +10,27 @@ class ProductNameField extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return Autocomplete<String>(
-      optionsBuilder: (textEditingValue) {
-        return ref
+      optionsBuilder: (textEditingValue) async {
+        if (textEditingValue.text.isEmpty) {
+          return const Iterable<String>.empty();
+        }
+        final suggestions = await ref
             .read(productSearchControllerProvider.notifier)
             .searchProductsNamesSuggestions(textEditingValue.text);
+
+        return suggestions.toSet();
       },
       onSelected: (option) {
         controller.text = option;
       },
-      optionsMaxHeight: 400 ,
-      fieldViewBuilder: (_, textEditingController, __, ___) {
+      fieldViewBuilder: (_, textEditingController, focusNode, __) {
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (textEditingController.text != controller.text) {
+            textEditingController.text = controller.text;
+          }
+        });
         return TextFormField(
-          focusNode: ref.read(focusNodesProvider)[ProductDetailsType.name],
+          focusNode: focusNode,
           controller: textEditingController,
           textInputAction: TextInputAction.next,
           decoration: const InputDecoration(

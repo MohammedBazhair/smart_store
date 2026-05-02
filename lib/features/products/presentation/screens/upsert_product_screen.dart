@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/enums.dart';
-import '../../../../core/constants/log.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/providers/ui_providers.dart';
 import '../../../../errors/result.dart';
@@ -72,7 +71,7 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
         ref.read(settingsControllerProvider).value?.defaultCurrency ??
             CurrencyCode.theDefault;
 
-    _initializeFields(widget.product);
+    _initializeFields(widget.product, null);
     _requestFocusAfterEdit();
   }
 
@@ -87,7 +86,9 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
     super.dispose();
   }
 
-  void _initializeFields(Product? product) {
+  void _initializeFields(Product? product, String? barcode) {
+    _barcodeController.text = barcode ?? _barcodeController.text;
+    print(product);
     if (product == null) return;
 
     if (product is StoreProduct) {
@@ -186,9 +187,9 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
         isPopRequired: true,
       ),
     );
-    Logger.debugLog(message: '$result');
     if (result == null) return;
-    _initializeFields(result.product);
+
+    _initializeFields(result.product, result.barcode);
   }
 
   Future<void> _onAddProduct() async {
@@ -325,6 +326,7 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
                     ),
                     if (!isEditingProduct)
                       CustomButton(
+                        tooltip: 'مسح المحتوى',
                         buttonStyle: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey.shade500,
                           shadowColor: const Color(0x6D607D8B),

@@ -55,7 +55,7 @@ class ProductSearchController extends AsyncNotifier<List<StoreProduct>> {
   Future<List<String>> searchProductsNamesSuggestions(String query) async {
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
-    if (storeId == null || query.isEmpty) return [];
+    if (storeId == null || query.trim().isEmpty) return [];
 
     _suggestionsDebounce?.cancel();
 
@@ -64,7 +64,7 @@ class ProductSearchController extends AsyncNotifier<List<StoreProduct>> {
     _suggestionsDebounce = Timer(const Duration(milliseconds: 400), () async {
       try {
         final result = await _searchProductRepo.searchProductsNamesSuggestions(
-          query: query,
+          query: query.trim(),
           storeId: storeId,
         );
 

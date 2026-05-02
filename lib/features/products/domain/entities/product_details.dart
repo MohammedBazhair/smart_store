@@ -1,5 +1,4 @@
 enum ProductDetailsType {
-  name,
   price,
   quantity,
   category,
