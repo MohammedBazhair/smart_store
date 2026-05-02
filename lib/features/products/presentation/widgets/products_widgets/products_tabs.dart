@@ -42,7 +42,7 @@ class ProductsTabs extends ConsumerWidget {
             selected: isSelected,
             onSelected: (_) {
               ref
-                  .read(productSearchProvider.notifier)
+                  .read(productSearchControllerProvider.notifier)
                   .search(query.copyWith(sortType: type));
             },
             labelStyle: TextStyle(

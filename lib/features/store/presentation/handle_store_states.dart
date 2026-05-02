@@ -12,6 +12,7 @@ Future<void> handleStoreStates(
     case InitialStoreEvent():
     case LoadMyStoresEvent():
     case SelectStoreEvent():
+    case UnSelectStoreEvent():
     case LoadinMyStoresEvent():
       break;
     case CreateStoreEvent(:final storeName):

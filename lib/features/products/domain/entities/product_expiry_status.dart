@@ -34,13 +34,13 @@ class ProductExpiryStatus {
       );
     } else if (days <= 7) {
       return ProductExpiryStatus(
-        color: AppTheme.nearExpiryColor,
+        color: const Color(0xFFFA5E15),
         text: text,
         icon: Icons.warning_rounded,
       );
     } else if (days <= 30) {
       return ProductExpiryStatus(
-        color: Colors.orange,
+        color: AppTheme.nearExpiryColor,
         text: text,
         icon: Icons.warning_rounded,
       );

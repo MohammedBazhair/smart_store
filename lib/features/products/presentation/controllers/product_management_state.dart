@@ -16,10 +16,13 @@ class ProductManagementState extends Equatable {
   final bool isLoading;
 
   List<StoreProduct> get productsList => products.values.toList();
-  List<StoreProduct> get simpleProducts => products.values.take(2).toList();
 
   @override
-  List<Object?> get props => [products.length, categories.length];
+  List<Object?> get props => [
+        products,
+        categories,
+        isLoading,
+      ];
 
   ProductManagementState copyWith({
     ProductsByIdentifier? products,

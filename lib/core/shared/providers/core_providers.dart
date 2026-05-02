@@ -7,7 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../../../features/auth/data/repositories/auth_repository_impl.dart';
-import '../../../../features/auth/presentation/controllers/auth_controller.dart';
 import '../../../../features/user/data/datasources/user_local_data_source.dart';
 import '../../../../features/user/data/datasources/user_remote_data_source.dart';
 import '../../../../features/user/data/repositories/user_repository_impl.dart';
@@ -130,10 +129,7 @@ final authRepositoryProvider = Provider((ref) {
   return AuthRepositoryImpl(remoteAuth, network, localCacheService);
 });
 
-final authProvider = Provider((ref) {
-  final authRepo = ref.read(authRepositoryProvider);
-  return AuthController(authRepo);
-});
+
 
 final tokenRefreshProvider = Provider((ref) {
   final network = ref.watch(networkProvider);

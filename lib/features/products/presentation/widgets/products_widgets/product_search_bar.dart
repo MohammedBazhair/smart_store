@@ -7,7 +7,8 @@ import 'product_filter_dialog.dart';
 
 class ProductSearchBar extends ConsumerWidget {
   const ProductSearchBar({
-    super.key,  this.showFilter=true,
+    super.key,
+    this.showFilter = true,
   });
   final bool showFilter;
 
@@ -17,8 +18,9 @@ class ProductSearchBar extends ConsumerWidget {
       children: [
         Expanded(
           child: TextField(
-            controller:
-                ref.read(productSearchProvider.notifier).searchController,
+            controller: ref
+                .read(productSearchControllerProvider.notifier)
+                .searchController,
             decoration: InputDecoration(
               hintText: 'بحث عن منتج...',
               prefixIcon: const Icon(Icons.search),
@@ -30,7 +32,7 @@ class ProductSearchBar extends ConsumerWidget {
                       ? IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: ref
-                              .read(productSearchProvider.notifier)
+                              .read(productSearchControllerProvider.notifier)
                               .clearSearch,
                         )
                       : child!;
@@ -41,12 +43,12 @@ class ProductSearchBar extends ConsumerWidget {
             onChanged: (value) {
               final query = ref.read(productQueryProvider);
               ref
-                  .read(productSearchProvider.notifier)
+                  .read(productSearchControllerProvider.notifier)
                   .search(query.copyWith(search: value.trim()));
             },
           ),
         ),
-       if(showFilter) const _ProductFilterAction(),
+        if (showFilter) const _ProductFilterAction(),
       ],
     );
   }
@@ -63,7 +65,7 @@ class _ProductFilterAction extends ConsumerWidget {
         onApply: (category) {
           final query = ref.read(productQueryProvider);
           ref
-              .read(productSearchProvider.notifier)
+              .read(productSearchControllerProvider.notifier)
               .search(query.copyWith(category: category));
         },
       ),
@@ -80,7 +82,7 @@ class _ProductFilterAction extends ConsumerWidget {
           : const Icon(Icons.filter_list_off_rounded),
       onPressed: () {
         if (query.hasCategory) {
-          ref.read(productSearchProvider.notifier).clearCategory();
+          ref.read(productSearchControllerProvider.notifier).clearCategory();
           context.showSnakbar(
             'تم الغاء الفلترة بالفئات',
             type: SnackBarType.success,

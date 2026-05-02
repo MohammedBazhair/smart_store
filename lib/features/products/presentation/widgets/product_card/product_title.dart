@@ -11,8 +11,7 @@ class ProductTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       name,
-      maxLines: 1,
-      overflow: TextOverflow.fade,
+      maxLines: 2,
       style: const TextStyle(
         color: AppTheme.primaryColor,
         fontSize: 13,

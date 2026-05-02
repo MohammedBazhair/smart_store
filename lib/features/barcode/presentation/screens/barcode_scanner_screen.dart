@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../products/presentation/screens/upsert_product_screen.dart';
 import '../controllers/barcode_provider.dart';
@@ -20,41 +21,43 @@ class BarcodeScannerScreen extends StatelessWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
-    final controller = ref.read(barcodeControllerProvider.notifier);
-    await controller.stop();
+    try {
+      final controller = ref.read(barcodeControllerProvider.notifier);
+      await controller.stop();
 
-    final result = await controller.processBarcode(barcode, isPopRequired);
-    if (isPopRequired) {
-      if (context.mounted) Navigator.pop(context, barcode);
-      return;
-    }
+      final result = await controller.processBarcode(barcode);
 
-    if (result == null) {
+      if (isPopRequired) {
+        context.pop(result);
+        return;
+      }
+
+      if (result == null) {
+        await controller.start();
+
+        return;
+      }
+      if (result.isStoreProduct) {
+        await showProductPriceDialog(context: context, scanResult: result);
+        await controller.start();
+
+        return;
+      }
+      context.showSnakbar(
+        'المنتج غير موجود قم بتسجيله',
+        type: SnackBarType.error,
+      );
+
+      await context.pushTo(
+        UpsertProductScreen(
+          barcode: barcode,
+          product: result.product,
+        ),
+      );
       await controller.start();
-
-      return;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
     }
-
-    if (result.isStoreProduct) {
-      await showProductPriceDialog(context: context, scanResult: result);
-      await controller.start();
-
-      return;
-    }
-
-    context.showSnakbar(
-      'المنتج غير موجود قم بتسجيله',
-      type: SnackBarType.error,
-    );
-
-    if (!context.mounted) return;
-    await context.pushTo(
-      UpsertProductScreen(
-        barcode: barcode,
-        product: result.product,
-      ),
-    );
-    await controller.start();
   }
 
   @override
