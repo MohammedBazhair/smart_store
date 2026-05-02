@@ -4,6 +4,7 @@ import '../../../../core/constants/log.dart';
 import '../../../../errors/result.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
 
+import '../../../products/data/models/product_change_type.dart';
 import '../../../products/domain/entities/store_product.dart';
 import '../../../products/presentation/controllers/product_provider.dart';
 import '../../../settings/domain/entities/exchange_rate.dart';
@@ -75,7 +76,14 @@ class PosController extends Notifier<PosState> {
           updatedAt: DateTime.now().toUtc(),
         );
 
-        final result = await repo.updateProduct(updatedProduct);
+        final changeType = ProductChangeType.detectChanges(
+          oldP: item.product,
+          newP: updatedProduct,
+        );
+        final result = await repo.updateProduct(
+          updatedProduct,
+          changeType,
+        );
         if (result is ErrorState<void>) {
           state = state.copyWith(
             isLoading: false,
@@ -113,5 +121,3 @@ class PosController extends Notifier<PosState> {
     state = const PosState();
   }
 }
-
-

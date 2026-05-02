@@ -1,14 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/log.dart';
 import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/entities/product_query.dart';
 import '../../domain/entities/store_product.dart';
-import '../../domain/repositories/product_repository.dart';
+import '../../domain/repositories/search_product_repository.dart';
 import 'product_provider.dart';
 
-class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
-  ProductRepository get productRepo => ref.read(productRepositoryProvider);
+class ProductSearchController extends AsyncNotifier<List<StoreProduct>> {
+  SearchProductRepository get _searchProductRepo =>
+      ref.read(searchProductRepositoryProvider);
 
   final searchController = SearchController();
 
@@ -16,6 +18,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
   Future<List<StoreProduct>> build() {
     ref.onDispose(() {
       _debounce?.cancel();
+      _suggestionsDebounce?.cancel();
       searchController.dispose();
     });
 
@@ -23,6 +26,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
   }
 
   Timer? _debounce;
+  Timer? _suggestionsDebounce;
 
   Future<void> search(ProductQuery newQuery) async {
     final oldQuery = ref.read(productQueryProvider);
@@ -40,7 +44,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
       if (storeId == null) return;
 
       state = await AsyncValue.guard(() {
-        return productRepo.searchProducts(
+        return _searchProductRepo.searchStoreProducts(
           query: newQuery,
           storeId: storeId,
         );
@@ -48,9 +52,44 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
     });
   }
 
+  Future<List<String>> searchProductsNamesSuggestions(String query) async {
+    final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
+
+    if (storeId == null || query.trim().isEmpty) return [];
+
+    _suggestionsDebounce?.cancel();
+
+    final completer = Completer<List<String>>();
+
+    _suggestionsDebounce = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        final result = await _searchProductRepo.searchProductsNamesSuggestions(
+          query: query.trim(),
+          storeId: storeId,
+        );
+
+        completer.complete(result);
+      } catch (e, st) {
+        Logger.debugLog(error: e, stackTrace: st);
+        completer.complete([]);
+      }
+    });
+
+    return completer.future;
+  }
+
   Future<void> reset() async {
-    final _state = await initialState();
-    state = AsyncData(_state);
+    try {
+      if (!ref.mounted) return;
+
+      state = const AsyncValue.loading();
+
+      if (!ref.mounted) return;
+      final _state = await initialState();
+      state = AsyncData(_state);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+    }
   }
 
   Future<void> clearSearch() async {
@@ -73,7 +112,7 @@ class ProductSearchNotifier extends AsyncNotifier<List<StoreProduct>> {
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
     if (storeId == null) return <StoreProduct>[];
-    return productRepo.searchProducts(
+    return _searchProductRepo.searchStoreProducts(
       query: const ProductQuery(),
       storeId: storeId,
     );

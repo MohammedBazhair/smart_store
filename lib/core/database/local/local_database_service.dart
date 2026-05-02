@@ -25,6 +25,7 @@ abstract interface class LocalDatabaseService {
     required String table,
     WhereQueryParams? whereParams,
     String? orderBy,
+    List<String>? columns,
   });
 
   Future<int> update({
@@ -50,8 +51,6 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
 
   @override
   Batch get batch => _database.batch();
-
- 
 
   @override
   Future<int> insertRow({
@@ -85,7 +84,7 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     required String table,
     WhereQueryParams? whereParams,
   }) {
-    final (:where,:whereArgs) = WhereQueryBuilder.build(whereParams);
+    final (:where, :whereArgs) = WhereQueryBuilder.build(whereParams);
 
     return _database.delete(
       table,
@@ -97,8 +96,9 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
   @override
   Future<List<Map<String, dynamic>>> query({
     required String table,
-     WhereQueryParams? whereParams,
+    WhereQueryParams? whereParams,
     String? orderBy,
+    List<String>? columns,
   }) {
     final (:where, :whereArgs) = WhereQueryBuilder.build(whereParams);
 
@@ -107,6 +107,7 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
       orderBy: orderBy,
       where: where,
       whereArgs: whereArgs,
+      columns: columns,
     );
   }
 

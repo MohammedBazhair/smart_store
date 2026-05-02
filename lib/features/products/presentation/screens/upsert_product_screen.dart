@@ -72,7 +72,7 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
         ref.read(settingsControllerProvider).value?.defaultCurrency ??
             CurrencyCode.theDefault;
 
-    _initializeFields(widget.product);
+    _initializeFields(widget.product, null);
     _requestFocusAfterEdit();
   }
 
@@ -87,7 +87,8 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
     super.dispose();
   }
 
-  void _initializeFields(Product? product) {
+  void _initializeFields(Product? product, String? barcode) {
+    _barcodeController.text = barcode ?? _barcodeController.text;
     if (product == null) return;
 
     if (product is StoreProduct) {
@@ -186,9 +187,9 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
         isPopRequired: true,
       ),
     );
-    Logger.debugLog(message: '$result');
     if (result == null) return;
-    _initializeFields(result.product);
+    Logger.debugLog(message: '$result');
+    _initializeFields(result.product, result.barcode);
   }
 
   Future<void> _onAddProduct() async {
@@ -276,13 +277,14 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
       body: GestureDetector(
         onTap: FocusScope.of(context).unfocus,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 8,
               children: [
+                
                 ProductBarcodeField(
                   controller: _barcodeController,
                   onScan: _scanBarcode,
@@ -325,6 +327,7 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
                     ),
                     if (!isEditingProduct)
                       CustomButton(
+                        tooltip: 'مسح المحتوى',
                         buttonStyle: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey.shade500,
                           shadowColor: const Color(0x6D607D8B),

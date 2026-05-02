@@ -8,18 +8,26 @@ class CustomButton extends ConsumerWidget {
     required this.onPressed,
     this.buttonStyle,
     this.textStyle,
+    this.tooltip,
   });
   final Widget child;
   final VoidCallback? onPressed;
   final ButtonStyle? buttonStyle;
   final TextStyle? textStyle;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context, ref) {
-    return ElevatedButton(
+    final elevatedButton = ElevatedButton(
       style: buttonStyle,
-      onPressed:onPressed,
+      onPressed: onPressed,
       child: child,
     );
+    return tooltip != null
+        ? Tooltip(
+            message: tooltip,
+            child: elevatedButton,
+          )
+        : elevatedButton;
   }
 }

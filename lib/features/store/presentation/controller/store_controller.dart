@@ -170,4 +170,10 @@ class StoreController extends Notifier<StoreEventState> {
     state =
         SelectStoreEvent(state: state.state.copyWith(selectedStoreId: storeId));
   }
+
+  void unselectStores() {
+    _cache.remove(key: AppConstants.lastStoreIdKey);
+    state =
+        UnSelectStoreEvent(state: state.state.copyWith(selectedStoreId: null));
+  }
 }

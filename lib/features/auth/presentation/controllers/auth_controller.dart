@@ -1,26 +1,27 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/log.dart';
+import '../../../../core/database/local/database_helper.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../../errors/result.dart';
+import '../../../store/presentation/controller/store_provider.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_state.dart';
 
 final authControllerProvider =
-    StateNotifierProvider<AuthController, AuthState>((ref) {
-  final auth = ref.read(authProvider);
-  return auth;
-});
+    NotifierProvider<AuthController, AuthState>(AuthController.new);
 
-class AuthController extends StateNotifier<AuthState> {
-  AuthController(this._auth) : super(const AuthInitialState());
-  final AuthRepository _auth;
+class AuthController extends Notifier<AuthState> {
+  @override
+  AuthState build() => const AuthInitialState();
+
+  AuthRepository get _authRepo => ref.read(authRepositoryProvider);
 
   Future<void> loginWithGoogle() async {
     try {
       state = const AuthGoogleLoadingState();
-      final userId = await _auth.signInWithGoogle();
+      final userId = await _authRepo.signInWithGoogle();
       if (userId == null) {
         throw const AuthAppException('فشل تسجيل الدخول');
       }
@@ -35,7 +36,7 @@ class AuthController extends StateNotifier<AuthState> {
 
   Future<void> loginWithUri(Uri uri) async {
     try {
-      final result = await _auth.signInWithUrl(uri);
+      final result = await _authRepo.signInWithUrl(uri);
       if (result case ErrorState(:final message)) {
         throw AuthAppException(message);
       }
@@ -52,7 +53,7 @@ class AuthController extends StateNotifier<AuthState> {
     required String password,
   }) async {
     state = const AuthLoadingState();
-    final error = await _auth.signIn(email: email, password: password);
+    final error = await _authRepo.signIn(email: email, password: password);
 
     _handleState(error);
   }
@@ -60,15 +61,19 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signUp({required String email, required String password}) async {
     state = const AuthLoadingState();
 
-    final error = await _auth.signUp(email: email, password: password);
+    final error = await _authRepo.signUp(email: email, password: password);
 
     _handleState(error);
   }
 
   Future<void> signOut() async {
     try {
-      await _auth.signOut();
+      await _authRepo.signOut();
       state = const AuthSignOutState();
+
+      await DatabaseHelper.instance.close();
+      ref.read(storeControllerProvider.notifier).unselectStores();
+      await ref.read(appSyncControllerProvider.notifier).resetCacheFlags();
     } catch (e) {
       _handleState('حدث خطأ في الخروج حاول مرة أخرى');
     }
@@ -77,7 +82,7 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> resetPassword(String email) async {
     state = const AuthLoadingState();
     try {
-      await _auth.resetPassword(email);
+      await _authRepo.resetPassword(email);
       state = AuthResetPasswordSuccessfullState(email);
     } on AppException catch (e) {
       state = AuthFailedState(e.message);
@@ -93,7 +98,7 @@ class AuthController extends StateNotifier<AuthState> {
   }) async {
     state = const AuthLoadingState();
     try {
-      await _auth.updateUser(
+      await _authRepo.updateUser(
         email: email,
         newPassword: newPassword,
         nonce: nonce,

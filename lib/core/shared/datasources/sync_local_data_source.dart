@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../../constants/enums.dart';
 import '../../constants/log.dart';
 import '../../database/local/local_database_service.dart';
@@ -6,11 +8,11 @@ import '../data/models/sync_change_model.dart';
 import '../data/models/sync_state_model.dart';
 
 abstract class SyncLocalDataSource {
-  Future<void> addChange(SyncChangeModel change);
+  Future<void> addChange(SyncChangeModel change, [Transaction? transaction]);
 
   Future<List<SyncChangeModel>> getTableChanges(String table);
 
-  Future<void> deleteChange(int id);
+  Future<void> deleteChange(int id, [Transaction? transaction]);
 
   Future<void> clearTablesChanges(String table);
 
@@ -24,26 +26,38 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
   final LocalDatabaseService _db;
 
   @override
-  Future<void> addChange(SyncChangeModel change) async {
-    final existing = await _db.query(
-      table: 'sync_changes',
-      whereParams: WhereQueryParams(
-        groups: [
-          FilterGroup(
-            filters: [
-              Filter(column: 'table_name', value: change.tableName),
-              Filter(column: 'record_id', value: change.recordId),
-            ],
-          ),
-        ],
-      ),
-    );
+  Future<void> addChange(
+    SyncChangeModel change, [
+    Transaction? transaction,
+  ]) async {
+    final isInTransaction = transaction != null;
+    final existing = isInTransaction
+        ? await transaction.query(
+            'sync_changes',
+            where: 'table_name = ? AND record_id = ?',
+            whereArgs: [change.tableName, change.recordId],
+          )
+        : await _db.query(
+            table: 'sync_changes',
+            whereParams: WhereQueryParams(
+              groups: [
+                FilterGroup(
+                  filters: [
+                    Filter(column: 'table_name', value: change.tableName),
+                    Filter(column: 'record_id', value: change.recordId),
+                  ],
+                ),
+              ],
+            ),
+          );
 
     if (existing.isEmpty) {
-      await _db.insertRow(
-        table: 'sync_changes',
-        map: change.toMap(),
-      );
+      isInTransaction
+          ? await transaction.insert('sync_changes', change.toMap())
+          : await _db.insertRow(
+              table: 'sync_changes',
+              map: change.toMap(),
+            );
 
       return;
     }
@@ -68,17 +82,27 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
       newOperation = SyncOperation.update;
     }
 
-    await _db.update(
-      updated: {'operation': newOperation.name},
-      whereParams: WhereQueryParams(
-        groups: [
-          FilterGroup(
-            filters: [Filter(column: 'id', value: oldChange.id!)],
-          ),
-        ],
-      ),
-      table: 'sync_changes',
-    );
+    final updatedValues = {'operation': newOperation.name};
+    if (isInTransaction) {
+      await transaction.update(
+        'sync_changes',
+        updatedValues,
+        where: 'id = ?',
+        whereArgs: [oldChange.id],
+      );
+    } else {
+      await _db.update(
+        updated: updatedValues,
+        whereParams: WhereQueryParams(
+          groups: [
+            FilterGroup(
+              filters: [Filter(column: 'id', value: oldChange.id!)],
+            ),
+          ],
+        ),
+        table: 'sync_changes',
+      );
+    }
   }
 
   @override
@@ -89,7 +113,7 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
         whereParams: WhereQueryParams(
           groups: [
             FilterGroup(
-              filters: [ Filter(column: 'table_name', value: table)],
+              filters: [Filter(column: 'table_name', value: table)],
             ),
           ],
         ),
@@ -103,15 +127,19 @@ class SyncLocalDataSourceImpl implements SyncLocalDataSource {
   }
 
   @override
-  Future<void> deleteChange(int id) async {
-    await _db.deleteWhere(
-      table: 'sync_changes',
-      whereParams: WhereQueryParams(
-        groups: [
-          FilterGroup(filters: [Filter(column: 'id', value: id)]),
-        ],
-      ),
-    );
+  Future<void> deleteChange(int id, [Transaction? transaction]) async {
+    if (transaction != null) {
+      await transaction.delete('sync_changes', where: 'id = ?', whereArgs: [id]);
+    } else {
+      await _db.deleteWhere(
+        table: 'sync_changes',
+        whereParams: WhereQueryParams(
+          groups: [
+            FilterGroup(filters: [Filter(column: 'id', value: id)]),
+          ],
+        ),
+      );
+    }
   }
 
   @override

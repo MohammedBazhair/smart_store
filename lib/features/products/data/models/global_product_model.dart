@@ -39,9 +39,9 @@ class GlobalProductModel extends GlobalProduct {
 
   factory GlobalProductModel.fromLocal(Map<String, dynamic> map) {
     return GlobalProductModel(
-      id: map['global_product_id']?.toString() ?? '',
+      id: map['global_product_id'],
       category: Category.fromLocal(map),
-      name: map['product_name']?.toString() ?? 'منتج غير معروف',
+      name: map['product_name'],
       barcode: map['barcode']?.toString(),
       createdAt: DateTime.tryParse(map['product_created_at']?.toString() ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(map['product_updated_at']?.toString() ?? '') ?? DateTime.now(),
