@@ -14,7 +14,8 @@ class CheckoutButton extends ConsumerWidget {
   const CheckoutButton({super.key});
 
   Future<void> _processCheckout(BuildContext context, WidgetRef ref) async {
-    final success = await ref.read(posControllerProvider.notifier).checkout();
+    final success =
+        await ref.read(posControllerProvider.notifier).processCheckout();
     if (success && context.mounted) {
       // ignore: unawaited_futures
       await ref.read(audioControllerProvider.notifier).playSuccessResult();

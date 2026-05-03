@@ -21,7 +21,9 @@ class InitScreen extends ConsumerWidget {
           if (previous is AsyncData) return;
           Future(() async {
             await ref.read(storeControllerProvider.notifier).loadMyStores();
-            await ref.read(productControllerProvider.notifier).initialize();
+            await ref
+                .read(productControllerProvider.notifier)
+                .loadInitialData();
             if (!context.mounted) return;
             await context.pushAndRemoveUntilTo(const DashboardScreen());
           });

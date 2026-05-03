@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/extensions/extensions.dart';
+import '../../../../../core/shared/presentation/widgets/dialogs/delete_confirmation_dialog.dart';
 import '../../controllers/pos_providers.dart';
 
 void showClearConfirmation(
@@ -9,35 +10,25 @@ void showClearConfirmation(
 ) {
   showDialog(
     context: context,
-    builder: (context) => const ProviderScope(child: ClearConfirmationDialog()),
+    builder: (context) => const ClearCartConfirmationDialog(),
   );
 }
 
-class ClearConfirmationDialog extends StatelessWidget {
-  const ClearConfirmationDialog({
-    super.key,
-  });
+class ClearCartConfirmationDialog extends ConsumerWidget {
+  const ClearCartConfirmationDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('تفريغ السلة'),
-      content: const Text('هل أنت متأكد من مسح جميع المنتجات من السلة؟'),
-      actions: [
-        TextButton(
-          onPressed: context.pop,
-          child: const Text('تراجع'),
-        ),
-        Consumer(
-          builder: (context, ref, child) => TextButton(
-            onPressed: () {
-              ref.read(posControllerProvider.notifier).clearCart();
-              context.pop();
-            },
-            child: const Text('مسح', style: TextStyle(color: Colors.red)),
-          ),
-        ),
-      ],
+  Widget build(BuildContext context, ref) {
+    return DeleteConfirmationDialog(
+      title: 'تفريغ السلة',
+      description: 'هل أنت متأكد من مسح جميع المنتجات من السلة؟',
+      cancelButtonText: 'تراجع',
+      confirmButtonText: 'مسح السلة',
+      onConfirmPressed: () {
+        ref.read(posControllerProvider.notifier).clearCart();
+        context.pop();
+      },
     );
   }
+
 }
