@@ -43,9 +43,7 @@ class StoreCard extends ConsumerWidget {
           ref.read(storeControllerProvider.notifier).selectStore(store.id!);
           context.pushAndRemoveUntilTo(const InitScreen());
         },
-        onLongPress: () {
-          showMembersSheet(context, store.id!, members);
-        },
+        onLongPress: () => showMembersSheet(context, store.id!, members),
         child: Ink(
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(

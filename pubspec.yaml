@@ -58,7 +58,6 @@ dependencies:
 
   # Utilities
   uuid: ^4.5.3
-  rename: ^3.1.0
 
   # Development Tools
   flutter_native_splash: ^2.4.7
@@ -68,6 +67,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  rename: ^3.1.0
 
 flutter:
   uses-material-design: true

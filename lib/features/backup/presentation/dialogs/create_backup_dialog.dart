@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/bottom_sheet_handle.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../domain/entities/backup_type.dart';
 import '../controllers/backup_providers.dart';
@@ -31,6 +32,7 @@ class CreateBackupDialog extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 10,
         children: [
+          const BottomSheetHandle(),
           Text(
             'اختر نوع النسخة الاحتياطية',
             style: TextTheme.of(context).titleLarge,

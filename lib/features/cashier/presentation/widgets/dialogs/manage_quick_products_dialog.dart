@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../../core/shared/presentation/widgets/common/hint_row.dart';
 import '../../../../audio/presentation/controller/audio_provider.dart';
 import '../../../../products/domain/entities/store_product.dart';
 import '../../../../products/presentation/widgets/product_card/product_card.dart';
@@ -27,10 +28,9 @@ class ManageQuickProductsDialog extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           vertical: 24,
-          horizontal: 12,
+          horizontal: 18,
         ),
         child: Column(
-          spacing: 24,
           children: [
             // Header
             const Text(
@@ -42,7 +42,20 @@ class ManageQuickProductsDialog extends ConsumerWidget {
               ),
             ),
 
+            const SizedBox(height: 24),
+            const HintRow(
+              message: 'اضغط مطولا على المنتج لاضافته/ازالته للمنتجات السريعة',
+              iconData: Icons.touch_app_outlined,
+            ),
+            const HintRow(
+              message: 'اضغط ضغطة واحدة على المنتج لاضافته لسلة التسوق',
+              iconData: Icons.touch_app_outlined,
+            ),
+
+            const SizedBox(height: 24),
+
             const _TabsQuick(),
+            const SizedBox(height: 24),
 
             Expanded(
               child: ref.watch(quickProductsControllerProvider).when(
@@ -62,7 +75,6 @@ class ManageQuickProductsDialog extends ConsumerWidget {
                     ),
                   ),
             ),
-            // List
           ],
         ),
       ),

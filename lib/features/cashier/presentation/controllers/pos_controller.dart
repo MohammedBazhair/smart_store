@@ -54,11 +54,6 @@ class PosController extends Notifier<PosState> {
     state = state.copyWith(cartItems: copiedCart);
   }
 
-  Future<StoreProduct?> findProductByBarcode(String barcode) async {
-    final productState = ref.read(productControllerProvider);
-    return productState.products[barcode];
-  }
-
   Future<bool> checkout() async {
     if (state.cartItems.isEmpty) return false;
 
