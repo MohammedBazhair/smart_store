@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/centered_divider_text.dart';
 import '../../../../core/shared/presentation/widgets/common/common_actions.dart';
 import '../controllers/pos_providers.dart';
 import '../widgets/dialogs/manage_quick_products_dialog.dart';
@@ -16,26 +17,23 @@ class CheckoutScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(posControllerProvider);
+    final hasCartItems = state.cartItems.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('المحاسب الصغير'),
         actions: [
           const SettingsActonIcon(),
-          IconButton(
-            tooltip: 'تفريغ السلة',
-            icon: const Icon(Icons.delete_sweep_outlined),
-            onPressed: () {
-              if (state.cartItems.isNotEmpty) {
-                showClearConfirmation(context);
-              }
-            },
-          ),
+          if (hasCartItems)
+            IconButton(
+              tooltip: 'تفريغ السلة',
+              icon: const Icon(Icons.delete_sweep_outlined),
+              onPressed: () => showClearConfirmation(context),
+            ),
         ],
       ),
-      body: state.cartItems.isEmpty
-          ? const _BuildEmptyState()
-          : Column(
+      body: hasCartItems
+          ? Column(
               children: [
                 const QuickProductsSection(),
                 Expanded(
@@ -43,13 +41,14 @@ class CheckoutScreen extends ConsumerWidget {
                 ),
                 if (state.cartItems.isNotEmpty) const PosCheckoutFooter(),
               ],
-            ),
-      floatingActionButton: state.cartItems.isEmpty
-          ? FloatingActionButton(
+            )
+          : const _BuildEmptyState(),
+      floatingActionButton: hasCartItems
+          ? null
+          : FloatingActionButton(
               onPressed: () => showManageQuickProductsDialog(context),
               child: const Icon(Icons.bolt_outlined),
-            )
-          : null,
+            ),
     );
   }
 }
@@ -91,17 +90,7 @@ class _BuildEmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(color: AppTheme.textSecondary),
           ),
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            child: const Row(
-              spacing: 15,
-              children: [
-                Expanded(child: Divider()),
-                Text('أو', style: TextStyle(color: AppTheme.textSecondary)),
-                Expanded(child: Divider()),
-              ],
-            ),
-          ),
+          const CenteredDividerText(text: 'أو'),
           const Text(
             'اضغط على زر المنتجات السريعة ⚡\nلاختيار منتجاتك المفضلة وإضافتها للسلة',
             textAlign: TextAlign.center,

@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
+import '../../../barcode/domain/barcode_scan_result.dart';
 import '../../../barcode/presentation/screens/barcode_scanner_screen.dart';
+import '../../../products/domain/entities/store_product.dart';
 import '../controllers/pos_providers.dart';
 
 class ScannerTriggerButton extends ConsumerWidget {
@@ -21,18 +23,25 @@ class ScannerTriggerButton extends ConsumerWidget {
 
     while (true) {
       if (!navigator.mounted) break;
-      final barcode = await showModalBottomSheet<String?>(
+      final result = await showModalBottomSheet<BarcodeScanResult?>(
         context: navigator.context,
-        builder: (context) => const BarcodeScannerScreen(isPopRequired: true),
+        isScrollControlled: true,
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        builder: (context) => const FractionallySizedBox(
+          heightFactor: 0.6,
+          child: BarcodeScannerScreen(
+            isPopRequired: true,
+            isBottomSheet: true,
+          ),
+        ),
       );
+      if (result == null || !navigator.mounted) break;
 
-      if (barcode == null || !navigator.mounted) break;
+      final product = result.product;
 
-      final product = await posNotifier.findProductByBarcode(barcode);
-
-      if (product != null) {
+      if (product is StoreProduct) {
         posNotifier.addToCart(product);
-        // Delay to allow the bottom sheet to close and native resources to release
+        // Delay to allow the prbottom sheet to close and native resources to release
         await Future.delayed(const Duration(seconds: 1));
         continue;
       } else {

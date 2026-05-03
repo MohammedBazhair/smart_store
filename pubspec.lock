@@ -934,7 +934,7 @@ packages:
     source: hosted
     version: "2.7.0"
   rename:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: rename
       sha256: da5f4d67f8c68f066ad04edfd6585495dbe595f2baf3b1999eb6af1805d79539

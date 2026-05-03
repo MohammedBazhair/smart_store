@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/bottom_sheet_handle.dart';
 import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store_member.dart';
 import '../controller/store_provider.dart';
@@ -18,9 +19,6 @@ void showMembersSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
     builder: (_) {
       return DraggableScrollableSheet(
         expand: false,
@@ -29,18 +27,8 @@ void showMembersSheet(
         builder: (_, controller) {
           return Column(
             children: [
-              /// HANDLE
-              Container(
-                margin: const EdgeInsets.only(top: 10, bottom: 20),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+              const BottomSheetHandle(),
 
-              /// TITLE
               const Text(
                 'أعضاء المتجر',
                 style: TextStyle(
