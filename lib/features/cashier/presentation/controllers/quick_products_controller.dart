@@ -34,6 +34,7 @@ class QuickProductsController extends AsyncNotifier<QuickProductsState> {
 
     final ids = await _quickRepo.getQuickProductsIds(_storeId!);
 
+    Logger.debugLog(message: '$ids');
     final allProducts = ref.watch(productControllerProvider).products;
 
     final quickProducts = <String, StoreProduct>{};
@@ -41,9 +42,13 @@ class QuickProductsController extends AsyncNotifier<QuickProductsState> {
     for (final id in ids) {
       final product = allProducts[id];
 
-      if (product == null) continue;
-
-      quickProducts[id] = product;
+      if (product != null) {
+        quickProducts[id] = product;
+      } else {
+        final productKey = StoreProductKey(storeId: _storeId!, productId: id);
+        // ignore: unawaited_futures
+        _quickRepo.removeQuickProduct(productKey);
+      }
     }
 
     return quickProducts;

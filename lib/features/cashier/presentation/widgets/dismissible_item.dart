@@ -41,7 +41,7 @@ class DismissibleItem extends ConsumerWidget {
         ),
       ),
       confirmDismiss: (_) {
-        notifier.removeFromCart(productId);
+        notifier.removeCartItem(productId);
 
         context.showSnakbar(
           'تم حذف المنتج التالي (${item.product.globalProduct.name})',

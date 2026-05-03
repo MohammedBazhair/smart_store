@@ -33,15 +33,15 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     return const ProductManagementState();
   }
 
-  Future<void> initialize() async {
+  Future<void> loadInitialData() async {
     state = state.copyWith(isLoading: true);
     final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
 
     await _syncProductRepo.syncAllCategories();
     if (storeId != null) await _syncProductRepo.syncAllProducts(storeId);
 
-    final categories = await getCategories();
-    final products = await getStoreProducts();
+    final categories = await fetchCategories();
+    final products = await fetchStoreProducts();
 
     state = state.copyWith(
       products: products,
@@ -50,19 +50,20 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     );
   }
 
-  Future<List<Category>> getCategories() async {
+
+  Future<List<Category>> fetchCategories() async {
     final categories = await _productRepo.getAllCategories();
     categories.sort((a, b) => a.name.compareTo(b.name));
     return categories;
   }
 
   Future<void> loadStoreProducts() async {
-    final products = await getStoreProducts();
+    final products = await fetchStoreProducts();
 
     state = state.copyWith(products: products);
   }
 
-  Future<ProductsByIdentifier> getStoreProducts() async {
+  Future<ProductsByIdentifier> fetchStoreProducts() async {
     try {
       if (!_permissionService.can(PermissionTask.viewStoreProducts)) return {};
       final storeId = ref.read(storeControllerProvider).state.selectedStoreId;
@@ -127,14 +128,15 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final alertService = ref.read(alertServiceProvider);
     await alertService.scheduleProductAlerts(storeProduct);
 
-    final copiedProducts = {...state.products};
+    final updatedProductsMap = {...state.products};
 
     final key = storeProduct.id!;
-    copiedProducts[key] = storeProduct;
 
-    state = state.copyWith(products: copiedProducts);
+    updatedProductsMap[key] = storeProduct;
+
+    state = state.copyWith(products: updatedProductsMap);
     await ref.read(audioControllerProvider.notifier).playSuccessResult();
-    _refreshRefs();
+    _resetSearchState();
     return const SuccessState(null);
   }
 
@@ -163,16 +165,16 @@ class ProductManagementController extends Notifier<ProductManagementState> {
 
     final productId = newProduct.id!;
 
-    final copiedProducts = {...state.products};
+    final updatedProductsMap = {...state.products};
 
-    copiedProducts.update(
+    updatedProductsMap.update(
       productId,
       (value) => newProduct,
       ifAbsent: () => newProduct,
     );
 
-    state = state.copyWith(products: copiedProducts);
-    _refreshRefs();
+    state = state.copyWith(products: updatedProductsMap);
+    _resetSearchState();
     return result;
   }
 
@@ -211,7 +213,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
       copied.remove(product.id);
 
       state = state.copyWith(products: copied);
-      _refreshRefs();
+      _resetSearchState();
       return const SuccessState(null);
     } on AppException catch (e) {
       return ErrorState(e.message);
@@ -221,7 +223,7 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     }
   }
 
-  void _refreshRefs() {
+  void _resetSearchState() {
     ref.read(productSearchControllerProvider.notifier).reset();
   }
 }

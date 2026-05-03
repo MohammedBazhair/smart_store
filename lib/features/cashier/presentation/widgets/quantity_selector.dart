@@ -5,7 +5,6 @@ import '../../domain/entities/quantity_selection_item.dart';
 import '../controllers/pos_providers.dart';
 import 'dialogs/show_quantity_selector_dialog.dart';
 
-
 class QuantitySelector extends ConsumerWidget {
   const QuantitySelector({super.key, required this.item});
   final CartItem item;
@@ -25,7 +24,7 @@ class QuantitySelector extends ConsumerWidget {
         final newQuantity = ref.read(quantitySelectionProvider).quantity;
         if (newQuantity == item.quantity) return;
 
-        controller.updateQuantity(
+        controller.updateCartItemQuantity(
           item.product.globalProduct.id!,
           newQuantity,
         );

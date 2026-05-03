@@ -88,7 +88,9 @@ class DashboardBody extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async {
         final controller = ref.read(productControllerProvider.notifier);
-        await controller.initialize();
+
+        await controller.loadInitialData();
+
         await ref.read(alertsControllerProvider.notifier).loadAlerts();
       },
       child: const SingleChildScrollView(

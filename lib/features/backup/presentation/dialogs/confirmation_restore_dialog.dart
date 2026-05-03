@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+
+import '../../../../core/shared/presentation/widgets/common/bottom_sheet_handle.dart';
+
 import '../../../auth/presentation/widgets/custom_button.dart';
 
 Future<bool?> showConfirmationRestoreDialog(BuildContext context) {
@@ -24,6 +27,9 @@ class ConfirmationRestoreDialog extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 10,
         children: [
+
+          const BottomSheetHandle(),
+
           CircleAvatar(
             radius: 40,
             backgroundColor: AppTheme.primaryColor.withAlpha(30),

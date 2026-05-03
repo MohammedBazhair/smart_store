@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/log.dart';
-
-import '../../../../errors/result.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
 
 import '../../../products/data/models/product_change_type.dart';
@@ -19,96 +17,86 @@ class PosController extends Notifier<PosState> {
     return const PosState();
   }
 
-  ExchangeRate get baseExchangeRate =>
+  ExchangeRate get defaultExchangeRate =>
       ref.read(settingsControllerProvider).value?.defaultExchangeRate ??
       ExchangeRate.defaultRate();
 
   void addToCart(StoreProduct product, {int quantity = 1}) {
-    final copiedCart = {...state.cartItems};
-    copiedCart.update(
+    final updatedCartItems = {...state.cartItems};
+    updatedCartItems.update(
       product.id!,
       (item) => item.copyWith(quantity: item.quantity + quantity),
       ifAbsent: () =>
           CartItem(product: product, quantity: quantity, price: product.price),
     );
 
-    state = state.copyWith(cartItems: copiedCart);
+    state = state.copyWith(cartItems: updatedCartItems);
   }
 
-  void updateQuantity(String productId, int quantity) {
+  void updateCartItemQuantity(String productId, int quantity) {
     ref.read(audioControllerProvider.notifier).playClick();
 
-    final copiedCart = {...state.cartItems};
-    copiedCart.update(
+    final updatedCartItems = {...state.cartItems};
+    updatedCartItems.update(
       productId,
       (item) => item.copyWith(quantity: quantity),
     );
 
-    state = state.copyWith(cartItems: copiedCart);
+    state = state.copyWith(cartItems: updatedCartItems);
   }
 
-  void removeFromCart(String productId) {
-    final copiedCart = {...state.cartItems};
-    copiedCart.remove(productId);
+  void removeCartItem(String productId) {
+    final updatedCartItems = {...state.cartItems};
+    updatedCartItems.remove(productId);
 
-    state = state.copyWith(cartItems: copiedCart);
+    state = state.copyWith(cartItems: updatedCartItems);
   }
 
-  Future<StoreProduct?> findProductByBarcode(String barcode) async {
-    final productState = ref.read(productControllerProvider);
-    return productState.products[barcode];
-  }
-
-  Future<bool> checkout() async {
+  Future<bool> processCheckout() async {
     if (state.cartItems.isEmpty) return false;
+
+    final cartSnapshot = {...state.cartItems};
 
     state = state.copyWith(isLoading: true);
 
     try {
-      final repo = ref.read(productRepositoryProvider);
+      final productRepo = ref.read(productRepositoryProvider);
 
-      for (final item in state.cartItems.values) {
-        final currentQty = item.product.quantity ?? 0;
-        final newQty = currentQty - item.quantity;
+      const changeType = ProductChangeType(
+        globalChanged: false,
+        storeChanged: true,
+      );
+      await Future.wait(
+        cartSnapshot.values.map((item) {
+          final currentQty = item.product.quantity ?? 0;
+          final updatedQuantity =
+              (currentQty - item.quantity).clamp(0, currentQty);
 
-        final updatedProduct = item.product.copyWith(
-          quantity: newQty < 0 ? 0 : newQty,
-          updatedAt: DateTime.now().toUtc(),
-        );
 
-        final changeType = ProductChangeType.detectChanges(
-          oldP: item.product,
-          newP: updatedProduct,
-        );
-        final result = await repo.updateProduct(
-          updatedProduct,
-          changeType,
-        );
-        if (result is ErrorState<void>) {
-          state = state.copyWith(
-            isLoading: false,
-            errorMessage: 'فشل تحديث كمية ${item.product.globalProduct.name}',
+          final updatedProduct = item.product.copyWith(
+            quantity: updatedQuantity,
+            updatedAt: DateTime.now().toUtc(),
+
           );
-          return false;
-        }
-      }
+
+          return productRepo.updateProduct(
+            updatedProduct,
+            changeType,
+          );
+        }),
+      );
+
 
       await ref.read(audioControllerProvider.notifier).playSuccessResult();
 
-      await ref.read(productControllerProvider.notifier).loadStoreProducts();
-
-      final ids = state.cartItems.keys;
-      final futures =
-          ids.map((id) => ref.refresh(productByIdProvider(id).future));
-
-      // ignore: unawaited_futures
-      Future.wait(futures);
+       // ignore: unawaited_futures
+       ref.read(productControllerProvider.notifier).loadStoreProducts();
 
       return true;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
+
       state = state.copyWith(
-        isLoading: false,
         errorMessage: 'حدث خطأ غير متوقع أثناء عملية الشراء',
       );
       return false;

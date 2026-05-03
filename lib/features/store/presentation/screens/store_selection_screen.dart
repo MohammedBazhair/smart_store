@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../../core/shared/presentation/widgets/common/hint_row.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../auth/presentation/widgets/sign_out_button.dart';
 import '../../../user/domain/entities/status_config.dart';
@@ -32,7 +33,9 @@ class StoreSelectionScreen extends ConsumerWidget {
       body: RefreshIndicator(
         edgeOffset: 100,
         onRefresh: () async {
-          await ref.read(appSyncControllerProvider.notifier).sync(isManual: true);
+          await ref
+              .read(appSyncControllerProvider.notifier)
+              .sync(isManual: true);
         },
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -63,27 +66,9 @@ class StoreSelectionScreen extends ConsumerWidget {
                   right: 24,
                 ),
                 sliver: SliverToBoxAdapter(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.touch_app_outlined,
-                        size: 18,
-                        color: AppTheme.textSecondary,
-                      ),
-                      SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          'اضغط مطولاً على المتجر لإدارة الأعضاء',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppTheme.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: HintRow(
+                    message: 'اضغط مطولاً على المتجر لإدارة الأعضاء',
+                    iconData: Icons.touch_app_outlined,
                   ),
                 ),
               ),
@@ -92,7 +77,7 @@ class StoreSelectionScreen extends ConsumerWidget {
             /// STORES GRID
             stores.isEmpty
                 ? const SliverFillRemaining(
-                    child: _EmptyStoresView(),
+                    child: EmptyStoresView(),
                   )
                 : SliverPadding(
                     padding: const EdgeInsets.all(24),
@@ -116,8 +101,8 @@ class StoreSelectionScreen extends ConsumerWidget {
   }
 }
 
-class _EmptyStoresView extends StatelessWidget {
-  const _EmptyStoresView();
+class EmptyStoresView extends StatelessWidget {
+  const EmptyStoresView({super.key});
 
   @override
   Widget build(BuildContext context) {

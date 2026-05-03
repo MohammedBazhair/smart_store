@@ -18,13 +18,15 @@ class DeleteAlertDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return Padding(
-      padding: const EdgeInsets.all(24),      child: Column(
+
+      padding: const EdgeInsets.all(24),
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const BottomSheetHandle(),
-      
+
           const SizedBox(height: 24),
-      
+
           /// Delete Icon Circle
           Container(
             width: 82,
@@ -43,9 +45,10 @@ class DeleteAlertDialog extends ConsumerWidget {
               color: AppTheme.errorColor,
             ),
           ),
-      
+
+
           const SizedBox(height: 20),
-      
+
           /// Title
           const Text(
             'حذف التنبيه',
@@ -55,9 +58,10 @@ class DeleteAlertDialog extends ConsumerWidget {
               letterSpacing: -0.3,
             ),
           ),
-      
+
+
           const SizedBox(height: 10),
-      
+
           /// Description
           Text(
             'هل أنت متأكد من حذف هذا التنبيه؟\nلن تتمكن من استعادته بعد الحذف.',
@@ -69,15 +73,18 @@ class DeleteAlertDialog extends ConsumerWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-      
+
+
           const SizedBox(height: 28),
-      
+
           /// Action Buttons
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed:()=> context.pop(false),
+
+                  onPressed: () => context.pop(false),
+
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
                       color: Colors.grey.shade300,

@@ -61,11 +61,12 @@ class AppSyncController extends Notifier<bool> {
 
     // 2. Load stores and products in parallel once prerequisites are available
     await ref.read(storeControllerProvider.notifier).loadMyStores();
-    await ref.read(productControllerProvider.notifier).initialize();
+    await ref.read(productControllerProvider.notifier).loadInitialData();
   }
 
   Future<void> resetCacheFlags() async {
     await ref.read(syncProductRepositoryProvider).resetCacheFlags();
     state = false;
   }
+
 }
