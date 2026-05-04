@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,6 +11,7 @@ class CustomPhoneField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       autofillHints: const [AutofillHints.telephoneNumber],
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       keyboardType: TextInputType.phone,
       cursorRadius: const Radius.circular(20),
       cursorWidth: 1.3,
@@ -21,6 +21,7 @@ class CustomPhoneField extends StatelessWidget {
       ],
       decoration: const InputDecoration(
         hintText: 'أدخل رقم الهاتف',
+        helperMaxLines: 2,
         prefixIcon: Padding(
           padding: EdgeInsetsDirectional.only(start: 15.0),
           child: Icon(Icons.phone),
@@ -35,7 +36,7 @@ class CustomPhoneField extends StatelessWidget {
           return 'أدخل رقم هاتف صحيح';
         }
 
-       return validator?.call(value);
+        return validator?.call(value);
       },
     );
   }

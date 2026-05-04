@@ -231,7 +231,11 @@ class AppTheme {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: errorColor),
+          borderSide: BorderSide(color: errorColor.withAlpha(50)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: errorColor.withAlpha(200)),
         ),
         errorStyle: const TextStyle(fontSize: 12, height: 2),
         contentPadding:

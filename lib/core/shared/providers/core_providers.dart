@@ -2,7 +2,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -24,9 +23,6 @@ import '../datasources/sync_local_data_source.dart';
 import '../domain/services/permission_service.dart';
 import '../presentation/controllers/sync_controller.dart';
 import 'repositories_provider.dart';
-
-final databaseProvider =
-    Provider<Database>((ref) => throw UnimplementedError());
 
 final networkProvider = Provider((_) {
   return ConnectivityServiceImpl(Connectivity());
@@ -92,8 +88,7 @@ final remoteDatabaseServiceProvider = Provider((ref) {
 });
 
 final localDatabaseServiceProvider = Provider((ref) {
-  final supabaseClinet = ref.read(databaseProvider);
-  return LocalDatabaseServiceImpl(supabaseClinet);
+  return LocalDatabaseServiceImpl();
 });
 
 final syncLocalDataSourceProvider = Provider((ref) {

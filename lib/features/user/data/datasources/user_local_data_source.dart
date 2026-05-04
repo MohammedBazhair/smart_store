@@ -32,33 +32,12 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
     ProfileEntity profile, [
     bool skipLocalTracking = false,
   ]) async {
-    await _cacheService.setString(
-      key: AppConstants.profileUserIdKey,
-      value: profile.userId,
-    );
-
-    final whereParams = WhereQueryParams(
-      groups: [
-        FilterGroup(
-          filters: [
-            Filter(column: 'id', value: profile.userId),
-          ],
-        ),
-      ],
-    );
-    final existingRow = await _localService.query(
-      table: AppConstants.profilesTable,
-      whereParams: whereParams,
-    );
-
-    final isNew = existingRow.isEmpty;
-
-    if (isNew) {
-      await _localService.insertRow(
-        map: profile.toMap(),
-        table: AppConstants.profilesTable,
+    try {
+      await _cacheService.setString(
+        key: AppConstants.profileUserIdKey,
+        value: profile.userId,
       );
-    } else {
+
       final whereParams = WhereQueryParams(
         groups: [
           FilterGroup(
@@ -68,23 +47,48 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
           ),
         ],
       );
-
-      await _localService.update(
-        whereParams: whereParams,
-        updated: profile.toMapUpdate(),
+      final existingRow = await _localService.query(
         table: AppConstants.profilesTable,
+        whereParams: whereParams,
       );
+
+      final isNew = existingRow.isEmpty;
+
+      if (isNew) {
+        await _localService.insertRow(
+          map: profile.toMap(),
+          table: AppConstants.profilesTable,
+        );
+      } else {
+        final whereParams = WhereQueryParams(
+          groups: [
+            FilterGroup(
+              filters: [
+                Filter(column: 'id', value: profile.userId),
+              ],
+            ),
+          ],
+        );
+
+        await _localService.update(
+          whereParams: whereParams,
+          updated: profile.toMapUpdate(),
+          table: AppConstants.profilesTable,
+        );
+      }
+
+      if (skipLocalTracking) return;
+
+      final change = SyncChangeModel(
+        tableName: AppConstants.profilesTable,
+        recordId: profile.userId,
+        operation: isNew ? SyncOperation.insert : SyncOperation.update,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      await _sync.addChange(change);
+    } catch (e, st) {
+      Logger.debugLog(error: e,stackTrace: st);
     }
-
-    if (skipLocalTracking) return;
-
-    final change = SyncChangeModel(
-      tableName: AppConstants.profilesTable,
-      recordId: profile.userId,
-      operation: isNew ? SyncOperation.insert : SyncOperation.update,
-      updatedAt: DateTime.now().toUtc(),
-    );
-    await _sync.addChange(change);
   }
 
   @override
@@ -122,7 +126,7 @@ class UserLocalDataSourceImpl implements UserLocalDataSource {
 
     final ids = aleradyProfiles.map((m) => m['id'] as String).toSet();
 
-    final batch = _localService.batch;
+    final batch =await _localService.batch;
 
     for (final element in maps) {
       final userId = element['id'] as String?;

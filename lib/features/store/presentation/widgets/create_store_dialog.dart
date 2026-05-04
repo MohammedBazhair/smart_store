@@ -35,7 +35,6 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
   }
 
   Future<void> _submit() async {
-
     setState(() {
       _error = null;
       _isLoading = true;
@@ -49,7 +48,6 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
     final cntroller = ref.read(storeControllerProvider.notifier);
 
     final serverError = await cntroller.createStore(name);
-
     if (serverError == null) return context.pop();
 
     setState(() {
@@ -66,95 +64,100 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
       ),
       elevation: 10,
       backgroundColor: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // العنوان
-            const Text(
-              'إنشاء متجر جديد',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryColor,
+      child: GestureDetector(
+        onTap: FocusScope.of(context).unfocus,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // العنوان
+              const Text(
+                'إنشاء متجر جديد',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // حقل النص
-            Form(
-              key: _formKey,
-              child: TextFormField(
-                controller: _storeNameController,
-                textInputAction: TextInputAction.done,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'[a-zA-Z\u0621-\u063A\u0641-\u064A\s]'),
+              // حقل النص
+              Form(
+                key: _formKey,
+                child: TextFormField(
+                  controller: _storeNameController,
+                  textInputAction: TextInputAction.done,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[a-zA-Z\u0621-\u063A\u0641-\u064A\s]'),
+                    ),
+                  ],
+                  decoration: const InputDecoration(
+                    hintText: 'اسم المتجر',
+                    prefixIcon: Icon(Icons.store, color: AppTheme.primaryColor),
+                    errorMaxLines: 2,
+                  ),
+                  onFieldSubmitted: (value) => _submit(),
+                  validator: (value) {
+                    final name = value?.trim() ?? '';
+
+                    if (name.isEmpty) {
+                      return 'يجب إدخال اسم متجرك';
+                    }
+
+                    return _error;
+                  },
+                ),
+              ),
+              const SizedBox(height: 25),
+
+              // الأزرار
+              Row(
+                spacing: 15,
+                children: [
+                  Expanded(
+                    child: CustomButton(
+                      onPressed: _isLoading ? null : _submit,
+                      buttonStyle: ElevatedButton.styleFrom(
+                        elevation: 5,
+                      ),
+                      child: _isLoading
+                          ? const LoadingWidget()
+                          : const Text(
+                              'إنشاء',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: const Text(
+                        'إلغاء',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
-                decoration: const InputDecoration(
-                  hintText: 'اسم المتجر',
-                  prefixIcon: Icon(Icons.store, color: AppTheme.primaryColor),
-                ),
-                onFieldSubmitted: (value) => _submit(),
-                validator: (value) {
-                  final name = value?.trim() ?? '';
-
-                  if (name.isEmpty) {
-                    return 'يجب إدخال اسم متجرك';
-                  }
-
-                  return _error;
-                },
               ),
-            ),
-            const SizedBox(height: 25),
-
-            // الأزرار
-            Row(
-              spacing: 15,
-              children: [
-                Expanded(
-                  child: CustomButton(
-                    onPressed: _isLoading ? null : _submit,
-                    buttonStyle: ElevatedButton.styleFrom(
-                      elevation: 5,
-                    ),
-                    child: _isLoading
-                        ? const LoadingWidget()
-                        : const Text(
-                            'إنشاء',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  ),
-                ),
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.grey.shade400),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                    ),
-                    child: const Text(
-                      'إلغاء',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

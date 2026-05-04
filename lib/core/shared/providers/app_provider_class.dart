@@ -5,7 +5,6 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../../app_initializer.dart';
 import '../../database/local/database_helper.dart';
-import 'core_providers.dart';
 import 'repositories_provider.dart';
 
 class AppProviders {
@@ -32,7 +31,6 @@ class AppProviders {
     _container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-        databaseProvider.overrideWithValue(database),
       ],
     );
   }

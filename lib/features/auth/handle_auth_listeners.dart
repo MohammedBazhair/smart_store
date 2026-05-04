@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../core/constants/enums.dart';
 import '../../core/extensions/extensions.dart';
 import '../../core/shared/providers/core_providers.dart';
@@ -22,12 +21,16 @@ Future<void> handlgeAuthListener({
       break;
 
     case AuthSuccessfullState():
-    await ref.read(audioControllerProvider.notifier).playSuccessResult();
+      await ref.read(audioControllerProvider.notifier).playSuccessResult();
 
       final profile =
           await ref.read(userControllerProvider.notifier).loadProfile();
       if (profile?.isDataComplete ?? false) {
-        await context.pushAndRemoveUntilTo( AccountStatusScreen(profile: profile!,));
+        await context.pushAndRemoveUntilTo(
+          AccountStatusScreen(
+            profile: profile!,
+          ),
+        );
       } else {
         await context.pushReplacementTo(const MoreInfoScreen());
       }
@@ -39,7 +42,6 @@ Future<void> handlgeAuthListener({
     case AuthGoogleLoadingState():
       break;
     case AuthResetPasswordSuccessfullState(:final email):
-
       context.showSnakbar(
         'تم ارسال رمز اعادة تعيين كلمة المرور الى بريدك الالكتروني',
         type: SnackBarType.success,
@@ -56,7 +58,7 @@ Future<void> handlgeAuthListener({
         'تم تسجيل خروجك',
         type: SnackBarType.success,
       );
-      await context.pushAndRemoveUntilTo(const SignInScreen());
 
+      await context.pushAndRemoveUntilTo(const SignInScreen());
   }
 }

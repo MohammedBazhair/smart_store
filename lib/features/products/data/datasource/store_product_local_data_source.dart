@@ -277,14 +277,14 @@ class StoreProductLocalDataSourceImpl implements StoreProductLocalDataSource {
       updatedAt: DateTime.now().toUtc(),
     );
 
-    await _sync.addChange(storeProductChange,transaction);
+    await _sync.addChange(storeProductChange, transaction);
   }
 
   @override
   Future<void> setStoreProducts(
     List<StoreProductModel> products,
   ) async {
-    final batch = _db.batch;
+    final batch = await _db.batch;
     for (final product in products) {
       batch.insert(
         'store_products',

@@ -18,6 +18,13 @@ import 'store_state.dart';
 class StoreController extends Notifier<StoreEventState> {
   @override
   StoreEventState build() {
+    final isLogged = ref.watch(userControllerProvider).entity.isLogged;
+
+    if (!isLogged) {
+      _cache.remove(key: AppConstants.lastStoreIdKey);
+      return const InitialStoreEvent();
+    }
+
     final selectedStoreId = _cache.getString(key: AppConstants.lastStoreIdKey);
 
     return InitialStoreEvent(
@@ -27,7 +34,7 @@ class StoreController extends Notifier<StoreEventState> {
 
   LocalCacheService get _cache => ref.read(localCacheServiceProvider);
   ProfileEntity get profile => ref.read(userControllerProvider).entity.profile;
-  StoreRepository get storeRepo => ref.read(storeRepositoryProvider);
+  StoreRepository get _storeRepo => ref.read(storeRepositoryProvider);
 
   StoreMember? get meAsCurrentMember {
     try {
@@ -48,11 +55,10 @@ class StoreController extends Notifier<StoreEventState> {
   Future<void> loadMyStores() async {
     state = LoadinMyStoresEvent(state: state.state);
 
-    final repo = ref.read(storeRepositoryProvider);
-    final stores = await repo.getUserStores(profile.phone ?? '');
+    final stores = await _storeRepo.getUserStores(profile.phone ?? '');
 
     final futures = stores.map((s) async {
-      final members = await repo.getStoreMembers(s.id!);
+      final members = await _storeRepo.getStoreMembers(s.id!);
       final storeWithMembers = StoreWithMembers(store: s, members: members);
       return MapEntry(s.id!, storeWithMembers);
     });
@@ -85,7 +91,7 @@ class StoreController extends Notifier<StoreEventState> {
         isDeleted: false,
       );
 
-      await storeRepo.addStoreMember(member);
+      await _storeRepo.addStoreMember(member);
 
       await ref.read(audioControllerProvider.notifier).playScannerBeep();
 
@@ -105,7 +111,7 @@ class StoreController extends Notifier<StoreEventState> {
         storeId: state.state.selectedStoreId!,
         memberPhone: phoneNumber,
       );
-      await storeRepo.removeStoreMember(memberKey);
+      await _storeRepo.removeStoreMember(memberKey);
     } on AppException catch (e) {
       state = ErrorStoreEvent(state: state.state, error: e.message);
     } catch (e) {
@@ -129,7 +135,7 @@ class StoreController extends Notifier<StoreEventState> {
         isDeleted: false,
       );
 
-      final newStore = await storeRepo.createStore(store);
+      final newStore = await _storeRepo.createStore(store);
       final ownerMember = StoreMember(
         primaryKey:
             StoreMemberKey(storeId: newStore.id!, memberPhone: profile.phone!),
@@ -148,6 +154,7 @@ class StoreController extends Notifier<StoreEventState> {
       };
 
       Future.delayed(const Duration(seconds: 1), () {
+        if (!ref.mounted) return;
         ref.read(audioControllerProvider.notifier).playSuccessResult();
 
         state = CreateStoreEvent(
@@ -157,7 +164,8 @@ class StoreController extends Notifier<StoreEventState> {
       });
 
       return null;
-    } on AppException catch (e) {
+    } on AppException catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       return e.message;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
@@ -169,11 +177,5 @@ class StoreController extends Notifier<StoreEventState> {
     await _cache.setString(key: AppConstants.lastStoreIdKey, value: storeId);
     state =
         SelectStoreEvent(state: state.state.copyWith(selectedStoreId: storeId));
-  }
-
-  void unselectStores() {
-    _cache.remove(key: AppConstants.lastStoreIdKey);
-    state =
-        UnSelectStoreEvent(state: state.state.copyWith(selectedStoreId: null));
   }
 }

@@ -1,128 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/common/bottom_sheet_handle.dart';
-import '../../../user/domain/entities/role.dart';
 import '../../domain/entities/store_member.dart';
-import '../controller/store_provider.dart';
 import 'add_member_dialog.dart';
+import 'member_item.dart';
 
 void showMembersSheet(
   BuildContext context,
   String storeId,
   Set<StoreMember> members,
 ) {
-  final membersList = members.toList();
-
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
     builder: (_) {
-      return DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: .6,
-        maxChildSize: .9,
-        builder: (_, controller) {
-          return Column(
-            children: [
-              const BottomSheetHandle(),
-
-              const Text(
-                'أعضاء المتجر',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              Expanded(
-                child: ListView.builder(
-                  controller: controller,
-                  itemCount: membersList.length,
-                  itemBuilder: (_, index) {
-                    final member = membersList[index];
-
-                    return Consumer(
-                      builder: (_, ref, __) {
-                        return Dismissible(
-                          key: ObjectKey(member.primaryKey),
-                          confirmDismiss: (direction) async =>
-                              member.role != Role.storeOwner,
-                          direction: member.role == Role.storeOwner
-                              ? DismissDirection.none
-                              : DismissDirection.endToStart,
-                          onDismissed: (_) {
-                            ref
-                                .read(storeControllerProvider.notifier)
-                                .removeStoreMember(
-                                  member.primaryKey.memberPhone,
-                                );
-                          },
-                          background: Container(
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 20),
-                            color: Colors.red,
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                            ),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor:
-                                  AppTheme.primaryColor.withOpacity(.15),
-                              child: Text(
-                                member.primaryKey.memberPhone.substring(0, 2),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryColor,
-                                ),
-                              ),
-                            ),
-                            title: Text(member.primaryKey.memberPhone),
-                            subtitle: Text(member.role.label),
-                            trailing: member.role.label == 'مالك'
-                                ? const Icon(
-                                    Icons.workspace_premium,
-                                    color: Colors.amber,
-                                  )
-                                : null,
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-
-              /// ADD MEMBER BUTTON
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: Consumer(
-                    builder: (_, ref, __) {
-                      return ElevatedButton.icon(
-                        icon: const Icon(Icons.person_add),
-                        label: const Text('إضافة عضو'),
-                        onPressed: () {
-                          Navigator.pop(context);
-                          showAddMemberDialog(context);
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+      return FractionallySizedBox(
+        heightFactor: 0.7,
+        child: StoreMembersSheet(
+          storeId: storeId,
+          members: members.toList(),
+        ),
       );
     },
   );
+}
+
+class StoreMembersSheet extends ConsumerWidget {
+  const StoreMembersSheet({
+    super.key,
+    required this.storeId,
+    required this.members,
+  });
+  final String storeId;
+  final List<StoreMember> members;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const BottomSheetHandle(),
+          const Text(
+            'أعضاء المتجر',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: ListView.builder(
+              itemCount: members.length,
+              itemBuilder: (_, index) {
+                final member = members[index];
+
+                return MemberItem(member: member);
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.person_add),
+                label: const Text('إضافة عضو'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  showAddMemberDialog(context);
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
