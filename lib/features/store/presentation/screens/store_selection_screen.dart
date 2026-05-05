@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/common/hint_row.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../auth/presentation/widgets/sign_out_button.dart';
+import '../../../products/presentation/screens/init_screen.dart';
 import '../../../user/domain/entities/status_config.dart';
 import '../../../user/presentation/widgets/status_icon_widget.dart';
 import '../controller/store_provider.dart';
@@ -86,10 +88,17 @@ class StoreSelectionScreen extends ConsumerWidget {
                       separatorBuilder: (context, index) =>
                           const SizedBox(height: 20),
                       itemBuilder: (context, index) {
+                        final store = stores[index];
                         return StoreCard(
-                          store: stores[index].store,
-                          owner: stores[index].owner,
-                          members: stores[index].members,
+                          store: store.store,
+                          owner: store.owner,
+                          membersLength: store.members.length,
+                          onPressed: () {
+                            ref
+                                .read(storeControllerProvider.notifier)
+                                .selectStore(store.store.id!);
+                            context.pushAndRemoveUntilTo(const InitScreen());
+                          },
                         );
                       },
                     ),

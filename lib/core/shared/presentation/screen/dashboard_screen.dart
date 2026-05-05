@@ -6,6 +6,7 @@ import '../../../../features/alerts/presentation/widgets/notification_icon_butto
 import '../../../../features/barcode/presentation/screens/barcode_scanner_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/settings/presentation/controllers/settings_provider.dart';
+import '../../../../features/store/presentation/controller/store_provider.dart';
 import '../../../extensions/extensions.dart';
 import '../../../utils/permissions.dart';
 import '../widgets/common/common_actions.dart';
@@ -30,6 +31,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       if (!mounted) return;
 
       ref.read(settingsControllerProvider.notifier);
+        Future.microtask(() async {
+        await ref.read(storeControllerProvider.notifier).loadMyStores();
+        await ref.read(productControllerProvider.notifier).loadInitialData();
+        await ref.read(alertsControllerProvider.notifier).loadAlerts();
+      });
     });
 
     checkPermission();

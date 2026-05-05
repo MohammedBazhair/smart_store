@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
 import '../controller/store_provider.dart';
+import 'custom_store_name_field.dart';
 
-Future<void> showCreateStoreDialog(BuildContext context) async {
+Future<void> showCreateStoreDialog(
+  BuildContext context,
+) async {
   await showDialog(
     context: context,
     builder: (context) => const CreateStoreDialog(),
@@ -15,7 +17,9 @@ Future<void> showCreateStoreDialog(BuildContext context) async {
 }
 
 class CreateStoreDialog extends ConsumerStatefulWidget {
-  const CreateStoreDialog({super.key});
+  const CreateStoreDialog({
+    super.key,
+  });
 
   @override
   ConsumerState<CreateStoreDialog> createState() => _CreateStoreDialogState();
@@ -34,7 +38,7 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _onSubmit() async {
     setState(() {
       _error = null;
       _isLoading = true;
@@ -48,6 +52,7 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
     final cntroller = ref.read(storeControllerProvider.notifier);
 
     final serverError = await cntroller.createStore(name);
+
     if (serverError == null) return context.pop();
 
     setState(() {
@@ -87,30 +92,10 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
               // حقل النص
               Form(
                 key: _formKey,
-                child: TextFormField(
+                child: CustomStoreNameField(
                   controller: _storeNameController,
-                  textInputAction: TextInputAction.done,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                      RegExp(r'[a-zA-Z\u0621-\u063A\u0641-\u064A\s]'),
-                    ),
-                  ],
-                  decoration: const InputDecoration(
-                    hintText: 'اسم المتجر',
-                    prefixIcon: Icon(Icons.store, color: AppTheme.primaryColor),
-                    errorMaxLines: 2,
-                  ),
-                  onFieldSubmitted: (value) => _submit(),
-                  validator: (value) {
-                    final name = value?.trim() ?? '';
-
-                    if (name.isEmpty) {
-                      return 'يجب إدخال اسم متجرك';
-                    }
-
-                    return _error;
-                  },
+                  errorText: _error,
+                  onSubmitted: _onSubmit,
                 ),
               ),
               const SizedBox(height: 25),
@@ -121,7 +106,7 @@ class _CreateStoreDialogState extends ConsumerState<CreateStoreDialog> {
                 children: [
                   Expanded(
                     child: CustomButton(
-                      onPressed: _isLoading ? null : _submit,
+                      onPressed: _isLoading ? null : _onSubmit,
                       buttonStyle: ElevatedButton.styleFrom(
                         elevation: 5,
                       ),

@@ -63,6 +63,15 @@ class CreateStoreEvent extends StoreEventState {
   final String storeName;
 }
 
+class UpdateStoreEvent extends StoreEventState {
+  const UpdateStoreEvent({required super.state, required this.storeName});
+  final String storeName;
+}
+
+class UpdateingStoreEvent extends StoreEventState {
+  const UpdateingStoreEvent({required super.state});
+}
+
 class SelectStoreEvent extends StoreEventState {
   const SelectStoreEvent({required super.state});
 }
@@ -74,6 +83,10 @@ class UnSelectStoreEvent extends StoreEventState {
 class AddStoreMemberEvent extends StoreEventState {
   const AddStoreMemberEvent({required super.state, required this.member});
   final StoreMember member;
+}
+
+class AddingStoreEvent extends StoreEventState {
+  const AddingStoreEvent({required super.state});
 }
 
 class RemoveStoreMemberEvent extends StoreEventState {

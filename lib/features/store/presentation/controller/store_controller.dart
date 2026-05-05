@@ -75,6 +75,7 @@ class StoreController extends Notifier<StoreEventState> {
 
   Future<String?> addStoreMember(String phoneNumber) async {
     try {
+      state = AddingStoreEvent(state: state.state);
       final selectedStoreId = state.state.selectedStoreId;
       if (selectedStoreId == null) {
         throw const NoStoreSelectedException('لم يتم اختيار متجر');
@@ -97,11 +98,15 @@ class StoreController extends Notifier<StoreEventState> {
 
       state = AddStoreMemberEvent(state: state.state, member: member);
       return null;
-    } on AppException catch (e) {
+    } on AppException catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      state = ErrorStoreEvent(state: state.state, error: e.message);
       return e.message;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
-      return 'حدث خطأ أثناء إضافة العضو صاحب الرقم $phoneNumber';
+      final errorMessage = 'حدث خطأ أثناء إضافة العضو صاحب الرقم $phoneNumber';
+      state = ErrorStoreEvent(state: state.state, error: errorMessage);
+      return errorMessage;
     }
   }
 
@@ -166,10 +171,66 @@ class StoreController extends Notifier<StoreEventState> {
       return null;
     } on AppException catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
+      state = ErrorStoreEvent(state: state.state, error: e.message);
       return e.message;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
-      return 'فشلت عملية إنشاء متجر تأكد من الاتصال بالانترنت او راجع الدعم الفني';
+      const errorMessage =
+          'فشلت عملية إنشاء متجر تأكد من الاتصال بالانترنت او راجع الدعم الفني';
+      state = ErrorStoreEvent(state: state.state, error: errorMessage);
+      return errorMessage;
+    }
+  }
+
+  Future<void> updateSelectedStore(String storeName) async {
+    try {
+      if (!state.state.isSelectedStore) {
+        state = ErrorStoreEvent(
+          state: state.state,
+          error: 'يجب تحديد متجر اولا لتتمكن من تعديله',
+        );
+      }
+      state = UpdateingStoreEvent(state: state.state);
+
+      final selectedStore = state.state.selectedStore;
+
+      if (selectedStore?.store.name == storeName) return;
+      final now = DateTime.now().toUtc();
+
+      final updatedStore =
+          selectedStore!.store.copyWith(name: storeName, updatedAt: now);
+
+      await _storeRepo.updateStore(updatedStore);
+
+      final copiedStores = {
+        ...state.state.myStores,
+      };
+
+      final storeWithMembers = StoreWithMembers(
+        store: updatedStore,
+        members: state.state.selectedStore!.members,
+      );
+
+      copiedStores.update(
+        updatedStore.id!,
+        (_) => storeWithMembers,
+      );
+
+      state = UpdateStoreEvent(
+        state: state.state.copyWith(myStores: copiedStores),
+        storeName: storeName,
+      );
+      await ref.read(audioControllerProvider.notifier).playSuccessResult();
+    } on AppException catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      state = ErrorStoreEvent(state: state.state, error: e.message);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      state = ErrorStoreEvent(
+        state: state.state,
+        error:
+            'فشلت عملية تعديل المتجر تأكد من الاتصال بالانترنت او راجع الدعم الفني',
+      );
     }
   }
 

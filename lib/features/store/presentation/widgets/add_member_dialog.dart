@@ -6,6 +6,7 @@ import '../../../../core/shared/presentation/widgets/common/loading_widget.dart'
 import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../auth/presentation/widgets/custom_phone_field.dart';
 import '../controller/store_provider.dart';
+import '../controller/store_state.dart';
 
 void showAddMemberDialog(BuildContext context) {
   showDialog(
@@ -27,7 +28,19 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
   final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String? _serverError;
-  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    ref.listenManual(storeControllerProvider, (previous, next) {
+      if (next is ErrorStoreEvent) {
+        setState(() {
+          _serverError = next.error;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -37,6 +50,8 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final _isLoading = ref.watch(storeControllerProvider) is AddingStoreEvent;
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -68,6 +83,11 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
               child: CustomPhoneField(
                 _phoneController,
                 validator: (_) => _serverError,
+                errorMaxLines: 2,
+                onChanged: (_) {
+                  if (_serverError == null) return;
+                  setState(() => _serverError = null);
+                },
               ),
             ),
             const SizedBox(height: 25),
@@ -85,22 +105,14 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
                                 _formKey.currentState?.validate() ?? false;
                             if (!isValid) return;
 
-                            setState(() {
-                              _serverError = null;
-                              _isLoading = true;
-                            });
-
                             final phone = _phoneController.text;
                             final error = await ref
                                 .read(storeControllerProvider.notifier)
                                 .addStoreMember(phone);
 
-                            if (error == null) return Navigator.pop(context);
-
-                            setState(() {
-                              _serverError = error;
-                              _isLoading = false;
-                            });
+                            if (error == null) {
+                              return Navigator.pop(context);
+                            }
                           },
                     buttonStyle: ElevatedButton.styleFrom(
                       elevation: 5,

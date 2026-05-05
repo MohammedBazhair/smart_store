@@ -3,23 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
-import '../../../products/presentation/screens/init_screen.dart';
 import '../../domain/entities/store.dart';
 import '../../domain/entities/store_member.dart';
 import '../controller/store_provider.dart';
-import 'members_sheet.dart';
 
 class StoreCard extends ConsumerWidget {
   const StoreCard({
     super.key,
     required this.store,
     required this.owner,
-    required this.members,
+    required this.membersLength,
+    required this.onPressed,
   });
 
   final Store store;
   final StoreMember owner;
-  final Set<StoreMember> members;
+  final int membersLength;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -39,11 +39,7 @@ class StoreCard extends ConsumerWidget {
         borderRadius: borderRadius,
         splashColor: color.withOpacity(0.15),
         highlightColor: color.withOpacity(0.06),
-        onTap: () {
-          ref.read(storeControllerProvider.notifier).selectStore(store.id!);
-          context.pushAndRemoveUntilTo(const InitScreen());
-        },
-        onLongPress: () => showMembersSheet(context, store.id!, members),
+        onTap: onPressed,
         child: Ink(
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
@@ -135,7 +131,7 @@ class StoreCard extends ConsumerWidget {
                         const Icon(Icons.groups, size: 18, color: color),
                         const SizedBox(width: 10),
                         Text(
-                          '${members.length}',
+                          '$membersLength',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: color,
