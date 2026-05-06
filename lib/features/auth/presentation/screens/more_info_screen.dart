@@ -13,6 +13,7 @@ import '../../../user/presentation/screens/account_status_screen.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_fullname_field.dart';
 import '../widgets/custom_phone_field.dart';
+import '../widgets/sign_out_button.dart';
 
 final _isLoadingProvider = StateProvider((_) => false);
 
@@ -58,10 +59,25 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _initFields();
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  void _initFields() {
+    final profile = ref.read(userControllerProvider).entity.profile;
+    final name = profile.username;
+    final phone = profile.phone;
+
+    _nameController.text = name;
+    _phoneController.text = phone ?? _phoneController.text;
   }
 
   @override
@@ -84,7 +100,14 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
           );
       }
     });
+    final email = ref.read(userControllerProvider.notifier).currentUser?.email;
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('المتجر الذكي'),
+        actions: const [
+          SignOutButton(),
+        ],
+      ),
       body: GestureDetector(
         onTap: FocusScope.of(context).unfocus,
         child: SafeArea(
@@ -93,20 +116,6 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
               shrinkWrap: true,
               padding: const EdgeInsets.all(24),
               children: [
-                const SizedBox(
-                  height: 20,
-                ),
-                const Text(
-                  'المتجر الذكي',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-                const SizedBox(
-                  height: 60,
-                ),
                 const Text(
                   'أكمل بياناتك!',
                   style: TextStyle(
@@ -114,6 +123,15 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 10),
+                if (email != null)
+                  Text(
+                    'بريدك: $email',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
                 const SizedBox(height: 10),
                 const Text(
                   'أدخل اسمك ورقم هاتفك لإكمال عملية التسجيل',

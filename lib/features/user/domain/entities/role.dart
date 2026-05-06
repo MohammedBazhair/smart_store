@@ -9,7 +9,7 @@ enum Role {
   /// Can explore products
   worker(label: 'موظف'),
 
-// when user signup first time
+  // when user signup first time
   guest(label: 'زائر');
 
   final String label;
@@ -20,4 +20,6 @@ enum Role {
   static Role fromString(String role) {
     return Role.values.byName(role);
   }
+
+  bool get isStoreOwner => this ==storeOwner;
 }

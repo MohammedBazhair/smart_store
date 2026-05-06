@@ -6,31 +6,31 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/screen/dashboard_screen.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
-import '../../../store/presentation/controller/store_provider.dart';
 import '../controllers/download_provider.dart';
-import '../controllers/product_provider.dart';
 
-class InitScreen extends ConsumerWidget {
+class InitScreen extends ConsumerStatefulWidget {
   const InitScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(initDataFromNetProvider, (previous, next) {
-      next.whenOrNull(
-        data: (_) {
-          if (previous is AsyncData) return;
-          Future(() async {
-            await ref.read(storeControllerProvider.notifier).loadMyStores();
-            await ref
-                .read(productControllerProvider.notifier)
-                .loadInitialData();
-            if (!context.mounted) return;
-            await context.pushAndRemoveUntilTo(const DashboardScreen());
-          });
-        },
-      );
-    });
+  ConsumerState<InitScreen> createState() => _InitScreenState();
+}
 
+class _InitScreenState extends ConsumerState<InitScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async{
+
+      await ref.read(initDataFromNetProvider.future);
+      if (!mounted) return;
+
+      await context.pushAndRemoveUntilTo(const DashboardScreen());
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -228,13 +228,12 @@ class _ErrorContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primary = AppTheme.primaryColor; // نفس اللون المستخدم في التصميم
+    const primary = AppTheme.primaryColor;
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // أيقونة خطأ احترافية
           Container(
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(

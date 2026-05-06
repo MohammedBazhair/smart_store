@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../../../features/store/presentation/controller/store_provider.dart';
@@ -9,7 +8,13 @@ import '../../providers/core_providers.dart';
 
 class AppSyncController extends Notifier<bool> {
   @override
-  bool build() => false;
+  bool build() {
+    final isLogged = ref.watch(userControllerProvider).entity.isLogged;
+
+    if (!isLogged) ref.read(syncProductRepositoryProvider).resetCacheFlags();
+
+    return false;
+  }
 
   Future<void> sync({bool isManual = false}) async {
     if (state) return;
@@ -64,8 +69,4 @@ class AppSyncController extends Notifier<bool> {
     await ref.read(productControllerProvider.notifier).loadInitialData();
   }
 
-  Future<void> resetCacheFlags() async {
-    await ref.read(syncProductRepositoryProvider).resetCacheFlags();
-    state = false;
-  }
 }

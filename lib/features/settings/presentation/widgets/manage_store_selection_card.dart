@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/widgets/common/hint_row.dart';
 import '../../../store/presentation/controller/store_provider.dart';
+import '../../../store/presentation/screens/store_details_screen.dart';
 import '../../../store/presentation/screens/store_selection_screen.dart';
 import '../../../store/presentation/widgets/store_card.dart';
 
@@ -36,7 +37,7 @@ class ManageStoreSelectionCard extends ConsumerWidget {
                       ),
                       if (hasSelectedStore)
                         const HintRow(
-                          message: 'اضغط مطولاً على المتجر لإدارة الأعضاء',
+                          message: 'اضغط على المتجر للانتقال لتفاصيل المتجر',
                           iconData: Icons.touch_app_outlined,
                         ),
                     ],
@@ -55,7 +56,12 @@ class ManageStoreSelectionCard extends ConsumerWidget {
                 ? StoreCard(
                     store: selectedStore.store,
                     owner: selectedStore.owner,
-                    members: selectedStore.members,
+                    membersLength: selectedStore.members.length,
+                    onPressed: () {
+                      context.pushTo(
+                        StoreDetailsScreen(storeId: selectedStore.store.id),
+                      );
+                    },
                   )
                 : const EmptyStoresView(),
           ],

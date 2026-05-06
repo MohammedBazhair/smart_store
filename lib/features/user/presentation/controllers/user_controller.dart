@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
@@ -27,21 +26,31 @@ class UserController extends Notifier<UserState> {
   Future<ProfileEntity?> loadProfile() async {
     try {
       if (state.entity.isInitilized) return state.entity.profile;
+      // منع الاستدعاء المزدوج
+      if (state is UserLoadingProfileState) return null;
+
       state = UserLoadingProfileState(state.entity);
       if (currentUser?.id == null) return null;
 
-      final profileParams = GetProfileParams(
-        userId: currentUser!.id,
-        appMetadata: currentUser!.appMetadata,
-        userMetadata: currentUser?.userMetadata,
-      );
+      final profileParams = GetProfileParams.fromSupabaseUser(currentUser!);
 
-      final newProfile = await _userRepository.getProfile(profileParams);
+      ProfileEntity newProfile =
+          await _userRepository.getProfile(profileParams);
+
+      if (!newProfile.isDataComplete) {
+        newProfile = newProfile.copyWith(
+          username: profileParams.userMetadata?.fullName,
+          phone: profileParams.phone,
+        );
+      }
+
+      if (!ref.mounted) return null;
 
       state = UserLoadedProfileState(
         state.entity
             .copyWith(profile: newProfile, isLogged: true, isInitilized: true),
       );
+      
       return newProfile;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
