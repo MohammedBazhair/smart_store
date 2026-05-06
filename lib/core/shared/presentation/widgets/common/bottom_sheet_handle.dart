@@ -12,7 +12,7 @@ class BottomSheetHandle extends StatelessWidget {
         margin: const EdgeInsets.only(
           bottom: 18,
         ),
-        width: 60,
+        width: 50,
         height: 4,
         decoration: BoxDecoration(
           color: Colors.grey.shade300,

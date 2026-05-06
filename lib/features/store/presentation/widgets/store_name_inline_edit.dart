@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-
-import '../../../../core/constants/log.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../controller/store_provider.dart';
 import '../controller/store_state.dart';
@@ -28,36 +28,30 @@ class _StoreNameInlineEditState extends ConsumerState<StoreNameInlineEdit> {
   @override
   void initState() {
     super.initState();
-    _initStoreName();
 
+    _listenToStoreChanges();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _listenToStoreChanges() {
     ref.listenManual(
       storeControllerProvider,
-      (_, event) => handleStoreStates(event, context),
-    );
+      fireImmediately: true,
+      (_, next) async {
+        final newName = next.state.selectedStore?.store.name;
+        final isEditing = ref.read(isEditingStoreNameProvider);
 
-    ref.listenManual(
-      isEditingStoreNameProvider,
-      (_, isEditing) {
-        Logger.debugLog(message: 'isEditing: $isEditing');
-        if (!isEditing) _resetStoreName();
+        if (!isEditing) {
+          _controller.text = newName ?? '';
+        }
+        await handleStoreStates(next, context);
       },
     );
-  }
-
-  void _initStoreName() {
-    if (!ref.context.mounted) return;
-    _controller.text = _controller.text =
-        ref.read(storeControllerProvider).state.selectedStore?.store.name ??
-            'لم يتم تحديد متجر';
-  }
-
-  void _resetStoreName() {
-    WidgetsBinding.instance.addPersistentFrameCallback((_) {
-      if (!ref.context.mounted) return;
-      _controller.text = _controller.text =
-          ref.watch(storeControllerProvider).state.selectedStore?.store.name ??
-              'لم يتم تحديد متجر';
-    });
   }
 
   void _onSubmit() async {
@@ -65,15 +59,24 @@ class _StoreNameInlineEditState extends ConsumerState<StoreNameInlineEdit> {
     if (!isValidated) return;
 
     final storeName = _controller.text;
-    await ref
+    final isEdited = await ref
         .read(storeControllerProvider.notifier)
         .updateSelectedStore(storeName);
+
+    if (!isEdited) {
+      final oldName =
+          ref.read(storeControllerProvider).state.selectedStore?.store.name;
+      _controller.text = oldName ?? _controller.text;
+    }
     ref.read(isEditingStoreNameProvider.notifier).state = false;
   }
 
   @override
   Widget build(BuildContext context) {
     final isEditing = ref.watch(isEditingStoreNameProvider);
+    final storeName =
+        ref.watch(storeControllerProvider).state.selectedStore?.store.name ??
+            '';
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
       child: isEditing
@@ -114,7 +117,7 @@ class _StoreNameInlineEditState extends ConsumerState<StoreNameInlineEdit> {
                 children: [
                   Expanded(
                     child: Text(
-                      _controller.text,
+                      storeName,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -122,16 +125,19 @@ class _StoreNameInlineEditState extends ConsumerState<StoreNameInlineEdit> {
                       ),
                     ),
                   ),
-                  IconButton.filled(
+                  IconButton(
                     tooltip: 'تعديل المتجر',
                     onPressed: () {
                       ref.read(isEditingStoreNameProvider.notifier).state =
                           true;
                     },
-                    icon: const Icon(
-                      Icons.edit,
-                      size: 18,
-                      color: Colors.white,
+                    icon: SvgPicture.asset(
+                      'assets/icons/edit.svg',
+                      width: 30,
+                      colorFilter: const ColorFilter.mode(
+                        AppTheme.primaryColor,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ],

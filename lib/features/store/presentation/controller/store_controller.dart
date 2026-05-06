@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/cache_service.dart';
+import '../../../../core/shared/domain/entities/permission.dart';
+import '../../../../core/shared/domain/services/permission_service.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../audio/presentation/controller/audio_provider.dart';
@@ -36,20 +38,39 @@ class StoreController extends Notifier<StoreEventState> {
   ProfileEntity get profile => ref.read(userControllerProvider).entity.profile;
   StoreRepository get _storeRepo => ref.read(storeRepositoryProvider);
 
-  StoreMember? get meAsCurrentMember {
+  StoreMember? _getCurrentMember() {
     try {
       final storeId = state.state.selectedStoreId;
-      final phone = profile.phone;
+      final phone = ref.read(userControllerProvider).entity.profile.phone;
 
       if (storeId == null || phone == null) return null;
 
-      final memberKey = StoreMemberKey(storeId: storeId, memberPhone: phone);
-      final members = state.state.selectedStore?.members;
-      return members?.firstWhere((m) => m.primaryKey == memberKey);
-    } catch (e, st) {
-      Logger.debugLog(error: e, stackTrace: st);
+      final store = state.state.myStores[storeId];
+      if (store == null) return null;
+
+      final key = StoreMemberKey(
+        storeId: storeId,
+        memberPhone: phone,
+      );
+
+      return store.members.firstWhere(
+        (m) => m.primaryKey == key,
+      );
+    } catch (_) {
       return null;
     }
+  }
+
+  bool _can(PermissionTask task) {
+    final member = _getCurrentMember();
+    final profile = ref.read(userControllerProvider).entity.profile;
+
+    final permission = PermissionService(
+      role: member?.role ?? Role.guest,
+      accountStatus: profile.accountStatus,
+    );
+
+    return permission.can(task);
   }
 
   Future<void> loadMyStores() async {
@@ -75,6 +96,8 @@ class StoreController extends Notifier<StoreEventState> {
 
   Future<String?> addStoreMember(String phoneNumber) async {
     try {
+      final hasPermission = _can(PermissionTask.editStoreDetails);
+      if (!hasPermission) return 'لا توجد لديك صلاحيات إضافة عضو جديد للمتجر';
       state = AddingStoreEvent(state: state.state);
       final selectedStoreId = state.state.selectedStoreId;
       if (selectedStoreId == null) {
@@ -94,9 +117,20 @@ class StoreController extends Notifier<StoreEventState> {
 
       await _storeRepo.addStoreMember(member);
 
-      await ref.read(audioControllerProvider.notifier).playScannerBeep();
+      await ref.read(audioControllerProvider.notifier).playSuccessResult();
 
-      state = AddStoreMemberEvent(state: state.state, member: member);
+      final copiedMembers = Set.of(state.state.selectedStore!.members);
+      copiedMembers.add(member);
+
+      final myCopiedStores = {...state.state.myStores};
+      myCopiedStores.update(
+        selectedStoreId,
+        (storeWithMembers) => storeWithMembers.copyWith(members: copiedMembers),
+      );
+      state = AddStoreMemberEvent(
+        state: state.state.copyWith(myStores: myCopiedStores),
+        member: member,
+      );
       return null;
     } on AppException catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
@@ -110,20 +144,43 @@ class StoreController extends Notifier<StoreEventState> {
     }
   }
 
-  Future<void> removeStoreMember(String phoneNumber) async {
+  Future<bool> removeStoreMember(String phoneNumber) async {
     try {
+      final hasPermission = _can(PermissionTask.editStoreDetails);
+
+      if (!hasPermission) {
+        throw const PermissionsException('لا توجد لديك صلاحية إزالة عضو');
+      }
       final memberKey = StoreMemberKey(
         storeId: state.state.selectedStoreId!,
         memberPhone: phoneNumber,
       );
       await _storeRepo.removeStoreMember(memberKey);
-    } on AppException catch (e) {
+
+      final copiedMembers = Set.of(state.state.selectedStore!.members);
+      copiedMembers.removeWhere((m) => m.primaryKey == memberKey);
+
+      final myCopiedStores = {...state.state.myStores};
+      myCopiedStores.update(
+        memberKey.storeId,
+        (storeWithMembers) => storeWithMembers.copyWith(members: copiedMembers),
+      );
+
+      state = RemoveStoreMemberEvent(
+        state: state.state.copyWith(myStores: myCopiedStores),
+      );
+      return true;
+    } on AppException catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       state = ErrorStoreEvent(state: state.state, error: e.message);
-    } catch (e) {
+      return false;
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       state = ErrorStoreEvent(
         state: state.state,
         error: 'حدث خطأ أثناء إزالة العضو صاحب الرقم $phoneNumber',
       );
+      return false;
     }
   }
 
@@ -182,19 +239,26 @@ class StoreController extends Notifier<StoreEventState> {
     }
   }
 
-  Future<void> updateSelectedStore(String storeName) async {
+  Future<bool> updateSelectedStore(String storeName) async {
     try {
       if (!state.state.isSelectedStore) {
-        state = ErrorStoreEvent(
-          state: state.state,
-          error: 'يجب تحديد متجر اولا لتتمكن من تعديله',
+        throw const NoStoreSelectedException(
+          'يجب تحديد متجر اولا لتتمكن من تعديله',
         );
       }
+
+      final hasPermission = _can(PermissionTask.editStoreDetails);
+      if (!hasPermission) {
+        throw const PermissionsException(
+          'لا توجد لديك صلاحيات تعديل بيانات المتجر',
+        );
+      }
+
       state = UpdateingStoreEvent(state: state.state);
 
       final selectedStore = state.state.selectedStore;
 
-      if (selectedStore?.store.name == storeName) return;
+      if (selectedStore?.store.name == storeName) return false;
       final now = DateTime.now().toUtc();
 
       final updatedStore =
@@ -221,9 +285,11 @@ class StoreController extends Notifier<StoreEventState> {
         storeName: storeName,
       );
       await ref.read(audioControllerProvider.notifier).playSuccessResult();
+      return true;
     } on AppException catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
       state = ErrorStoreEvent(state: state.state, error: e.message);
+      return false;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
       state = ErrorStoreEvent(
@@ -231,6 +297,7 @@ class StoreController extends Notifier<StoreEventState> {
         error:
             'فشلت عملية تعديل المتجر تأكد من الاتصال بالانترنت او راجع الدعم الفني',
       );
+      return false;
     }
   }
 

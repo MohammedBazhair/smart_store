@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/shared/presentation/theme/app_theme.dart';
+import '../../../store/presentation/widgets/store_member_item.dart';
 import '../controllers/alert_provider.dart';
 import 'delete_alert_dialog.dart';
 
@@ -20,20 +19,8 @@ class DismissibleAlertWrapper extends ConsumerWidget {
     return Dismissible(
       key: ValueKey(alertId),
       direction: DismissDirection.startToEnd,
-      background: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        alignment: Alignment.centerRight,
-        decoration: BoxDecoration(
-          color: AppTheme.errorColor,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Icon(
-          Icons.delete_rounded,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
+      background: const DismissibleBackground(isLeft: false),
+      secondaryBackground: const DismissibleBackground(isLeft: true),
       onDismissed: (_) {
         ref.read(alertsControllerProvider.notifier).deleteAlert(alertId);
       },

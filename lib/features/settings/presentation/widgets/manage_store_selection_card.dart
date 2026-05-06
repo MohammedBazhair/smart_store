@@ -37,7 +37,7 @@ class ManageStoreSelectionCard extends ConsumerWidget {
                       ),
                       if (hasSelectedStore)
                         const HintRow(
-                          message: 'اضغط مطولاً على المتجر لإدارة الأعضاء',
+                          message: 'اضغط على المتجر للانتقال لتفاصيل المتجر',
                           iconData: Icons.touch_app_outlined,
                         ),
                     ],
@@ -58,7 +58,9 @@ class ManageStoreSelectionCard extends ConsumerWidget {
                     owner: selectedStore.owner,
                     membersLength: selectedStore.members.length,
                     onPressed: () {
-                      context.pushTo( StoreDetailsScreen(storeWithMembers: selectedStore));
+                      context.pushTo(
+                        StoreDetailsScreen(storeId: selectedStore.store.id),
+                      );
                     },
                   )
                 : const EmptyStoresView(),

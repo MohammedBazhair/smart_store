@@ -30,7 +30,7 @@ Future<void> handleStoreStates(
 
     case AddStoreMemberEvent(:final member):
       context.showSnakbar(
-        'تم إضافة العضو صاحب الرقم ${member.primaryKey.memberPhone}إلى متجرك بنجاح',
+        'تم إضافة العضو صاحب الرقم ${member.primaryKey.memberPhone} إلى متجرك بنجاح',
         type: SnackBarType.success,
       );
 

@@ -110,7 +110,6 @@ final userRemoteDataSourceProvider = Provider((ref) {
   );
 });
 
-
 final userControllerProvider = NotifierProvider<UserController, UserState>(
   () {
     return UserController();
@@ -123,8 +122,6 @@ final authRepositoryProvider = Provider((ref) {
   final localCacheService = ref.read(localCacheServiceProvider);
   return AuthRepositoryImpl(remoteAuth, network, localCacheService);
 });
-
-
 
 final tokenRefreshProvider = Provider((ref) {
   final network = ref.watch(networkProvider);
@@ -147,14 +144,16 @@ final tokenRefreshProvider = Provider((ref) {
   ref.onDispose(subscription.cancel);
 });
 
-final permissionServiceProvider = Provider((ref) {
-  final accountStatus = ref.watch(userControllerProvider).entity.profile.accountStatus;
+final permissionServiceProvider = Provider.autoDispose((ref) {
+  final accountStatus =
+      ref.watch(userControllerProvider).entity.profile.accountStatus;
 
-  ref.watch(storeControllerProvider);
-  final member = ref.read(storeControllerProvider.notifier).meAsCurrentMember;
-  final role = member?.role ?? Role.guest;
+  final role = ref.watch(currentMemberProvider.select((s) => s?.role));
 
-  return PermissionService(role: role, accountStatus: accountStatus);
+  return PermissionService(
+    role: role ?? Role.guest,
+    accountStatus: accountStatus,
+  );
 });
 
 final appSyncControllerProvider = NotifierProvider<AppSyncController, bool>(() {

@@ -10,7 +10,7 @@ import '../../../user/domain/entities/status_config.dart';
 import '../../../user/presentation/widgets/status_icon_widget.dart';
 import '../controller/store_provider.dart';
 import '../handle_store_states.dart';
-import '../widgets/create_store_dialog.dart';
+import '../widgets/dialogs/create_store_dialog.dart';
 import '../widgets/store_card.dart';
 
 class StoreSelectionScreen extends ConsumerWidget {
@@ -69,7 +69,8 @@ class StoreSelectionScreen extends ConsumerWidget {
                 ),
                 sliver: SliverToBoxAdapter(
                   child: HintRow(
-                    message: 'اضغط مطولاً على المتجر لإدارة الأعضاء',
+                    message:
+                        'اضغط على المتجر لتحديده والانتقال للشاشة الرئيسية',
                     iconData: Icons.touch_app_outlined,
                   ),
                 ),

@@ -87,7 +87,8 @@ class StoreRepositoryImpl implements StoreRepository {
     if (!await connectivityService.hasConnection()) {
       throw const InternetException();
     }
-    final isUserExist = await userRepository.isPhoneSignUp(member.primaryKey.memberPhone);
+    final isUserExist =
+        await userRepository.isPhoneSignUp(member.primaryKey.memberPhone);
 
     if (!isUserExist) {
       throw const UserPhoneNotFoundException(
@@ -97,8 +98,14 @@ class StoreRepositoryImpl implements StoreRepository {
 
     final model = StoreMemberModel.fromEntity(member);
 
-    await remote.addMember(model);
-    await local.insertStoreMember(model);
+    if (!await connectivityService.hasConnection()) {
+      throw const InternetException();
+    }
+
+    await Future.wait([
+      remote.addMember(model),
+      local.insertStoreMember(model),
+    ]);
   }
 
   @override

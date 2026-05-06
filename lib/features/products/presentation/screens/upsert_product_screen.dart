@@ -29,7 +29,6 @@ import '../widgets/pick_date/show_expiry_date_picker.dart';
 import '../widgets/product_details/delete_product_dialog.dart';
 import '../widgets/save_product_button.dart';
 
-/// شاشة إضافة منتج جديد
 class UpsertProductScreen extends ConsumerStatefulWidget {
   const UpsertProductScreen({
     super.key,
@@ -182,8 +181,14 @@ class _UpsertProductScreenState extends ConsumerState<UpsertProductScreen> {
   Future<void> _scanBarcode() async {
     final result = await showModalBottomSheet<BarcodeScanResult?>(
       context: context,
-      builder: (context) => const BarcodeScannerScreen(
-        isPopRequired: true,
+      isScrollControlled: true,
+      clipBehavior: Clip.antiAliasWithSaveLayer,
+      builder: (context) => const FractionallySizedBox(
+        heightFactor: 0.6,
+        child: BarcodeScannerScreen(
+          isPopRequired: true,
+          isBottomSheet: true,
+        ),
       ),
     );
     if (result == null) return;

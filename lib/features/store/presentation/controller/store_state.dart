@@ -9,6 +9,16 @@ class StoreWithMembers {
   final Set<StoreMember> members;
 
   StoreMember get owner => members.firstWhere((m) => m.role == Role.storeOwner);
+
+  StoreWithMembers copyWith({
+    Store? store,
+    Set<StoreMember>? members,
+  }) {
+    return StoreWithMembers(
+      store: store ?? this.store,
+      members: members ?? this.members,
+    );
+  }
 }
 
 class StoreState {

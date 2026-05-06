@@ -1,3 +1,6 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../../../core/constants/log.dart';
 import '../../../../core/database/remote/remote_database_service.dart';
 import '../../../../core/shared/data/models/sync_state_model.dart';
 import '../models/store_member_key.dart';
@@ -89,27 +92,33 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
 
   @override
   Future<void> addMember(StoreMemberModel member) async {
-    await _client.insertRow(table: 'store_members', map: member.toMap());
+    try {
+      await _client.insertRow(table: 'store_members', map: member.toMap());
 
-    await _updateStore(member.primaryKey.storeId);
+      await _updateStore(member.primaryKey.storeId);
+    } on PostgrestException catch (e, st) {
+      const uniquenessViolationCode = '23505';
+      if (e.code == uniquenessViolationCode) {
+        await updateMember(member);
+        return;
+      }
+      Logger.debugLog(error: e, stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+    }
   }
 
   @override
   Future<void> removeMember(StoreMemberKey key) async {
     await _client.update(
       updated: {
-        'is_deleted': true,
+        'is_deleted': 1,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
       table: 'store_members',
       whereFilter: key.toMap(),
     );
-
-    await _client.update(
-      updated: {'updated_at': DateTime.now().toUtc().toIso8601String()},
-      table: 'stores',
-      whereFilter: {'store_id': key.storeId},
-    );
+    await _updateStore(key.storeId);
   }
 
   @override
@@ -128,7 +137,7 @@ class StoreRemoteDataSourceImpl implements StoreRemoteDataSource {
     await _client.update(
       updated: member.toUpdateMap(),
       table: 'store_members',
-      whereFilter:member.primaryKey.toMap(),
+      whereFilter: member.primaryKey.toMap(),
     );
 
     await _updateStore(member.primaryKey.storeId);
