@@ -1,9 +1,10 @@
 import 'package:sqflite/sqflite.dart';
 import '../../constants/typedef.dart';
+import 'database_helper.dart';
 import 'query_where_builder.dart';
 
 abstract interface class LocalDatabaseService {
-  Batch get batch;
+  Future<Batch> get batch;
 
   Future<int> insertRow({
     required Map<String, dynamic> map,
@@ -46,18 +47,20 @@ abstract interface class LocalDatabaseService {
 }
 
 class LocalDatabaseServiceImpl implements LocalDatabaseService {
-  LocalDatabaseServiceImpl(this._database);
-  final Database _database;
+  LocalDatabaseServiceImpl();
+
+  Future<Database> get _database => DatabaseHelper.instance.database;
 
   @override
-  Batch get batch => _database.batch();
+  Future<Batch> get batch async => (await _database).batch();
 
   @override
   Future<int> insertRow({
     required String table,
     required Map<String, dynamic> map,
-  }) {
-    return _database.insert(
+  }) async {
+    final _db = await _database;
+    return _db.insert(
       table,
       map,
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -70,23 +73,25 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     required RowList rows,
     ConflictAlgorithm? conflictAlgorithm,
   }) async {
-    final batch = _database.batch();
+    final _batch = await batch;
 
     for (final row in rows) {
-      batch.insert(table, row, conflictAlgorithm: conflictAlgorithm);
+      _batch.insert(table, row, conflictAlgorithm: conflictAlgorithm);
     }
 
-    await batch.commit(noResult: true);
+    await _batch.commit(noResult: true);
   }
 
   @override
   Future<int> deleteWhere({
     required String table,
     WhereQueryParams? whereParams,
-  }) {
+  }) async {
+    final _db = await _database;
+
     final (:where, :whereArgs) = WhereQueryBuilder.build(whereParams);
 
-    return _database.delete(
+    return _db.delete(
       table,
       where: where,
       whereArgs: whereArgs,
@@ -99,10 +104,12 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     WhereQueryParams? whereParams,
     String? orderBy,
     List<String>? columns,
-  }) {
+  }) async {
+    final _db = await _database;
+
     final (:where, :whereArgs) = WhereQueryBuilder.build(whereParams);
 
-    return _database.query(
+    return _db.query(
       table,
       orderBy: orderBy,
       where: where,
@@ -115,16 +122,20 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
   Future<List<Map<String, dynamic>>> rawQuery({
     required String query,
     List<Object?>? arguments,
-  }) {
-    return _database.rawQuery(query, arguments);
+  }) async{
+    final _db = await _database;
+
+    return _db.rawQuery(query, arguments);
   }
 
   @override
   Future<T> transaction<T>(
     Future<T> Function(Transaction) action, {
     bool? exclusive,
-  }) {
-    return _database.transaction(action, exclusive: exclusive);
+  }) async{
+    final _db = await _database;
+
+    return _db.transaction(action, exclusive: exclusive);
   }
 
   @override
@@ -132,10 +143,12 @@ class LocalDatabaseServiceImpl implements LocalDatabaseService {
     required String table,
     required Map<String, dynamic> updated,
     WhereQueryParams? whereParams,
-  }) {
+  })async {
+    final _db = await _database;
+
     final (:where, :whereArgs) = WhereQueryBuilder.build(whereParams);
 
-    return _database.update(
+    return _db.update(
       table,
       updated,
       where: where,

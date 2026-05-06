@@ -48,6 +48,7 @@ class ProfileEntity {
   final int credits;
   final AccountStatus accountStatus;
 
+/// check if user without username and phone  
   bool get isDataComplete => phone != null && username.isNotEmpty;
 
   ProfileEntity copyWith({

@@ -230,10 +230,7 @@ class SyncProductRepositoryImpl implements SyncProductRepository {
 
   @override
   Future<void> resetCacheFlags() async {
-        // 1️⃣ Reset cache flags
-      await _localCache.remove(key: 'isCategoriesDownloaded');
-      await _localCache.remove(key: 'isProductsDownloaded');
-
-    
+    await _localCache.remove(key: 'isCategoriesDownloaded');
+    await _localCache.remove(key: 'isProductsDownloaded');
   }
 }

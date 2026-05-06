@@ -1,17 +1,25 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CustomPhoneField extends StatelessWidget {
-  const CustomPhoneField(this.controller, {super.key, this.validator});
+  const CustomPhoneField(
+    this.controller, {
+    super.key,
+    this.validator,
+    this.onChanged,
+    this.errorMaxLines = 1,
+  });
   final TextEditingController controller;
   final String? Function(String?)? validator;
+  final ValueChanged<String>? onChanged;
+  final int errorMaxLines;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       autofillHints: const [AutofillHints.telephoneNumber],
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       keyboardType: TextInputType.phone,
       cursorRadius: const Radius.circular(20),
       cursorWidth: 1.3,
@@ -19,12 +27,15 @@ class CustomPhoneField extends StatelessWidget {
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
       ],
-      decoration: const InputDecoration(
+      onChanged: onChanged,
+      decoration: InputDecoration(
         hintText: 'أدخل رقم الهاتف',
-        prefixIcon: Padding(
+        helperMaxLines: 2,
+        prefixIcon: const Padding(
           padding: EdgeInsetsDirectional.only(start: 15.0),
           child: Icon(Icons.phone),
         ),
+        errorMaxLines: errorMaxLines,
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -35,7 +46,7 @@ class CustomPhoneField extends StatelessWidget {
           return 'أدخل رقم هاتف صحيح';
         }
 
-       return validator?.call(value);
+        return validator?.call(value);
       },
     );
   }

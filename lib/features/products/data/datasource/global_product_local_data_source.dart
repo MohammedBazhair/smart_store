@@ -182,14 +182,14 @@ class GlobalProductLocalDataSourceImpl implements GlobalProductLocalDataSource {
       updatedAt: DateTime.now().toUtc(),
     );
 
-    await _sync.addChange(globalProductChange,transaction);
+    await _sync.addChange(globalProductChange, transaction);
   }
 
   @override
   Future<void> setGlobalProducts(
     List<GlobalProductModel> products,
   ) async {
-    final batch = _db.batch;
+    final batch = await _db.batch;
     for (final product in products) {
       batch.insert(
         'global_products',

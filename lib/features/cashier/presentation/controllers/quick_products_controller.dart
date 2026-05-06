@@ -33,7 +33,6 @@ class QuickProductsController extends AsyncNotifier<QuickProductsState> {
     if (_storeId == null) return {};
 
     final ids = await _quickRepo.getQuickProductsIds(_storeId!);
-
     Logger.debugLog(message: '$ids');
     final allProducts = ref.watch(productControllerProvider).products;
 

@@ -9,10 +9,13 @@ import '../../domain/entities/backup_type.dart';
 import '../controllers/backup_providers.dart';
 import 'confirmation_restore_dialog.dart';
 
-
-Future<void> showRestoreBackupDialog(BuildContext context, WidgetRef ref) async {
+Future<void> showRestoreBackupDialog(
+  BuildContext context,
+  WidgetRef ref,
+) async {
   final isButtonClicked = await showModalBottomSheet<bool?>(
     context: context,
+    isScrollControlled: true,
     builder: (context) => const RestoreBackupDialog(),
   );
 
@@ -22,9 +25,7 @@ Future<void> showRestoreBackupDialog(BuildContext context, WidgetRef ref) async 
 
   if (shouldRestore != true) return;
 
-
   await ref.read(backupControllerProvider.notifier).restoreBackup();
-
 }
 
 class RestoreBackupDialog extends ConsumerWidget {
@@ -39,9 +40,7 @@ class RestoreBackupDialog extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 10,
         children: [
-
           const BottomSheetHandle(),
-
           Text(
             'اختر مصدر الاستعادة',
             style: TextTheme.of(context).titleLarge,

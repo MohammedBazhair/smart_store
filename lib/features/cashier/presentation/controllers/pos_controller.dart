@@ -72,11 +72,9 @@ class PosController extends Notifier<PosState> {
           final updatedQuantity =
               (currentQty - item.quantity).clamp(0, currentQty);
 
-
           final updatedProduct = item.product.copyWith(
             quantity: updatedQuantity,
             updatedAt: DateTime.now().toUtc(),
-
           );
 
           return productRepo.updateProduct(

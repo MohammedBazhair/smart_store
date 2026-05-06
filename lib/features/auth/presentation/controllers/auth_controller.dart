@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/constants/log.dart';
 import '../../../../core/database/local/database_helper.dart';
 import '../../../../core/shared/providers/core_providers.dart';
@@ -69,12 +68,12 @@ class AuthController extends Notifier<AuthState> {
   Future<void> signOut() async {
     try {
       await _authRepo.signOut();
-      state = const AuthSignOutState();
 
-      await DatabaseHelper.instance.close();
-      ref.read(storeControllerProvider.notifier).unselectStores();
-      await ref.read(appSyncControllerProvider.notifier).resetCacheFlags();
-    } catch (e) {
+      await _refreshWhenSignOut();
+
+      state = const AuthSignOutState();
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       _handleState('حدث خطأ في الخروج حاول مرة أخرى');
     }
   }
@@ -114,5 +113,12 @@ class AuthController extends Notifier<AuthState> {
   void _handleState(String? error) {
     state =
         error == null ? const AuthSuccessfullState() : AuthFailedState(error);
+  }
+
+  Future<void> _refreshWhenSignOut() async {
+    ref.invalidate(userControllerProvider);
+    ref.invalidate(storeControllerProvider);
+    ref.invalidate(appSyncControllerProvider);
+    await DatabaseHelper.instance.close();
   }
 }

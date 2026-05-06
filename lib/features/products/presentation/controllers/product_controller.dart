@@ -50,7 +50,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     );
   }
 
-
   Future<List<Category>> fetchCategories() async {
     final categories = await _productRepo.getAllCategories();
     categories.sort((a, b) => a.name.compareTo(b.name));
@@ -131,7 +130,6 @@ class ProductManagementController extends Notifier<ProductManagementState> {
     final updatedProductsMap = {...state.products};
 
     final key = storeProduct.id!;
-
     updatedProductsMap[key] = storeProduct;
 
     state = state.copyWith(products: updatedProductsMap);

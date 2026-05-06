@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../../../features/store/presentation/controller/store_provider.dart';
@@ -9,7 +8,13 @@ import '../../providers/core_providers.dart';
 
 class AppSyncController extends Notifier<bool> {
   @override
-  bool build() => false;
+  bool build() {
+    final isLogged = ref.watch(userControllerProvider).entity.isLogged;
+
+    if (!isLogged) ref.read(syncProductRepositoryProvider).resetCacheFlags();
+
+    return false;
+  }
 
   Future<void> sync({bool isManual = false}) async {
     if (state) return;
@@ -55,18 +60,14 @@ class AppSyncController extends Notifier<bool> {
     // These are required for foreign key constraints in other tables
 
     await Future.wait([
+      ref.read(userRepositoryProvider).syncAllProfiles(),
       ref.read(userControllerProvider.notifier).loadProfile(),
       ref.read(settingsControllerProvider.notifier).getExchangeRates(),
     ]);
 
-    // 2. Load stores and products in parallel once prerequisites are available
+
     await ref.read(storeControllerProvider.notifier).loadMyStores();
     await ref.read(productControllerProvider.notifier).loadInitialData();
-  }
-
-  Future<void> resetCacheFlags() async {
-    await ref.read(syncProductRepositoryProvider).resetCacheFlags();
-    state = false;
   }
 
 }

@@ -186,10 +186,10 @@ class AppTheme {
           foregroundColor: Colors.white,
           shadowColor: AppTheme.primaryColor.withOpacity(0.35),
           padding: const EdgeInsets.all(12),
-          fixedSize: const Size.fromHeight(50),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
+          fixedSize: const Size.fromHeight(50),
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -231,7 +231,11 @@ class AppTheme {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: errorColor),
+          borderSide: BorderSide(color: errorColor.withAlpha(50)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: errorColor.withAlpha(200)),
         ),
         errorStyle: const TextStyle(fontSize: 12, height: 2),
         contentPadding:

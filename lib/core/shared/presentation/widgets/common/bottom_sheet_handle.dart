@@ -7,19 +7,17 @@ class BottomSheetHandle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Center(
       child: Container(
         margin: const EdgeInsets.only(
           bottom: 18,
         ),
-        width: 60,
+        width: 50,
         height: 4,
         decoration: BoxDecoration(
           color: Colors.grey.shade300,
           borderRadius: BorderRadius.circular(100),
         ),
-
       ),
     );
   }

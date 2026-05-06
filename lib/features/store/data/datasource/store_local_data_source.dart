@@ -95,7 +95,9 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
           [store.ownerPhone],
         );
         if (parent.isEmpty) {
-          throw Exception('Owner profile (${store.ownerPhone}) not found in local database');
+          throw Exception(
+            'Owner profile (${store.ownerPhone}) not found in local database',
+          );
         }
 
         // 2. Check currency (Foreign Key)
@@ -104,7 +106,9 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
           [store.currency.name],
         );
         if (currencyCheck.isEmpty) {
-          throw Exception('Currency (${store.currency}) not found in exchange_rates');
+          throw Exception(
+            'Currency (${store.currency}) not found in exchange_rates',
+          );
         }
 
         // 3. Insert Store
@@ -235,28 +239,12 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       table: 'store_members',
       whereParams: whereParams,
       updated: {
-        'is_deleted': true,
+        'is_deleted': 1,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       },
     );
 
-    await _db.update(
-      table: 'store_members',
-      whereParams: WhereQueryParams(
-        groups: [
-          FilterGroup(
-            filters: [
-              Filter(column: 'store_id', value: key.storeId),
-              Filter(column: 'member_phone', value: key.memberPhone),
-            ],
-          ),
-        ],
-      ),
-      updated: {
-        'is_deleted': true,
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      },
-    );
+    await _updateStore(key.storeId);
 
     if (skipLocalTracking) return;
 
@@ -268,8 +256,6 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
     );
 
     await _sync.addChange(syncChange);
-
-    await _updateStore(key.storeId);
   }
 
   @override

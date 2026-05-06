@@ -2,7 +2,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -24,9 +23,6 @@ import '../datasources/sync_local_data_source.dart';
 import '../domain/services/permission_service.dart';
 import '../presentation/controllers/sync_controller.dart';
 import 'repositories_provider.dart';
-
-final databaseProvider =
-    Provider<Database>((ref) => throw UnimplementedError());
 
 final networkProvider = Provider((_) {
   return ConnectivityServiceImpl(Connectivity());
@@ -92,8 +88,7 @@ final remoteDatabaseServiceProvider = Provider((ref) {
 });
 
 final localDatabaseServiceProvider = Provider((ref) {
-  final supabaseClinet = ref.read(databaseProvider);
-  return LocalDatabaseServiceImpl(supabaseClinet);
+  return LocalDatabaseServiceImpl();
 });
 
 final syncLocalDataSourceProvider = Provider((ref) {
@@ -115,7 +110,6 @@ final userRemoteDataSourceProvider = Provider((ref) {
   );
 });
 
-
 final userControllerProvider = NotifierProvider<UserController, UserState>(
   () {
     return UserController();
@@ -128,8 +122,6 @@ final authRepositoryProvider = Provider((ref) {
   final localCacheService = ref.read(localCacheServiceProvider);
   return AuthRepositoryImpl(remoteAuth, network, localCacheService);
 });
-
-
 
 final tokenRefreshProvider = Provider((ref) {
   final network = ref.watch(networkProvider);
@@ -152,14 +144,16 @@ final tokenRefreshProvider = Provider((ref) {
   ref.onDispose(subscription.cancel);
 });
 
-final permissionServiceProvider = Provider((ref) {
-  final accountStatus = ref.watch(userControllerProvider).entity.profile.accountStatus;
+final permissionServiceProvider = Provider.autoDispose((ref) {
+  final accountStatus =
+      ref.watch(userControllerProvider).entity.profile.accountStatus;
 
-  ref.watch(storeControllerProvider);
-  final member = ref.read(storeControllerProvider.notifier).meAsCurrentMember;
-  final role = member?.role ?? Role.guest;
+  final role = ref.watch(currentMemberProvider.select((s) => s?.role));
 
-  return PermissionService(role: role, accountStatus: accountStatus);
+  return PermissionService(
+    role: role ?? Role.guest,
+    accountStatus: accountStatus,
+  );
 });
 
 final appSyncControllerProvider = NotifierProvider<AppSyncController, bool>(() {
