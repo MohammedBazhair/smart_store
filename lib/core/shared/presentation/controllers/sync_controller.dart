@@ -60,11 +60,12 @@ class AppSyncController extends Notifier<bool> {
     // These are required for foreign key constraints in other tables
 
     await Future.wait([
+      ref.read(userRepositoryProvider).syncAllProfiles(),
       ref.read(userControllerProvider.notifier).loadProfile(),
       ref.read(settingsControllerProvider.notifier).getExchangeRates(),
     ]);
 
-    // 2. Load stores and products in parallel once prerequisites are available
+
     await ref.read(storeControllerProvider.notifier).loadMyStores();
     await ref.read(productControllerProvider.notifier).loadInitialData();
   }

@@ -53,8 +53,8 @@ class UserRepositoryImpl implements UserRepository {
       if (hasConnection) await _remoteDataSource.updateProfile(profile);
 
       await _localDataSource.upsertProfile(profile, hasConnection);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
       rethrow;
     }
   }
@@ -85,7 +85,11 @@ class UserRepositoryImpl implements UserRepository {
     final remoteProfilesMaps =
         await _remoteDataSource.fetchProfiles(lastSynced);
 
-    await _localDataSource.setProfiles(remoteProfilesMaps);
+    try {
+      await _localDataSource.setProfiles(remoteProfilesMaps);
+    } catch (e,st) {
+      Logger.debugLog(error: e,stackTrace: st);
+    }
 
     final syncStateProfiles = SyncStateModel(
       tableName: AppConstants.profilesTable,
