@@ -31,7 +31,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       if (!mounted) return;
 
       ref.read(settingsControllerProvider.notifier);
-        Future.microtask(() async {
+      Future.microtask(() async {
         await ref.read(storeControllerProvider.notifier).loadMyStores();
         await ref.read(productControllerProvider.notifier).loadInitialData();
         await ref.read(alertsControllerProvider.notifier).loadAlerts();

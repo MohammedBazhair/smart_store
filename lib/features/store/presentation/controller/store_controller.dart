@@ -78,15 +78,14 @@ class StoreController extends Notifier<StoreEventState> {
 
     final stores = await _storeRepo.getUserStores(profile.phone ?? '');
 
-    final futures = stores.map((s) async {
+    final Map<String, StoreWithMembers> myStores = {};
+
+    for (final s in stores) {
       final members = await _storeRepo.getStoreMembers(s.id!);
+
       final storeWithMembers = StoreWithMembers(store: s, members: members);
-      return MapEntry(s.id!, storeWithMembers);
-    });
-
-    final entries = await Future.wait(futures);
-
-    final myStores = Map.fromEntries(entries);
+      myStores[s.id!] = storeWithMembers;
+    }
 
     final newState =
         state.state.copyWith(myStores: myStores, isInitialized: true);
