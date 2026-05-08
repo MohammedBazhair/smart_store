@@ -1,99 +1,112 @@
 import 'package:flutter/material.dart';
-
+import '../../../../core/extensions/extensions.dart';
 import '../../products_management/presentation/screens/all_products_screen.dart';
 import '../../stores_management/presentation/screens/all_stores_screen.dart';
 import '../../users_management/presentation/screens/manage_users_screen.dart';
+import '../widgets/dashboard_admin_card.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width > 900;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('لوحة تحكم الإدارة'),
-        centerTitle: true,
-      ),
-      body: GridView.count(
-        padding: const EdgeInsets.all(16),
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+      backgroundColor: const Color(0xFFF4F7FA),
+      body: Row(
         children: [
-          _buildDashboardCard(
-            context,
-            title: 'إدارة المستخدمين',
-            icon: Icons.people,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ManageUsersScreen()),
-              );
-            },
-          ),
-          _buildDashboardCard(
-            context,
-            title: 'إدارة المتاجر',
-            icon: Icons.store,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AllStoresScreen()),
-              );
-            },
-          ),
-          _buildDashboardCard(
-            context,
-            title: 'إدارة المنتجات',
-            icon: Icons.inventory,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AllProductsScreen()),
-              );
-            },
-          ),
-          _buildDashboardCard(
-            context,
-            title: 'الإعدادات',
-            icon: Icons.settings,
-            onTap: () {
-              // TODO: Navigate to admin settings
-            },
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                _AdminAppBar(isDesktop: isDesktop),
+                SliverPadding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  sliver: _DashboardGrid(),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildDashboardCard(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 48, color: Theme.of(context).primaryColor),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+class _AdminAppBar extends StatelessWidget {
+  const _AdminAppBar({required this.isDesktop});
+  final bool isDesktop;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      floating: true,
+      backgroundColor: Colors.white,
+      elevation: 0.5,
+      centerTitle: !isDesktop,
+      leading: isDesktop ? const SizedBox.shrink() : null,
+      title: const Text(
+        'نظرة عامة على النظام',
+        style: TextStyle(
+          color: Color(0xFF2D3748),
+          fontWeight: FontWeight.w800,
+          fontSize: 18,
+          letterSpacing: -0.5,
         ),
       ),
+      actions: const [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: CircleAvatar(
+            backgroundColor: Color(0xFFEDF2F7),
+            child: Icon(Icons.person_outline, color: Colors.blue),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DashboardGrid extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SliverLayoutBuilder(
+      builder: (context, constraints) {
+        final double width = constraints.crossAxisExtent;
+        final int crossAxisCount = width > 1200 ? 4 : (width > 800 ? 3 : 2);
+
+        return SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 24,
+            mainAxisSpacing: 24,
+            childAspectRatio: width > 600 ? 1.3 : 1.1,
+          ),
+          delegate: SliverChildListDelegate([
+            DashboardAdminCard(
+              title: 'إدارة المستخدمين',
+              icon: Icons.people_alt_rounded,
+              onTap: () => context.pushTo(const ManageUsersScreen()),
+            ),
+            DashboardAdminCard(
+              title: 'إدارة المتاجر',
+              icon: Icons.storefront_rounded,
+              onTap: () => context.pushTo(const AllStoresScreen()),
+            ),
+            DashboardAdminCard(
+              title: 'إدارة المنتجات',
+              icon: Icons.inventory_2_rounded,
+              onTap: () => context.pushTo(const AllProductsScreen()),
+            ),
+            DashboardAdminCard(
+              title: 'الإعدادات العامة',
+              icon: Icons.admin_panel_settings_rounded,
+              onTap: () {},
+            ),
+          ]),
+        );
+      },
     );
   }
 }

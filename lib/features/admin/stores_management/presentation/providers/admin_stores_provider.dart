@@ -7,7 +7,8 @@ final adminStoreRepositoryProvider = Provider<AdminStoreRepository>((ref) {
   return AdminStoreRepository(Supabase.instance.client);
 });
 
-final adminStoresListProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final adminStoresListProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) {
   final repo = ref.read(adminStoreRepositoryProvider);
   return repo.getAllStores();
 });

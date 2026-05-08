@@ -1,44 +1,38 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../../../../core/constants/app_constants.dart';
+import '../../../user/data/datasources/user_remote_data_source.dart';
 import '../../../user/domain/entities/profile.dart';
 
 class AdminUserRepository {
-  AdminUserRepository(this._client);
+  AdminUserRepository(this._userRemote);
 
-  final SupabaseClient _client;
+  final UserRemoteDataSource _userRemote;
 
-  Future<List<ProfileEntity>> getAllUsers() async {
-    final response = await _client.from(AppConstants.profilesTable).select();
-    return response.map((e) => ProfileEntity.fromMap(e)).toList();
+  Future<Map<String, ProfileEntity>> getAllUsers() async {
+    final response = await _userRemote.fetchProfiles();
+    final users = response.map((m) {
+      final profile = ProfileEntity.fromMap(m);
+
+      return MapEntry(profile.userId, profile);
+    });
+    return Map.fromEntries(users);
   }
 
-  Future<List<ProfileEntity>> searchUsers(String query) async {
-    final response = await _client
-        .from(AppConstants.profilesTable)
-        .select()
-        .or('phone.ilike.%$query%,user_name.ilike.%$query%');
-
-    return response.map((e) => ProfileEntity.fromMap(e)).toList();
+  Future<void> updateUserStatus(ProfileEntity updated) {
+    return _userRemote.updateProfile(updated);
   }
 
-  Future<void> updateUserStatus(String userId, String status) async {
-    await _client
-        .from(AppConstants.profilesTable)
-        .update({
-          'account_status': status,
-          'updated_at': DateTime.now().toUtc().toIso8601String(),
-        })
-        .eq('id', userId);
-  }
+  Future<ProfileEntity> addCredits(
+    String userId,
+    int amountToAdd,
+  ) async {
+    final profile = await _userRemote.readProfile(userId);
+    final currentCredits = profile.credits;
+    final updatedCredits = currentCredits + amountToAdd;
 
-  Future<void> addCredits(String userId, int currentCredits, int amountToAdd) async {
-    await _client
-        .from(AppConstants.profilesTable)
-        .update({
-          'credits': currentCredits + amountToAdd,
-          'updated_at': DateTime.now().toUtc().toIso8601String(),
-        })
-        .eq('id', userId);
+    final updatedDate = DateTime.now().toUtc();
+    final updatedProfile =
+        profile.copyWith(credits: updatedCredits, updatedAt: updatedDate);
+
+    await _userRemote.updateProfile(updatedProfile);
+    return updatedProfile;
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,8 +13,8 @@ import 'features/products/presentation/screens/init_screen.dart';
 import 'main.dart';
 
 Future<void> configureDependencies() async {
-  await Permission.storage.request();
-  
+  if (!kIsWeb) await Permission.storage.request();
+
   await Future.wait([
     _initializeAlertService(),
     _initializeWorkManager(),
@@ -28,6 +29,7 @@ Future<void> _initializeAlertService() async {
 }
 
 Future<void> _initializeWorkManager() async {
+  if (kIsWeb) return;
   await Workmanager().initialize(callbackDispatcher);
   await _registerBackgroundTasks();
 }
@@ -71,6 +73,7 @@ Future<void> initializeSupabase() async {
 }
 
 Future<void> _initializePushNotification() async {
+  if (kIsWeb) return;
   // Enable verbose logging for debugging (remove in production)
   await OneSignal.Debug.setLogLevel(OSLogLevel.none);
   // Initialize with your OneSignal App ID
