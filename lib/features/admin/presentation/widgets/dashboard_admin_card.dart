@@ -28,15 +28,12 @@ class DashboardAdminCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: theme.primaryColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: theme.primaryColor.withOpacity(0.1),
                 child: Icon(
                   icon,
-                  size: 40,
+                  size: 30,
                   color: theme.primaryColor,
                 ),
               ),
@@ -44,7 +41,7 @@ class DashboardAdminCard extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),

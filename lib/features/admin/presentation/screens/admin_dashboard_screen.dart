@@ -4,66 +4,24 @@ import '../../products_management/presentation/screens/all_products_screen.dart'
 import '../../stores_management/presentation/screens/all_stores_screen.dart';
 import '../../users_management/presentation/screens/manage_users_screen.dart';
 import '../widgets/dashboard_admin_card.dart';
+import 'admin_profile_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final bool isDesktop = MediaQuery.of(context).size.width > 900;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FA),
-      body: Row(
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                _AdminAppBar(isDesktop: isDesktop),
-                SliverPadding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                  sliver: _DashboardGrid(),
-                ),
-              ],
-            ),
+      appBar: AppBar(
+        title: const Text('لوحة التحكم'),
+        actions: [
+          IconButton(
+            onPressed: () => context.pushTo(const AdminProfileScreen()),
+            icon: const Icon(Icons.person_rounded),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _AdminAppBar extends StatelessWidget {
-  const _AdminAppBar({required this.isDesktop});
-  final bool isDesktop;
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      floating: true,
-      backgroundColor: Colors.white,
-      elevation: 0.5,
-      centerTitle: !isDesktop,
-      leading: isDesktop ? const SizedBox.shrink() : null,
-      title: const Text(
-        'نظرة عامة على النظام',
-        style: TextStyle(
-          color: Color(0xFF2D3748),
-          fontWeight: FontWeight.w800,
-          fontSize: 18,
-          letterSpacing: -0.5,
-        ),
-      ),
-      actions: const [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: CircleAvatar(
-            backgroundColor: Color(0xFFEDF2F7),
-            child: Icon(Icons.person_outline, color: Colors.blue),
-          ),
-        ),
-      ],
+      body: _DashboardGrid(),
     );
   }
 }
@@ -71,19 +29,18 @@ class _AdminAppBar extends StatelessWidget {
 class _DashboardGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SliverLayoutBuilder(
+    return LayoutBuilder(
       builder: (context, constraints) {
-        final double width = constraints.crossAxisExtent;
-        final int crossAxisCount = width > 1200 ? 4 : (width > 800 ? 3 : 2);
-
-        return SliverGrid(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 24,
-            mainAxisSpacing: 24,
-            childAspectRatio: width > 600 ? 1.3 : 1.1,
-          ),
-          delegate: SliverChildListDelegate([
+        final width = constraints.maxWidth;
+        final crossAxisCount = width > 1200 ? 4 : (width > 800 ? 3 : 2);
+        final aspectRatio = width > 600 ? 1.3 : 1.1;
+        return GridView.count(
+          padding: const EdgeInsets.all(24),
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: 24,
+          mainAxisSpacing: 24,
+          childAspectRatio: aspectRatio,
+          children: [
             DashboardAdminCard(
               title: 'إدارة المستخدمين',
               icon: Icons.people_alt_rounded,
@@ -100,11 +57,11 @@ class _DashboardGrid extends StatelessWidget {
               onTap: () => context.pushTo(const AllProductsScreen()),
             ),
             DashboardAdminCard(
-              title: 'الإعدادات العامة',
-              icon: Icons.admin_panel_settings_rounded,
-              onTap: () {},
+              title: 'تغيير أسعار الصرف',
+              icon: Icons.price_change_rounded,
+              onTap: () => context.pushTo(const AllProductsScreen()),
             ),
-          ]),
+          ],
         );
       },
     );

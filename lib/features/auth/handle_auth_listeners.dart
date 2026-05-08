@@ -28,7 +28,7 @@ Future<void> handlgeAuthListener({
           await ref.read(userControllerProvider.notifier).loadProfile();
       if (profile?.isDataComplete ?? false) {
         await OneSignal.login(profile!.phone!);
-        
+       
         await context.pushAndRemoveUntilTo(
           AccountStatusScreen(
             profile: profile,

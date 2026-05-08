@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../../core/shared/providers/core_providers.dart';
 import '../../data/admin_product_repository.dart';
 
 final adminProductRepositoryProvider = Provider<AdminProductRepository>((ref) {
-  return AdminProductRepository(Supabase.instance.client);
+  final supabase = ref.read(supabaseProvider);
+  return AdminProductRepository(supabase.client);
 });
 
 final adminProductsListProvider =
