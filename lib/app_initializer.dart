@@ -1,19 +1,60 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../core/constants/enums.dart';
 import '../../core/utils/top_level_fuctions.dart';
 import '../../features/alerts/presentation/controllers/alert_provider.dart';
+import 'core/database/local/database_helper.dart';
 import 'core/extensions/extensions.dart';
-import 'core/shared/providers/app_provider_class.dart';
+import 'core/shared/domain/entities/flavor_app_type.dart';
+import 'core/shared/providers/core_providers.dart';
+import 'core/shared/providers/repositories_provider.dart';
 import 'features/products/presentation/screens/init_screen.dart';
 import 'main.dart';
 
-Future<void> configureDependencies() async {
-  if (!kIsWeb) await Permission.storage.request();
+class AppProviders {
+  AppProviders._();
+  static ProviderContainer? _container;
+
+  static late final FlavorAppType _flavorAppType;
+
+  static Future<ProviderContainer> get container async {
+    if (!_hasContainer) await _initialize();
+    return _container!;
+  }
+
+  static bool get _hasContainer => _container != null;
+
+  static Future<void> _initialize() async {
+    final [_, _, sharedPrefs as SharedPreferences, database as Database] =
+        await Future.wait([
+      initializeDateFormatting('ar'),
+      initializeSupabase(),
+      SharedPreferences.getInstance(),
+      DatabaseHelper.instance.database,
+    ]);
+
+    _container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+        flavorProvider.overrideWithValue(_flavorAppType),
+      ],
+    );
+  }
+}
+
+Future<void> configureDependencies([
+  FlavorAppType flavor = FlavorAppType.client,
+]) async {
+  AppProviders._flavorAppType = flavor;
+
+  await Permission.storage.request();
 
   await Future.wait([
     _initializeAlertService(),
@@ -29,7 +70,6 @@ Future<void> _initializeAlertService() async {
 }
 
 Future<void> _initializeWorkManager() async {
-  if (kIsWeb) return;
   await Workmanager().initialize(callbackDispatcher);
   await _registerBackgroundTasks();
 }
@@ -73,7 +113,6 @@ Future<void> initializeSupabase() async {
 }
 
 Future<void> _initializePushNotification() async {
-  if (kIsWeb) return;
   // Enable verbose logging for debugging (remove in production)
   await OneSignal.Debug.setLogLevel(OSLogLevel.none);
   // Initialize with your OneSignal App ID

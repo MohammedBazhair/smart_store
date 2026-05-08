@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app_initializer.dart';
-import 'core/shared/providers/app_provider_class.dart';
+import 'core/shared/domain/entities/flavor_app_type.dart';
 import 'features/admin/presentation/admin_app.dart';
 
 final adminNavigatorKey = GlobalKey<NavigatorState>();
@@ -11,11 +11,13 @@ Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  await configureDependencies();
+  await configureDependencies(FlavorAppType.admin);
+
+  final container = await AppProviders.container;
 
   runApp(
     UncontrolledProviderScope(
-      container: await AppProviders.container,
+      container: container,
       child: const AdminApp(),
     ),
   );
