@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../user/domain/entities/profile.dart';
 import 'add_credits_dialog.dart';
 import 'change_status_dialog.dart';
+import 'change_user_info_dialog.dart';
 import 'custom_message_dialog.dart';
 
 enum AdminActionType {
   changeUserStatus,
+  changeUserInfo,
   addCredits,
   sendMessage,
 }
@@ -40,6 +42,7 @@ class AdminActionGateDialog extends ConsumerWidget {
       AdminActionType.changeUserStatus => ChangeStatusDialog(user: user),
       AdminActionType.addCredits => AddCreditsDialog(user: user),
       AdminActionType.sendMessage => CustomMessageDialog(user: user),
+      AdminActionType.changeUserInfo => ChangeUserInfoDialog(user: user),
     };
   }
 }
