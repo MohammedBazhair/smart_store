@@ -1,14 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/constants/log.dart';
+import '../../../../../core/shared/presentation/controllers/app_ui_event_controller.dart';
 import '../../../../../core/shared/providers/ui_providers.dart';
+import '../../../../../core/utils/send_messages_utils.dart';
 import '../../../../user/domain/entities/account_status.dart';
 import '../../data/admin_user_repository.dart';
+import '../../domain/entities/notification_payload.dart';
+import '../admin_user_notification_policy.dart';
 import 'admin_users_provider.dart';
 import 'admin_users_state.dart';
 
 class AdminUsersController extends Notifier<AdminUsersState> {
   AdminUserRepository get _repository => ref.read(adminUserRepositoryProvider);
+  AppUiEventController get _appUiController =>
+      ref.read(appUiEventProvider.notifier);
 
   @override
   AdminUsersState build() {
@@ -28,7 +34,7 @@ class AdminUsersController extends Notifier<AdminUsersState> {
         users: users,
       );
     } catch (e, st) {
-      ref.read(appUiEventProvider.notifier).showError(e.toString());
+      _appUiController.showError(e.toString());
       state = state.copyWith(
         isLoading: false,
       );
@@ -63,10 +69,17 @@ class AdminUsersController extends Notifier<AdminUsersState> {
         isLoading: false,
         users: copiedUsers,
       );
-      ref.read(appUiEventProvider.notifier).showSuccess('تم التحديث بنجاح');
+      _appUiController.showSuccess('تم التحديث بنجاح');
+
+      final payload = AdminUserNotificationPolicy.statusChanged(status);
+
+      notifyUser(
+        phone: updatedProfile.phone,
+        payload: payload,
+      );
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
-      ref.read(appUiEventProvider.notifier).showError(e.toString());
+      _appUiController.showError(e.toString());
       state = state.copyWith(
         isLoading: false,
       );
@@ -78,9 +91,7 @@ class AdminUsersController extends Notifier<AdminUsersState> {
     required int amount,
   }) async {
     if (amount <= 0) {
-      ref
-          .read(appUiEventProvider.notifier)
-          .showError('يجب أن يكون الرصيد أكبر من صفر');
+      _appUiController.showError('يجب أن يكون الرصيد أكبر من صفر');
       return;
     }
     try {
@@ -97,13 +108,36 @@ class AdminUsersController extends Notifier<AdminUsersState> {
         isLoading: false,
         users: copiedUsers,
       );
-      ref.read(appUiEventProvider.notifier).showSuccess('تم إضافة الرصيد بنجاح');
+      ref
+          .read(appUiEventProvider.notifier)
+          .showSuccess('تم إضافة الرصيد بنجاح');
+
+      final payload = AdminUserNotificationPolicy.creditsAdded(amount);
+
+      notifyUser(phone: updatedProfile.phone, payload: payload);
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
-      ref.read(appUiEventProvider.notifier).showError(e.toString());
+      _appUiController.showError(e.toString());
       state = state.copyWith(
         isLoading: false,
       );
     }
+  }
+
+  void notifyUser({
+    required String? phone,
+    required NotificationPayload payload,
+  }) async {
+    if (phone?.isEmpty ?? true) {
+      _appUiController
+          .showError('هاتف المستخدم الذي تريد ارسال له رسالة غير محدد');
+      return;
+    }
+
+    await sendPushNotification(
+      playerIds: [phone!],
+      title: payload.title,
+      message: payload.message,
+    );
   }
 }

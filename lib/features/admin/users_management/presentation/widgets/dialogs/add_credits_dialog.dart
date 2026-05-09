@@ -2,13 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../user/domain/entities/profile.dart';
-import 'dialog_actions_helper.dart';
+import '../../controllers/admin_users_provider.dart';
 
-class AddCreditsDialog extends StatelessWidget {
-  AddCreditsDialog({super.key, required this.ref, required this.user});
-  final WidgetRef ref;
+class AddCreditsDialog extends ConsumerStatefulWidget {
+  const AddCreditsDialog({super.key, required this.user});
   final ProfileEntity user;
-  final TextEditingController _controller = TextEditingController();
+
+  @override
+  ConsumerState<AddCreditsDialog> createState() => _AddCreditsDialogState();
+}
+
+class _AddCreditsDialogState extends ConsumerState<AddCreditsDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +52,10 @@ class AddCreditsDialog extends StatelessWidget {
             final amount = int.tryParse(_controller.text);
             if (amount != null && amount > 0) {
               Navigator.pop(context);
-              DialogActionsHelper.executeAddCredits(
-                context: context,
-                ref: ref,
-                user: user,
-                amount: amount,
-              );
+
+              ref
+                  .read(adminUsersControllerProvider.notifier)
+                  .addCredits(userId: widget.user.userId, amount: amount);
             }
           },
           child: const Text('تأكيد الشحن'),

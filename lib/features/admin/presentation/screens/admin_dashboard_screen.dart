@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../exchange_rates_management/presentation/screens/exchange_rates_screen.dart';
 import '../../products_management/presentation/screens/all_products_screen.dart';
 import '../../stores_management/presentation/screens/all_stores_screen.dart';
 import '../../users_management/presentation/screens/manage_users_screen.dart';
@@ -59,7 +60,7 @@ class _DashboardGrid extends StatelessWidget {
             DashboardAdminCard(
               title: 'تغيير أسعار الصرف',
               icon: Icons.price_change_rounded,
-              onTap: () => context.pushTo(const AllProductsScreen()),
+              onTap: () => context.pushTo(const ExchangesRatesScreen()),
             ),
           ],
         );

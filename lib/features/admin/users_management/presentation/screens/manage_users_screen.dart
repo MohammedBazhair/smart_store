@@ -1,104 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import '../../../../../core/shared/presentation/controllers/app_ui_event_controller.dart';
+import '../../../../user/domain/entities/profile.dart';
 import '../controllers/admin_users_provider.dart';
-import '../widgets/dialogs/add_credits_dialog.dart';
-import '../widgets/dialogs/change_status_dialog.dart';
-import '../widgets/dialogs/custom_message_dialog.dart';
 import '../widgets/user_card_item.dart';
 import '../widgets/user_search_bar.dart';
 
-class ManageUsersScreen extends ConsumerStatefulWidget {
+class ManageUsersScreen extends ConsumerWidget {
   const ManageUsersScreen({super.key});
 
   @override
-  ConsumerState<ManageUsersScreen> createState() => _ManageUsersScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    listenToUiEvents(context, ref);
+
+    final usersState = ref.watch(adminUsersControllerProvider);
+    final searchState = ref.watch(adminUsersSearchControllerProvider);
+
+    final isLoading = usersState.isLoading;
+
+    final usersMap =
+        searchState.query.isEmpty ? usersState.users : searchState.results;
+
+    final users = usersMap.values.toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('إدارة المستخدمين'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Skeletonizer(
+          enabled: isLoading,
+          child: Column(
+            spacing: 24,
+            children: [
+              const UserSearchBar(),
+              Expanded(
+                child: _UsersListView(
+                  users: isLoading ? ProfileEntity.fakeList : users,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
-  String _searchQuery = '';
+class _UsersListView extends StatelessWidget {
+  const _UsersListView({
+    required this.users,
+  });
+
+  final List<ProfileEntity> users;
 
   @override
   Widget build(BuildContext context) {
-    final usersAsync = ref.watch(adminUsersListProvider);
+    if (users.isEmpty) return const _EmptyState();
+    return ListView.separated(
+      itemCount: users.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 14),
+      itemBuilder: (context, index) {
+        final user = users[index];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // خلفية Premium هادئة
-      appBar: AppBar(
-        title: const Text(
-          'إدارة المستخدمين',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-      ),
-      body: Column(
-        children: [
-          // شريط البحث المخصص (ملف مستقل)
-          UserSearchBar(
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value.toLowerCase();
-              });
-            },
-          ),
-
-          Expanded(
-            child: usersAsync.when(
-              data: (users) {
-                // منطق الفلترة
-                final filteredUsers = users.where((user) {
-                  final nameMatch =
-                      user.username.toLowerCase().contains(_searchQuery);
-                  final phoneMatch =
-                      user.phone?.contains(_searchQuery) ?? false;
-                  return nameMatch || phoneMatch;
-                }).toList();
-
-                if (filteredUsers.isEmpty) {
-                  return _buildEmptyState();
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  itemCount: filteredUsers.length,
-                  itemBuilder: (context, index) {
-                    final user = filteredUsers[index];
-
-                    // بطاقة المستخدم المخصصة (ملف مستقل)
-                    return UserCardItem(
-                      user: user,
-                      onChangeStatus: () =>
-                          _openDialog(ChangeStatusDialog(ref: ref, user: user)),
-                      onAddCredits: () =>
-                          _openDialog(AddCreditsDialog(ref: ref, user: user)),
-                      onSendMessage: () =>
-                          _openDialog(CustomMessageDialog(user: user)),
-                    );
-                  },
-                );
-              },
-              loading: () =>
-                  const Center(child: CircularProgressIndicator.adaptive()),
-              error: (error, stack) => _buildErrorState(error.toString()),
-            ),
-          ),
-        ],
-      ),
+        return UserCardItem(user: user);
+      },
     );
   }
+}
 
-  // دالة مساعدة لفتح النوافذ المنبثقة
-  void _openDialog(Widget dialog) {
-    showDialog(
-      context: context,
-      builder: (context) => dialog,
-    );
-  }
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
 
-  // واجهة عند عدم وجود بيانات
-  Widget _buildEmptyState() {
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -110,34 +87,6 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
             style: TextStyle(color: Colors.grey, fontSize: 16),
           ),
         ],
-      ),
-    );
-  }
-
-  // واجهة عند حدوث خطأ
-  Widget _buildErrorState(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              size: 60,
-              color: Colors.redAccent,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'خطأ في تحميل البيانات: $message',
-              textAlign: TextAlign.center,
-            ),
-            TextButton(
-              onPressed: () => ref.invalidate(adminUsersListProvider),
-              child: const Text('إعادة المحاولة'),
-            ),
-          ],
-        ),
       ),
     );
   }

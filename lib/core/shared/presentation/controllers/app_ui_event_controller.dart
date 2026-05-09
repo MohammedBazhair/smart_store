@@ -33,6 +33,7 @@ class AppUiEventController extends Notifier<AppUiEvent?> {
   void clear() => state = null;
 }
 
+/// You Must Call it in Build Method
 void listenToUiEvents(BuildContext context, WidgetRef ref) {
   ref.listen(
     appUiEventProvider,

@@ -3,18 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../user/domain/entities/account_status.dart';
 import '../../../../../user/domain/entities/profile.dart';
-import 'dialog_actions_helper.dart';
+import '../../controllers/admin_users_provider.dart';
 
-class ChangeStatusDialog extends StatefulWidget {
-  const ChangeStatusDialog({super.key, required this.ref, required this.user});
-  final WidgetRef ref;
+class ChangeStatusDialog extends ConsumerStatefulWidget {
+  const ChangeStatusDialog({super.key, required this.user});
   final ProfileEntity user;
 
   @override
-  State<ChangeStatusDialog> createState() => _ChangeStatusDialogState();
+  ConsumerState<ChangeStatusDialog> createState() => _ChangeStatusDialogState();
 }
 
-class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
+class _ChangeStatusDialogState extends ConsumerState<ChangeStatusDialog> {
   late AccountStatus selectedStatus;
 
   @override
@@ -60,12 +59,11 @@ class _ChangeStatusDialogState extends State<ChangeStatusDialog> {
           ),
           onPressed: () {
             Navigator.pop(context);
-            DialogActionsHelper.executeStatusUpdate(
-              context: context,
-              ref: widget.ref,
-              profile: widget.user,
-              status: selectedStatus,
-            );
+
+            ref.read(adminUsersControllerProvider.notifier).updateUserStatus(
+                  userId: widget.user.userId,
+                  status: selectedStatus,
+                );
           },
           child: const Text('تحديث الآن'),
         ),
