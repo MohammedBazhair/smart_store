@@ -1,8 +1,8 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import '../../../../app_initializer.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/extensions.dart';
-import '../../../../core/shared/providers/app_provider_class.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/alert_utils.dart';
 import '../../../../core/utils/date_utils.dart';

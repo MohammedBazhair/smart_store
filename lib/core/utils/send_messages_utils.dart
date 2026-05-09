@@ -37,21 +37,18 @@ Future<void> sendPushNotification({
       url,
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Basic $oneSignalRestApiKey',
+        'Authorization': 'Key $oneSignalRestApiKey',
       },
       body: jsonEncode(payload),
     );
 
-    if (response.statusCode == 200) {
-      Logger.debugLog(message: 'Notification sent successfully');
-      Logger.debugLog(message: response.body);
-    } else {
+    if (response.statusCode != 200) {
       throw Exception(
         'Failed to send notification: ${response.statusCode} - ${response.body}',
       );
     }
-  } catch (e) {
-    Logger.debugLog(message: 'Exception: $e');
+  } catch (e,st) {
+    Logger.debugLog(error: e,stackTrace: st);
   }
 }
 

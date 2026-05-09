@@ -40,6 +40,9 @@ class ProfileEntity {
     );
   }
 
+static  List<ProfileEntity> get fakeList =>
+      List.generate(10, (_) => ProfileEntity.guest());
+
   final String userId;
   final String username;
   final String? phone;
@@ -48,7 +51,7 @@ class ProfileEntity {
   final int credits;
   final AccountStatus accountStatus;
 
-/// check if user without username and phone  
+  /// check if user without username and phone
   bool get isDataComplete => phone != null && username.isNotEmpty;
 
   ProfileEntity copyWith({
