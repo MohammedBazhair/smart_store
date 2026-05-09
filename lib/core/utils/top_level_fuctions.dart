@@ -9,7 +9,6 @@ import '../constants/app_constants.dart';
 import '../constants/enums.dart';
 import '../constants/log.dart';
 import '../database/local/cache_service.dart';
-import '../shared/providers/app_provider_class.dart';
 import 'background_utils.dart';
 
 @pragma('vm:entry-point')

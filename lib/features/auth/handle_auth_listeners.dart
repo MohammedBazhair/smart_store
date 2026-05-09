@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import '../../core/constants/enums.dart';
 import '../../core/extensions/extensions.dart';
 import '../../core/shared/providers/core_providers.dart';
@@ -26,9 +27,11 @@ Future<void> handlgeAuthListener({
       final profile =
           await ref.read(userControllerProvider.notifier).loadProfile();
       if (profile?.isDataComplete ?? false) {
+        await OneSignal.login(profile!.phone!);
+       
         await context.pushAndRemoveUntilTo(
           AccountStatusScreen(
-            profile: profile!,
+            profile: profile,
           ),
         );
       } else {

@@ -28,11 +28,9 @@ abstract interface class RemoteDatabaseService {
 
   Future<List<Map<String, dynamic>>> readRows({required String table});
 
-  Stream readRowsRealTime({
+  Stream<RowList> readRowsRealTime({
     required String table,
     required List<String> primaryKey,
-    required String column,
-    required String value,
   });
 
   Future<dynamic> update({
@@ -68,7 +66,7 @@ abstract interface class RemoteDatabaseService {
   Future<void> upsertRow({
     required String table,
     required Map<String, dynamic> row,
-     String? onConflict,
+    String? onConflict,
   });
 }
 
@@ -138,13 +136,11 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
   }
 
   @override
-  Stream readRowsRealTime({
+  Stream<RowList> readRowsRealTime({
     required String table,
     required List<String> primaryKey,
-    required String column,
-    required String value,
   }) {
-    return _client.from(table).stream(primaryKey: primaryKey).eq(column, value);
+    return _client.from(table).stream(primaryKey: primaryKey);
   }
 
   @override
@@ -214,7 +210,6 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
     required String table,
     required Map<String, dynamic> row,
     String? onConflict,
-
   }) async {
     await _client.from(table).upsert(row, onConflict: onConflict);
   }

@@ -16,9 +16,24 @@ class ExchangeRateModel extends ExchangeRate {
     );
   }
 
+  factory ExchangeRateModel.fromEntity(ExchangeRate entity) {
+    return ExchangeRateModel(
+      currency:entity.currency,
+      rateToBase: entity.rateToBase,
+      updatedAt: entity.updatedAt,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'currency': currency.name,
+      'rate_to_base': rateToBase,
+      'updated_at': updatedAt.toUtc().toIso8601String(),
+    };
+  }
+  
+  Map<String, dynamic> toMapUpdate() {
+    return {
       'rate_to_base': rateToBase,
       'updated_at': updatedAt.toUtc().toIso8601String(),
     };

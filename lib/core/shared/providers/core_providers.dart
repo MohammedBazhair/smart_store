@@ -20,6 +20,7 @@ import '../../database/remote/remote_storage_service.dart';
 import '../../network/connectivity_service.dart';
 import '../../network/network_clinet.dart';
 import '../datasources/sync_local_data_source.dart';
+import '../domain/entities/flavor_app_type.dart';
 import '../domain/services/permission_service.dart';
 import '../presentation/controllers/sync_controller.dart';
 import 'repositories_provider.dart';
@@ -55,7 +56,8 @@ final networkCilientProvider = Provider((ref) {
 final authRemoteDataSourceProvider = Provider((ref) {
   final auth = ref.read(supabaseAuthProvider);
   final userRemote = ref.read(userRemoteDataSourceProvider);
-  return AuthRemoteDataSourceImpl(auth, userRemote);
+  final flavor = ref.watch(flavorProvider);
+  return AuthRemoteDataSourceImpl(auth, userRemote, flavor);
 });
 
 final userLocalDataSourceProvider = Provider((ref) {
@@ -158,4 +160,9 @@ final permissionServiceProvider = Provider.autoDispose((ref) {
 
 final appSyncControllerProvider = NotifierProvider<AppSyncController, bool>(() {
   return AppSyncController();
+});
+
+
+final flavorProvider = Provider<FlavorAppType>((ref) {
+  return FlavorAppType.client;
 });

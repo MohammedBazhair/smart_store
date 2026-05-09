@@ -5,6 +5,7 @@ import '../../../../core/extensions/extensions.dart';
 import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../core/utils/send_messages_utils.dart';
+import '../../../admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
 import '../../../store/presentation/screens/store_selection_screen.dart';
 import '../../domain/entities/status_config.dart';
@@ -19,41 +20,39 @@ class ContinueButtonWidget extends ConsumerWidget {
   final StatusConfig config;
   final bool canContinue;
 
+  Future<void> _handleContinue(WidgetRef ref, BuildContext context) async {
+    final flavorApp = ref.read(flavorProvider);
+
+    if (canContinue) {
+      if (flavorApp.isAdmin) {
+        await context.pushAndRemoveUntilTo(const AdminDashboardScreen());
+      } else {
+        await ref.read(appSyncControllerProvider.notifier).sync();
+
+        await context.pushAndRemoveUntilTo(const StoreSelectionScreen());
+      }
+
+      return;
+    }
+
+    try {
+      await UrlUtils.sendWhatsApp(
+        phone: '967776793111',
+        message: 'مرحباً، أود الاستفسار عن حالة حسابي في تطبيق Smart Store.',
+      );
+    } catch (e) {
+      context.showSnakbar(
+        'حدثت مشكلة اثناء ارسال رسالة للدعم الفني',
+        type: SnackBarType.error,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, ref) {
     final isLoading = ref.watch(appSyncControllerProvider);
     return CustomButton(
-      onPressed: isLoading
-          ? null
-          : () async {
-              if (canContinue) {
-                try {
-                  await ref.read(appSyncControllerProvider.notifier).sync();
-
-                  await context
-                      .pushAndRemoveUntilTo(const StoreSelectionScreen());
-                } catch (e) {
-                  context.showSnakbar(
-                    'حدث خطأ أثناء المزامنة، يرجى المحاولة لاحقاً',
-                    type: SnackBarType.error,
-                  );
-                }
-                return;
-              }
-
-              try {
-                await UrlUtils.sendWhatsApp(
-                  phone: '967776793111',
-                  message:
-                      'مرحباً، أود الاستفسار عن حالة حسابي في تطبيق Smart Store.',
-                );
-              } catch (e) {
-                context.showSnakbar(
-                  'حدثت مشكلة اثناء ارسال رسالة للدعم الفني',
-                  type: SnackBarType.error,
-                );
-              }
-            },
+      onPressed: isLoading ? null : () => _handleContinue(ref, context),
       buttonStyle: ElevatedButton.styleFrom(
         backgroundColor: config.primaryColor,
         foregroundColor: Colors.white,

@@ -11,6 +11,17 @@ class Store {
     required this.isDeleted,
   });
 
+  factory Store.empty() {
+    return Store(
+      name: 'name',
+      currency: CurrencyCode.YER,
+      createdAt: DateTime.timestamp(),
+      updatedAt: DateTime.timestamp(),
+      ownerPhone: '771234567',
+      isDeleted: false,
+    );
+  }
+
   final String? id;
   final String ownerPhone;
   final String name;
@@ -18,6 +29,9 @@ class Store {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isDeleted;
+
+  static List<Store> get fakeStoresList =>
+      List.generate(5, (_) => Store.empty());
 
   Store copyWith({
     String? id,

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app_initializer.dart';
 import 'core/shared/presentation/screen/smart_store_app.dart';
-import 'core/shared/providers/app_provider_class.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -15,9 +14,11 @@ Future<void> main() async {
 
   await configureDependencies();
 
+  final container = await AppProviders.container;
+
   runApp(
     UncontrolledProviderScope(
-      container: await AppProviders.container,
+      container: container,
       child: const SmartStoreApp(),
     ),
   );

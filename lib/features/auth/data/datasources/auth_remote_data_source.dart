@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/log.dart';
+import '../../../../core/shared/domain/entities/flavor_app_type.dart';
 import '../../../../errors/exceptions.dart';
 import '../../../user/data/datasources/user_remote_data_source.dart';
 
@@ -32,9 +33,10 @@ abstract interface class AuthRemoteDataSource {
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  AuthRemoteDataSourceImpl(this._auth, this._userRemote);
+  AuthRemoteDataSourceImpl(this._auth, this._userRemote, this._flavor);
   final GoTrueClient _auth;
   final UserRemoteDataSource _userRemote;
+  final FlavorAppType _flavor;
 
   @override
   Future<AuthResponse> signUp({
@@ -63,17 +65,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<String?> signInWithGoogle() async {
     try {
-      const webClientId =
-          '711796199152-i0iuh8rvglm0jcgsbae80m9m7cc02pqe.apps.googleusercontent.com';
-
-      const androidClientId =
-          '711796199152-05m93odsde25vu2v7vsr4p2p5i3bvaud.apps.googleusercontent.com';
-
+      Logger.debugLog(message: 'Flavor: ${_flavor.name}');
       final signIn = GoogleSignIn.instance;
 
       await signIn.initialize(
-        serverClientId: webClientId,
-        clientId: androidClientId,
+        serverClientId: _flavor.webClientId,
+        clientId: _flavor.androidClientId,
       );
 
       // Perform the sign in

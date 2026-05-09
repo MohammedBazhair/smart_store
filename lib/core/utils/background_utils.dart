@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../../app_initializer.dart';
 import '../../features/alerts/data/models/alert_background_params.dart';
 import '../../features/alerts/data/models/alert_model.dart';
 import '../../features/alerts/domain/entities/expiry_reminder.dart';
@@ -7,7 +8,6 @@ import '../../features/products/presentation/controllers/product_provider.dart';
 import '../../features/settings/presentation/controllers/settings_provider.dart';
 import '../../features/store/presentation/controller/store_provider.dart';
 import '../constants/log.dart';
-import '../shared/providers/app_provider_class.dart';
 import '../shared/providers/core_providers.dart';
 import '../shared/providers/repositories_provider.dart';
 import 'date_utils.dart';

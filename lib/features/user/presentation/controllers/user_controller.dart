@@ -25,11 +25,8 @@ class UserController extends Notifier<UserState> {
 
   Future<ProfileEntity?> loadProfile() async {
     try {
-      if (state.entity.isInitilized) return state.entity.profile;
-      // منع الاستدعاء المزدوج
-      if (state is UserLoadingProfileState) return null;
-
       state = UserLoadingProfileState(state.entity);
+
       if (currentUser?.id == null) return null;
 
       final profileParams = GetProfileParams.fromSupabaseUser(currentUser!);
@@ -44,13 +41,12 @@ class UserController extends Notifier<UserState> {
         );
       }
 
-      if (!ref.mounted) return null;
+      if (!ref.mounted) return state.entity.profile;
 
       state = UserLoadedProfileState(
-        state.entity
-            .copyWith(profile: newProfile, isLogged: true, isInitilized: true),
+        state.entity.copyWith(profile: newProfile, isLogged: true),
       );
-      
+
       return newProfile;
     } catch (e, st) {
       Logger.debugLog(error: e, stackTrace: st);
