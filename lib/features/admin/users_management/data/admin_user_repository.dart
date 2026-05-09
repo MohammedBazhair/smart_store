@@ -16,7 +16,7 @@ class AdminUserRepository {
     return Map.fromEntries(users);
   }
 
-  Future<void> updateUserStatus(ProfileEntity updated) {
+  Future<void> updateUser(ProfileEntity updated) {
     return _userRemote.updateProfile(updated);
   }
 

@@ -42,6 +42,44 @@ class AdminUsersController extends Notifier<AdminUsersState> {
     }
   }
 
+  Future<void> updateUserInfo({
+    required String userId,
+    required String name,
+    required String phone,
+  }) async {
+    try {
+      state = state.copyWith(
+        isLoading: true,
+      );
+
+      final copiedUsers = {...state.users};
+
+      final profile = copiedUsers[userId];
+      if (profile == null) throw Exception();
+
+      final updatedProfile = profile.copyWith(username: name, phone: phone);
+
+      await _repository.updateUser(updatedProfile);
+
+      copiedUsers.update(
+        userId,
+        (value) => updatedProfile,
+      );
+
+      state = state.copyWith(
+        isLoading: false,
+        users: copiedUsers,
+      );
+      _appUiController.showSuccess('تم تحديث بيانات $name بنجاح');
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+      _appUiController.showError(e.toString());
+      state = state.copyWith(
+        isLoading: false,
+      );
+    }
+  }
+
   Future<void> updateUserStatus({
     required String userId,
     required AccountStatus status,
@@ -58,7 +96,7 @@ class AdminUsersController extends Notifier<AdminUsersState> {
 
       final updatedProfile = profile.copyWith(accountStatus: status);
 
-      await _repository.updateUserStatus(updatedProfile);
+      await _repository.updateUser(updatedProfile);
 
       copiedUsers.update(
         userId,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/extensions/extensions.dart';
 import '../../../../user/domain/entities/profile.dart';
 import '../../../../user/domain/entities/status_config.dart';
-import 'dialogs/admin_action_gate_Dialog.dart';
+import 'dialogs/admin_action_gate_dialog.dart';
 
 class UserCardItem extends StatelessWidget {
   const UserCardItem({
@@ -24,10 +25,10 @@ class UserCardItem extends StatelessWidget {
           child: Icon(Icons.person, color: statusColor),
         ),
         title: Text(
-          user.username.isEmpty ? 'بلا اسم' : user.username,
+          user.username.isEmpty ? user.createdAt?.toLocal().formattedDate()??'' : user.username,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('رقم: ${user.phone ?? "غير متوفر"}'),
+        subtitle: user.isDataComplete? Text('${user.phone}'):Text(user.createdAt?.toLocal().formattedTime??'${user.credits}') ,
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
@@ -61,6 +62,14 @@ class UserCardItem extends StatelessWidget {
             subtitle: 'الحالي: ${user.credits}',
             color: Colors.green,
             actionType: AdminActionType.addCredits,
+            user: user,
+          ),
+          _ActionTile(
+            icon: Icons.person,
+            title: 'تغيير البيانات',
+            subtitle: 'تغيير الاسم ورقم الهاتف',
+            color: Colors.deepPurpleAccent,
+            actionType: AdminActionType.changeUserInfo,
             user: user,
           ),
           _ActionTile(
