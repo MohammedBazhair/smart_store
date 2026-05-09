@@ -1,12 +1,14 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/database/remote/remote_database_service.dart';
+import '../../../store/data/models/store_model.dart';
+import '../../../store/domain/entities/store.dart';
 
 class AdminStoreRepository {
-  AdminStoreRepository(this._client);
+  AdminStoreRepository(this._remoteDatabase);
 
-  final SupabaseClient _client;
+  final RemoteDatabaseService _remoteDatabase;
 
-  Future<List<Map<String, dynamic>>> getAllStores() async {
-    final response = await _client.from('stores').select();
-    return List<Map<String, dynamic>>.from(response);
+  Stream<List<Store>> getAllStores()  {
+    final response =  _remoteDatabase.readRowsRealTime(table: 'stores', primaryKey: ['id']);
+    return response.map((m)=> m.map(StoreModel.fromMap).toList());
   }
 }

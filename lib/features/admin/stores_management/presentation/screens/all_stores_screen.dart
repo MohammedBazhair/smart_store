@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../store/domain/entities/store.dart';
 import '../providers/admin_stores_provider.dart';
+import '../widgets/store_admin_card.dart';
 
 class AllStoresScreen extends ConsumerWidget {
   const AllStoresScreen({super.key});
@@ -20,26 +22,32 @@ class AllStoresScreen extends ConsumerWidget {
             return const Center(child: Text('لا يوجد متاجر.'));
           }
 
-          return ListView.builder(
-            itemCount: stores.length,
-            itemBuilder: (context, index) {
-              final store = stores[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  leading: const Icon(Icons.store),
-                  title: Text(store['name'] ?? 'بدون اسم'),
-                  subtitle: Text('رقم المالك: ${store['owner_phone'] ?? 'غير متوفر'}'),
-                  trailing: store['is_deleted'] == true
-                      ? const Text('محذوف', style: TextStyle(color: Colors.red))
-                      : const Text('نشط', style: TextStyle(color: Colors.green)),
-                ),
-              );
-            },
-          );
+          return _StoresListView(stores: stores);
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => _StoresListView(stores: Store.fakeStoresList),
         error: (error, stack) => Center(child: Text('خطأ: $error')),
+      ),
+    );
+  }
+}
+
+class _StoresListView extends ConsumerWidget {
+  const _StoresListView({
+    required this.stores,
+  });
+  final List<Store> stores;
+
+  @override
+  Widget build(BuildContext context, ref) {
+    return RefreshIndicator(
+      onRefresh: () => ref.refresh(adminStoresListProvider.future),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(24),
+        itemCount: stores.length,
+        itemBuilder: (context, index) {
+          final store = stores[index];
+          return StoreAdminCard(store: store);
+        },
       ),
     );
   }

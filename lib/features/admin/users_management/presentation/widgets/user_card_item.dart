@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../user/domain/entities/profile.dart';
 import '../../../../user/domain/entities/status_config.dart';
-import 'dialogs/admin_action_gate_dialog.dart';
+import 'dialogs/admin_action_gate_Dialog.dart';
 
 class UserCardItem extends StatelessWidget {
   const UserCardItem({
@@ -16,7 +16,6 @@ class UserCardItem extends StatelessWidget {
         StatusConfig.getStatusConfig(user.accountStatus).primaryColor;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       elevation: 2,
       child: ExpansionTile(
@@ -25,7 +24,7 @@ class UserCardItem extends StatelessWidget {
           child: Icon(Icons.person, color: statusColor),
         ),
         title: Text(
-          user.username,
+          user.username.isEmpty ? 'بلا اسم' : user.username,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text('رقم: ${user.phone ?? "غير متوفر"}'),
@@ -36,7 +35,7 @@ class UserCardItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            user.accountStatus.name,
+            user.accountStatus.label,
             style: TextStyle(
               color: statusColor,
               fontSize: 12,
@@ -44,8 +43,10 @@ class UserCardItem extends StatelessWidget {
             ),
           ),
         ),
+        shape: const RoundedRectangleBorder(),
+        
         children: [
-          const Divider(),
+          const Divider(thickness: 0.3),
           _ActionTile(
             icon: Icons.security_rounded,
             title: 'حالة الحساب',
@@ -98,7 +99,7 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
+        horizontal: 18,
         vertical: 4,
       ),
       leading: Container(
