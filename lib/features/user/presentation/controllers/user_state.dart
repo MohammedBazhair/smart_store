@@ -4,22 +4,18 @@ class UserStateEntity {
   UserStateEntity({
     required this.profile,
     this.isLogged = false,
-    this.isInitilized = false,
   });
 
   final ProfileEntity profile;
   final bool isLogged;
-  final bool isInitilized;
 
   UserStateEntity copyWith({
     ProfileEntity? profile,
     bool? isLogged,
-    bool? isInitilized,
   }) {
     return UserStateEntity(
       profile: profile ?? this.profile,
       isLogged: isLogged ?? this.isLogged,
-      isInitilized: isInitilized ?? this.isInitilized,
     );
   }
 }
