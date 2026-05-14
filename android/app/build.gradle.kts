@@ -40,8 +40,8 @@ android {
 
             applicationId = "com.example.smart_store"
 
-            versionCode = 5
-            versionName = "1.0.4"
+            versionCode = 6
+            versionName = "1.0.5"
 
             resValue("string", "app_name", "المتجر الذكي")
         }

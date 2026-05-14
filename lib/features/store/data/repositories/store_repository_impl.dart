@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/enums.dart';
+import '../../../../core/constants/log.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/shared/data/models/sync_state_model.dart';
 import '../../../../core/shared/datasources/sync_local_data_source.dart';
@@ -53,8 +54,10 @@ class StoreRepositoryImpl implements StoreRepository {
 
   @override
   Future<List<Store>> getUserStores(String userPhone) async {
-    final hasConnection = await connectivityService.hasConnection();
+   Logger.debugLog(message: 'before hasConnection');
 
+    final hasConnection = await connectivityService.hasConnection();
+Logger.debugLog(message: 'after hasConnection');
     final stores = hasConnection
         ? await remote.getUserStores(
             userPhone: userPhone,

@@ -1,0 +1,71 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Client Debug",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "program": "lib/main.dart",
+      "args": [
+        "--flavor",
+        "client"
+      ]
+    },
+    {
+      "name": "Client Profile",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "program": "lib/main.dart",
+      "args": [
+        "--flavor",
+        "client"
+      ]
+    },
+    {
+      "name": "Client Release",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main.dart",
+      "args": [
+        "--flavor",
+        "client"
+      ]
+    },
+    {
+      "name": "Admin Debug",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "program": "lib/main_admin.dart",
+      "args": [
+        "--flavor",
+        "admin"
+      ]
+    },
+    {
+      "name": "Admin Profile",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "program": "lib/main_admin.dart",
+      "args": [
+        "--flavor",
+        "admin"
+      ]
+    },
+    {
+      "name": "Admin Release",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main_admin.dart",
+      "args": [
+        "--flavor",
+        "admin"
+      ]
+    }
+  ]
+}
