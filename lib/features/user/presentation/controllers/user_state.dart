@@ -1,7 +1,9 @@
+import 'package:equatable/equatable.dart';
+
 import '../../domain/entities/profile.dart';
 
-class UserStateEntity {
-  UserStateEntity({
+class UserStateEntity extends Equatable {
+  const UserStateEntity({
     required this.profile,
     this.isLogged = false,
   });
@@ -18,35 +20,43 @@ class UserStateEntity {
       isLogged: isLogged ?? this.isLogged,
     );
   }
+
+  @override
+  List<Object?> get props => [isLogged, profile];
 }
 
-sealed class UserState {
-  UserState(this.entity);
+sealed class UserState extends Equatable {
+  const UserState(this.entity);
   final UserStateEntity entity;
+
+  @override
+  List<Object?> get props => [entity];
 }
 
 class UserInitialState extends UserState {
-  UserInitialState(super.entity);
+  const UserInitialState(super.entity);
+
 }
 
 class UserUpdatedProfileState extends UserState {
-  UserUpdatedProfileState(super.entity);
+  const UserUpdatedProfileState(super.entity);
+
 }
 
 class UserLoadingProfileState extends UserState {
-  UserLoadingProfileState(super.entity);
+  const UserLoadingProfileState(super.entity);
 }
 
 class UserLoadedProfileState extends UserState {
-  UserLoadedProfileState(super.entity);
+  const UserLoadedProfileState(super.entity);
 }
 
 class UserMoreInfoProfileState extends UserState {
-  UserMoreInfoProfileState(super.entity);
+  const UserMoreInfoProfileState(super.entity);
 }
 
 class UserErrorState extends UserState {
-  UserErrorState(
+  const UserErrorState(
     super.entity, {
     required this.message,
   });

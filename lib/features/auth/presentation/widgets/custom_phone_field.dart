@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../fields_formatters/phone_number_formatter.dart';
+
 class CustomPhoneField extends StatelessWidget {
   const CustomPhoneField(
     this.controller, {
@@ -20,12 +22,15 @@ class CustomPhoneField extends StatelessWidget {
       controller: controller,
       autofillHints: const [AutofillHints.telephoneNumber],
       autovalidateMode: AutovalidateMode.onUserInteraction,
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.right,
       keyboardType: TextInputType.phone,
       cursorRadius: const Radius.circular(20),
       cursorWidth: 1.3,
       textInputAction: TextInputAction.done,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
+        PhoneNumberFormatter(),
       ],
       onChanged: onChanged,
       decoration: InputDecoration(
@@ -38,15 +43,17 @@ class CustomPhoneField extends StatelessWidget {
         errorMaxLines: errorMaxLines,
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) {
+        final withoutSpaces = value?.replaceAll(' ', '') ?? '';
+
+        if (withoutSpaces.isEmpty) {
           return 'الهاتف مطلوب';
         }
 
-        if (!value.startsWith('7') || value.length != 9) {
+        if (!withoutSpaces.startsWith('7') || withoutSpaces.length != 9) {
           return 'أدخل رقم هاتف صحيح';
         }
 
-        return validator?.call(value);
+        return validator?.call(withoutSpaces);
       },
     );
   }

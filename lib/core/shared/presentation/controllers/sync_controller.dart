@@ -59,15 +59,17 @@ class AppSyncController extends Notifier<bool> {
     // 1. First load essential data (Profile and Exchange Rates)
     // These are required for foreign key constraints in other tables
 
-    await Future.wait([
-      ref.read(userRepositoryProvider).syncAllProfiles(),
-      ref.read(userControllerProvider.notifier).loadProfile(),
-      ref.read(settingsControllerProvider.notifier).getExchangeRates(),
-    ]);
-
+    try {
+      await Future.wait([
+        ref.read(userRepositoryProvider).syncAllProfiles(),
+        ref.read(userControllerProvider.notifier).loadProfile(),
+        ref.read(settingsControllerProvider.notifier).getExchangeRates(),
+      ]);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
+    }
 
     await ref.read(storeControllerProvider.notifier).loadMyStores();
     await ref.read(productControllerProvider.notifier).loadInitialData();
   }
-
 }

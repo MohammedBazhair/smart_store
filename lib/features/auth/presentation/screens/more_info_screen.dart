@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+
 import '../../../../core/constants/enums.dart';
 import '../../../../core/extensions/extensions.dart';
+import '../../../../core/shared/presentation/screen/auth_gate_screen.dart';
 import '../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../core/shared/presentation/widgets/common/field_label.dart';
 import '../../../../core/shared/presentation/widgets/loading/three_dots_loading.dart';
 import '../../../../core/shared/providers/core_providers.dart';
-import '../../../user/presentation/controllers/user_state.dart';
-import '../../../user/presentation/screens/account_status_screen.dart';
+import '../../../user/presentation/handle_user_states.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_fullname_field.dart';
 import '../widgets/custom_phone_field.dart';
 import '../widgets/sign_out_button.dart';
+import '../widgets/user_avatar.dart';
 
 final _isLoadingProvider = StateProvider((_) => false);
 
@@ -33,15 +35,21 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
     final isValid = _formKey.currentState?.validate() ?? false;
 
     if (!isValid) return;
+
     ref.read(_isLoadingProvider.notifier).state = true;
 
     TextInput.finishAutofillContext();
 
     final controller = ref.read(userControllerProvider.notifier);
+
     final profile = await controller.loadProfile();
+
+    if (!mounted) return;
 
     if (profile == null) {
       ref.read(_isLoadingProvider.notifier).state = false;
+
+      if (!mounted) return;
 
       return context.showSnakbar(
         'لم يتم اعداد الحساب بنجاح الرجاء التواصل معنا',
@@ -49,13 +57,17 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
       );
     }
 
-    final name = _nameController.text;
-    final phone = _phoneController.text;
+    final name = _nameController.text.trim();
+    final phone = _phoneController.text.replaceAll(' ', '');
 
     final newProfile = profile.copyWith(username: name, phone: phone);
+
     await controller.updateProfile(newProfile);
 
+    if (!mounted) return;
+
     ref.read(_isLoadingProvider.notifier).state = false;
+    await context.pushAndRemoveUntilTo(const AuthGate());
   }
 
   @override
@@ -82,97 +94,85 @@ class _MoreInfoScreenState extends ConsumerState<MoreInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(userControllerProvider, (_, state) {
-      switch (state) {
-        case UserInitialState():
-        case UserLoadingProfileState():
-        case UserLoadedProfileState():
-        case UserUpdatedProfileState():
-          break;
+    ref.listen(
+      userControllerProvider,
+      (_, state) => handleUserStates(state, context),
+    );
 
-        case UserErrorState(:final message):
-          context.showSnakbar(message, type: SnackBarType.error);
-        case UserMoreInfoProfileState(:final entity):
-          context.pushReplacementTo(
-            AccountStatusScreen(
-              profile: entity.profile,
-            ),
-          );
-      }
-    });
-    final email = ref.read(userControllerProvider.notifier).currentUser?.email;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المتجر الذكي'),
-        actions: const [
-          SignOutButton(),
-        ],
+        title: const Text(
+          'إعداد الملف الشخصي',
+        ),
+        actions: const [SignOutButton()],
       ),
       body: GestureDetector(
         onTap: FocusScope.of(context).unfocus,
-        child: SafeArea(
-          child: Center(
-            child: ListView(
-              shrinkWrap: true,
-              padding: const EdgeInsets.all(24),
-              children: [
-                const Text(
-                  'أكمل بياناتك!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(30),
+          child: Column(
+            children: [
+              const Center(
+                child: Hero(
+                  tag: 'avatar',
+                  child: PremiumAvatar(radius: 60),
                 ),
-                const SizedBox(height: 10),
-                if (email != null)
-                  Text(
-                    'بريدك: $email',
-                    style: const TextStyle(
-                      fontSize: 14,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'البيانات الشخصية',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: AppTheme.textSecondary,
                     ),
-                  ),
-                const SizedBox(height: 10),
-                const Text(
-                  'أدخل اسمك ورقم هاتفك لإكمال عملية التسجيل',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 70),
-                Form(
-                  key: _formKey,
-                  child: AutofillGroup(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const FieldLabel(text: 'الاسم الكامل'),
-                        const SizedBox(height: 8),
-                        CustomFullNameField(nameController: _nameController),
-                        const SizedBox(height: 25),
-                        const FieldLabel(text: 'رقم الهاتف'),
-                        const SizedBox(height: 8),
-                        CustomPhoneField(_phoneController),
-                        const SizedBox(height: 25),
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final isLoading =
-                                ref.watch(_isLoadingProvider.notifier).state;
-                            return CustomButton(
+              ),
+              const SizedBox(height: 20),
+              Form(
+                key: _formKey,
+                child: AutofillGroup(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const FieldLabel(text: 'الاسم الكامل'),
+                      const SizedBox(height: 10),
+                      CustomFullNameField(
+                        nameController: _nameController,
+                      ),
+                      const SizedBox(height: 24),
+                      const FieldLabel(text: 'رقم الهاتف'),
+                      const SizedBox(height: 10),
+                      CustomPhoneField(_phoneController),
+                      const SizedBox(height: 40),
+
+                      // زر المتابعة بتصميم عريض وأنيق
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final isLoading = ref.watch(_isLoadingProvider);
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: double.infinity,
+                            height: 56,
+                            child: CustomButton(
                               onPressed: isLoading ? null : onSubmit,
                               child: isLoading
-                                  ? const ThreeDotsLoading()
-                                  : const Text('التالي'),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                                  ? const ThreeDotsLoading(dotSize: 5)
+                                  : const Text(
+                                      'حفظ ومتابعة',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

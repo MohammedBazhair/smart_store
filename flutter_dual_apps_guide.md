@@ -67,7 +67,7 @@ lib/
 
 ### Client
 ```bash
-flutter run --flavor client -t lib/main_client.dart
+flutter run --flavor client -t lib/main.dart
 ```
 
 ### Admin

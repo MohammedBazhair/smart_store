@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/log.dart';
 import '../../../../core/shared/providers/core_providers.dart';
 import '../../../../errors/result.dart';
+import '../../../auth/presentation/widgets/user_avatar.dart';
 import '../../domain/entities/get_profile_params.dart';
 import '../../domain/entities/profile.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -30,6 +31,8 @@ class UserController extends Notifier<UserState> {
       if (currentUser?.id == null) return null;
 
       final profileParams = GetProfileParams.fromSupabaseUser(currentUser!);
+
+      ref.read(profileParamsProvider.notifier).state = profileParams;
 
       ProfileEntity newProfile =
           await _userRepository.getProfile(profileParams);

@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
+
 import 'account_status.dart';
 
-class ProfileEntity {
-  ProfileEntity({
+class ProfileEntity extends Equatable {
+  const ProfileEntity({
     required this.userId,
     required this.username,
     this.updatedAt,
@@ -32,7 +34,7 @@ class ProfileEntity {
   }
 
   factory ProfileEntity.guest() {
-    return ProfileEntity(
+    return const ProfileEntity(
       userId: '',
       username: '',
       accountStatus: AccountStatus.pending,
@@ -40,7 +42,7 @@ class ProfileEntity {
     );
   }
 
-static  List<ProfileEntity> get fakeList =>
+  static List<ProfileEntity> get fakeList =>
       List.generate(10, (_) => ProfileEntity.guest());
 
   final String userId;
@@ -52,7 +54,10 @@ static  List<ProfileEntity> get fakeList =>
   final AccountStatus accountStatus;
 
   /// check if user without username and phone
-  bool get isDataComplete => phone != null && username.isNotEmpty;
+  bool get isDataComplete {
+    final hasPhone = phone?.isNotEmpty ?? false;
+    return hasPhone && username.isNotEmpty;
+  }
 
   ProfileEntity copyWith({
     String? userId,
@@ -97,4 +102,8 @@ static  List<ProfileEntity> get fakeList =>
   String toString() {
     return 'ProfileEntity(userId: $userId, username: $username, phone: $phone, updatedAt: $updatedAt, createdAt: $createdAt, credits: $credits, accountStatus: $accountStatus)';
   }
+
+  @override
+  List<Object?> get props =>
+      [userId, username, phone, updatedAt, createdAt, credits, accountStatus];
 }

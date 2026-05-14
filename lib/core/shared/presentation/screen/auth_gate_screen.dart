@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../../../core/utils/background_utils.dart';
+import '../../../../features/auth/presentation/screens/more_info_screen.dart';
 import '../../../../features/products/presentation/controllers/product_provider.dart';
 import '../../../../features/products/presentation/screens/product_details_screen.dart';
 import '../../../../features/store/presentation/controller/store_provider.dart';
-import '../../../../features/store/presentation/screens/store_selection_screen.dart';
 import '../../../../features/user/domain/entities/account_status.dart';
 import '../../../../features/user/presentation/screens/account_status_screen.dart';
 import '../../../constants/app_constants.dart';
@@ -54,19 +54,21 @@ class _AuthGateState extends ConsumerState<AuthGate> {
 
     if (!isLogged) return const SignInScreen();
 
-    final profile = ref.watch(userControllerProvider.select((s)=>s.entity.profile));
+    final profile =
+        ref.watch(userControllerProvider.select((s) => s.entity.profile));
 
     final isStoresInitialized =
         ref.watch(storeControllerProvider.select((s) => s.state.isInitialized));
 
-    if (!profile.isDataComplete || !isStoresInitialized) {
+    if (!isStoresInitialized) {
       return const SplashScreen();
     }
 
-    final stores = ref.watch(storeControllerProvider).state;
-
-    if (stores.selectedStoreId == null) {
-      return const StoreSelectionScreen();
+    if (!profile.isDataComplete) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.pushAndRemoveUntilTo(const MoreInfoScreen());
+      });
+      return const SplashScreen();
     }
 
     final screen = switch (profile.accountStatus) {
