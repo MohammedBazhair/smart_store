@@ -3,7 +3,7 @@ import '../../../settings/domain/entities/currence_code.dart';
 import '../../domain/entities/store.dart';
 
 class StoreModel extends Store {
-  StoreModel({
+  const StoreModel({
     super.id,
     required super.name,
     required super.currency,
@@ -33,7 +33,7 @@ class StoreModel extends Store {
       currency: CurrencyCode.values.byName(map['currency']),
       createdAt: DateTime.parse(map['created_at']),
       updatedAt: DateTime.parse(map['updated_at']),
-      isDeleted: map['is_deleted']==1,
+      isDeleted: map['is_deleted'] == 1,
     );
   }
 

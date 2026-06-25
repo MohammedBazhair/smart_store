@@ -2,20 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../store/domain/entities/store.dart';
+import 'popup_admin_card.dart';
 
 class StoreAdminCard extends StatelessWidget {
   const StoreAdminCard({
     super.key,
     required this.store,
-    this.onTap,
-    this.onEdit,
-    this.onDelete,
   });
 
   final Store store;
-  final VoidCallback? onTap;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +18,6 @@ class StoreAdminCard extends StatelessWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(28),
-      onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
@@ -117,43 +111,10 @@ class StoreAdminCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        PopupMenuButton<String>(
-                          color: Colors.white,
-                          elevation: 8,
-                          iconColor: Colors.black87,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                        if (store.id != null)
+                          PopupStoreAdmin(
+                            storeId: store.id!,
                           ),
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              onEdit?.call();
-                            } else if (value == 'delete') {
-                              onDelete?.call();
-                            }
-                          },
-                          itemBuilder: (_) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_rounded),
-                                  SizedBox(width: 10),
-                                  Text('تعديل'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.delete_rounded),
-                                  SizedBox(width: 10),
-                                  Text('حذف'),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
 
@@ -204,7 +165,7 @@ class StoreAdminCard extends StatelessWidget {
                         Expanded(
                           child: _BottomInfo(
                             title: 'آخر تحديث',
-                            value: store.updatedAt.formattedTime,
+                            value: store.updatedAt.formattedDate(),
                           ),
                         ),
                       ],

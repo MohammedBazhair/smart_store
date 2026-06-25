@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/extensions/extensions.dart';
+import '../../../../../core/shared/providers/ui_providers.dart';
 import '../../../../store/domain/entities/store.dart';
 import '../providers/admin_stores_provider.dart';
 import '../widgets/store_admin_card.dart';
@@ -10,7 +12,11 @@ class AllStoresScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final storesAsync = ref.watch(adminStoresListProvider);
+    ref.listen(appUiEventProvider, (_, state) {
+      if (state == null) return;
+      context.showSnakbar(state.message, type: state.type);
+    });
+    final storesAsync = ref.watch(adminStoresControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -40,7 +46,7 @@ class _StoresListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     return RefreshIndicator(
-      onRefresh: () => ref.refresh(adminStoresListProvider.future),
+      onRefresh: () => ref.refresh(adminStoresControllerProvider.future),
       child: ListView.builder(
         padding: const EdgeInsets.all(24),
         itemCount: stores.length,

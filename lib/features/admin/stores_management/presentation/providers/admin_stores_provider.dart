@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/shared/providers/core_providers.dart';
-import '../../../../store/domain/entities/store.dart';
+import '../../../../store/presentation/controller/store_provider.dart';
 import '../../data/admin_store_repository.dart';
+import '../controllers/admin_stores_controller.dart';
 
 final adminStoreRepositoryProvider = Provider<AdminStoreRepository>((ref) {
   final _remoteDatabase = ref.read(remoteDatabaseServiceProvider);
-  return AdminStoreRepository(_remoteDatabase);
+  final _storeRemoteDataSource = ref.read(storeRemoteDataSourceProvider);
+  return AdminStoreRepository(_remoteDatabase, _storeRemoteDataSource);
 });
 
-final adminStoresListProvider =
-    StreamProvider<List<Store>>((ref) {
-  final repo = ref.read(adminStoreRepositoryProvider);
-  return repo.getAllStores();
-});
+final adminStoresControllerProvider = StreamNotifierProvider(
+  AdminStoresNotifier.new,
+);

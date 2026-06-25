@@ -1,7 +1,7 @@
 import '../../../settings/domain/entities/currence_code.dart';
 
 class Store {
-  Store({
+  const Store({
     this.id,
     required this.name,
     required this.currency,
