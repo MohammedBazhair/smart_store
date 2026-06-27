@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/store_action_type.dart';
 import '../providers/admin_stores_provider.dart';
+import 'add_member_dialog.dart';
 import 'store_delete_confirmation_dialog.dart';
 
 class PopupStoreAdmin extends ConsumerWidget {
@@ -25,6 +26,7 @@ class PopupStoreAdmin extends ConsumerWidget {
       onSelected: (action) async {
         switch (action) {
           case StoreActionType.addMembers:
+            await showAddMemberDialog(context, storeId);
           case StoreActionType.deleteStore:
             final canDeleted = await showDeleteStoreDialog(context);
             if (canDeleted) await controller.deleteStore(storeId);

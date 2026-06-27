@@ -19,6 +19,7 @@ class StoreAdminCard extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(28),
       child: Container(
+        clipBehavior: Clip.antiAlias,
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),

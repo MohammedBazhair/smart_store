@@ -7,7 +7,7 @@ import '../../../../user/domain/entities/role.dart';
 import '../../data/admin_store_repository.dart';
 import '../providers/admin_stores_provider.dart';
 
-class AdminStoresNotifier extends StreamNotifier<List<Store>> {
+class AdminStoresController extends StreamNotifier<List<Store>> {
   AdminStoreRepository get _repository =>
       ref.read(adminStoreRepositoryProvider);
 

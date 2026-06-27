@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/shared/providers/core_providers.dart';
+import '../../../../store/domain/entities/store.dart';
 import '../../../../store/presentation/controller/store_provider.dart';
 import '../../data/admin_store_repository.dart';
 import '../controllers/admin_stores_controller.dart';
@@ -10,6 +11,7 @@ final adminStoreRepositoryProvider = Provider<AdminStoreRepository>((ref) {
   return AdminStoreRepository(_remoteDatabase, _storeRemoteDataSource);
 });
 
-final adminStoresControllerProvider = StreamNotifierProvider(
-  AdminStoresNotifier.new,
+final adminStoresControllerProvider =
+    StreamNotifierProvider<AdminStoresController, List<Store>>(
+  AdminStoresController.new,
 );
