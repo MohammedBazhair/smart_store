@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../store/domain/entities/store.dart';
 import '../../../../store/presentation/controller/store_state.dart';
+import 'members_expansion_tile.dart';
 import 'popup_admin_card.dart';
 
 class StoreAdminCard extends StatelessWidget {
@@ -156,6 +157,10 @@ class StoreAdminCard extends StatelessWidget {
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 14),
+
+                    MembersExpansionTile(members: storeWithMembers.members),
                   ],
                 ),
               ),

@@ -55,7 +55,7 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
 
     final memberKey = StoreMemberKey(
       storeId: widget.storeId,
-      memberPhone: _phoneController.text,
+      memberPhone: _phoneController.text.replaceAll(' ', ''),
     );
 
     final error =

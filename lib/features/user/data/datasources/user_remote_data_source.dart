@@ -29,14 +29,14 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       if (userId == null) throw ArgumentError.notNull('userId');
 
       final map = await _remoteDatabase.readRow(
-        id: userId,
+        value: userId,
         column: 'id',
         table: AppConstants.profilesTable,
       );
 
       return ProfileEntity.fromMap(map);
-    } catch (e,st) {
-      Logger.debugLog(error: e,stackTrace: st);
+    } catch (e, st) {
+      Logger.debugLog(error: e, stackTrace: st);
 
       rethrow;
     }

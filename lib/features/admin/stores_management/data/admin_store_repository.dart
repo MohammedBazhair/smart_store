@@ -1,3 +1,4 @@
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/database/remote/remote_database_service.dart';
 import '../../../store/data/datasource/store_remote_data_source.dart';
 import '../../../store/data/models/store_member_key.dart';
@@ -42,6 +43,17 @@ class AdminStoreRepository {
   }
 
   Future<void> insertMember(StoreMemberKey primaryKey, Role role) async {
+    final row = await _remoteDatabase.readRow(
+      value: primaryKey.memberPhone,
+      column: 'phone',
+      selectColumns: ['phone'],
+      table: AppConstants.profilesTable,
+    );
+
+    if (row.isEmpty) {
+      throw Exception('صاحب الرقم غير موجود');
+    }
+
     final member = StoreMemberModel(
       primaryKey: primaryKey,
       role: role,

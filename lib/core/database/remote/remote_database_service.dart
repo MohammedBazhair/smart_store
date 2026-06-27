@@ -15,7 +15,7 @@ abstract interface class RemoteDatabaseService {
   });
 
   Future<Map<String, dynamic>> readRow({
-    required String id,
+    required dynamic value,
     required String column,
     required String table,
     List<String> selectColumns = const ['*'],
@@ -91,13 +91,13 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
 
   @override
   Future<Map<String, dynamic>> readRow({
-    required String id,
+    required dynamic value,
     required String column,
     required String table,
     List<String> selectColumns = const ['*'],
   }) {
     final columnsString = _listToSelectColumns(selectColumns);
-    return _client.from(table).select(columnsString).eq(column, id).single();
+    return _client.from(table).select(columnsString).eq(column, value).limit(1).single();
   }
 
   @override
