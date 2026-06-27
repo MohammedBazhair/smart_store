@@ -23,6 +23,25 @@ class PopupStoreAdmin extends ConsumerWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        width: 100,
+        height: 100,
+        alignment: Alignment.bottomRight,
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withAlpha(10),
+          borderRadius: const BorderRadius.only(
+            bottomRight: Radius.circular(60),
+            topRight: Radius.circular(60),
+            bottomLeft: Radius.circular(60),
+          ),
+        ),
+        child: Icon(
+          Icons.more_vert,
+          size: 22,
+          color: Colors.grey[800],
+        ),
+      ),
       onSelected: (action) async {
         switch (action) {
           case StoreActionType.addMembers:

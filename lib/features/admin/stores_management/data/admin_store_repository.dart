@@ -4,6 +4,7 @@ import '../../../store/data/models/store_member_key.dart';
 import '../../../store/data/models/store_member_model.dart';
 import '../../../store/data/models/store_model.dart';
 import '../../../store/domain/entities/store.dart';
+import '../../../store/domain/entities/store_member.dart';
 import '../../../user/domain/entities/role.dart';
 
 class AdminStoreRepository {
@@ -12,10 +13,28 @@ class AdminStoreRepository {
   final RemoteDatabaseService _remoteDatabase;
   final StoreRemoteDataSource _storeRemoteDataSource;
 
-  Stream<List<Store>> getAllStores() {
+  Stream<Map<String, Store>> getAllStores() {
     final response =
         _remoteDatabase.readRowsRealTime(table: 'stores', primaryKey: ['id']);
-    return response.map((m) => m.map(StoreModel.fromMap).toList());
+    return response.map(
+      (rows) {
+        final entries = rows.map((map) {
+          final store = StoreModel.fromMap(map);
+
+          return MapEntry(store.id!, store);
+        });
+
+        return Map.fromEntries(entries);
+      },
+    );
+  }
+
+  Stream<List<StoreMember>> getAllMembers() {
+    final response = _remoteDatabase.readRowsRealTime(
+      table: 'store_members',
+      primaryKey: ['store_id', 'member_phone'],
+    );
+    return response.map((m) => m.map(StoreMemberModel.fromMap).toList());
   }
 
   Future<void> deleteStore(String storeId) async {
