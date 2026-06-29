@@ -12,7 +12,7 @@ import '../providers/admin_stores_provider.dart';
 import 'admin_stores_state.dart';
 
 class AdminStoresController extends Notifier<AdminStoresState> {
-  final _searchDebounce = Debouncer(milliseconds: 300);
+  final _searchDebounce = Debouncer(milliseconds: 800);
 
   AdminStoreRepository get _repository =>
       ref.read(adminStoreRepositoryProvider);
@@ -53,7 +53,17 @@ class AdminStoresController extends Notifier<AdminStoresState> {
       final memberKey =
           StoreMemberKey(storeId: storeId, memberPhone: selected.phone);
 
-      await _repository.insertMember(memberKey, role);
+      final insertedMember = await _repository.insertMember(memberKey, role);
+
+      final copied = {...state.storeWithMembers};
+      copied.update(
+        storeId,
+        (storeWithMembers) {
+          final copiedMembers = {...storeWithMembers.members, insertedMember};
+          return storeWithMembers.copyWith(members: copiedMembers);
+        },
+      );
+      state = state.copyWith(storeWithMembers: copied);
 
       _uiEvent.showSuccess('تم إضافة العضو إلى المتجر بنجاح');
       return null;
@@ -71,10 +81,10 @@ class AdminStoresController extends Notifier<AdminStoresState> {
   }
 
   void searchMembersByPhone(String queryPhone) {
-    state = state.copyWith(isLoading: true);
     _searchDebounce.dispose();
 
     _searchDebounce.run(() async {
+      state = state.copyWith(isLoading: true);
       final results = await _repository.searchUsers(queryPhone);
 
       if (!ref.mounted) return;

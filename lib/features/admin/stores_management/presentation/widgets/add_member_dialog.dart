@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../core/extensions/extensions.dart';
 import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../../auth/presentation/widgets/custom_button.dart';
@@ -51,6 +52,10 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
     );
 
     if (!mounted) return;
+    if (error == null) {
+      context.pop();
+      return;
+    }
 
     setState(() {
       _error = error;
@@ -65,90 +70,98 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
     final isLoading = ref.watch(
       adminStoresControllerProvider.select((s) => s.isLoading),
     );
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // العنوان
-          const Text(
-            'إضافة عضو',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primaryColor,
+    return FractionallySizedBox(
+      heightFactor: 0.6,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: CustomScrollView(
+          slivers: [
+            SliverList.list(
+              children: [
+                const Text(
+                  'إضافة عضو',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                // حقل النص
+                CustomPhoneField(
+                  _phoneController,
+                  validator: (_) => _error,
+                  errorMaxLines: 2,
+                  autovalidateMode: AutovalidateMode.disabled,
+                  onChanged: adminStoresController.searchMembersByPhone,
+                ),
+                const SizedBox(height: 25),
+                RoleSegmentedButton(
+                  role: _memberRole,
+                  onChanged: (value) => setState(() => _memberRole = value),
+                ),
+                const SizedBox(height: 25),
+              ],
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-
-          // حقل النص
-          CustomPhoneField(
-            _phoneController,
-            validator: (_) => _error,
-            errorMaxLines: 2,
-            onChanged: adminStoresController.searchMembersByPhone,
-          ),
-          const SizedBox(height: 25),
-          RoleSegmentedButton(
-            role: _memberRole,
-            onChanged: (value) => setState(() => _memberRole = value),
-          ),
-          const SizedBox(height: 25),
-
-          const SizedBox(
-            height: 300,
-            child: UserResultsSearchWidget(),
-          ),
-
-          // الأزرار
-          Row(
-            spacing: 15,
-            children: [
-              Expanded(
-                child: CustomButton(
-                  onPressed: isLoading ? null : submit,
-                  buttonStyle: ElevatedButton.styleFrom(
-                    elevation: 5,
-                  ),
-                  child: isLoading
-                      ? const LoadingWidget()
-                      : const Text(
-                          'إضافة',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+            const UserResultsSearchWidget(),
+            SliverCrossAxisGroup(
+              slivers: [
+                SliverCrossAxisExpanded(
+                  flex: 8,
+                  sliver: SliverToBoxAdapter(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
                         ),
-                ),
-              ),
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade400),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                  child: const Text(
-                    'إلغاء',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w600,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: const Text(
+                        'إلغاء',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SliverCrossAxisExpanded(
+                  flex: 1,
+                  sliver: SliverToBoxAdapter(child: SizedBox(width: 2)),
+                ),
+                SliverCrossAxisExpanded(
+                  flex: 8,
+                  sliver: SliverToBoxAdapter(
+                    child: CustomButton(
+                      onPressed: isLoading ? null : submit,
+                      buttonStyle: ElevatedButton.styleFrom(
+                        elevation: 5,
+                      ),
+                      child: isLoading
+                          ? const LoadingWidget()
+                          : const Text(
+                              'إضافة',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -66,7 +66,7 @@ class AdminStoreRepository {
     await _storeRemoteDataSource.removeStore(storeId);
   }
 
-  Future<void> insertMember(StoreMemberKey primaryKey, Role role) async {
+  Future<StoreMember> insertMember(StoreMemberKey primaryKey, Role role) async {
     final row = await _remoteDatabase.readRow(
       value: primaryKey.memberPhone,
       column: 'phone',
@@ -85,6 +85,7 @@ class AdminStoreRepository {
       updatedAt: DateTime.now(),
     );
     await _storeRemoteDataSource.addMember(member);
+    return member;
   }
 
   Future<List<UserSearchResult>> searchUsers(String queryPhone) async {

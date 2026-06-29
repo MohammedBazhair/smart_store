@@ -23,36 +23,37 @@ class UserResultsSearchWidget extends ConsumerWidget {
     );
     final resultUsers = isLoading ? UserSearchResult.fakeList : searchUsers;
 
-    return Skeletonizer(
-      enabled: isLoading,
-      child: ListView.builder(
-        itemCount: resultUsers.length,
-        itemBuilder: (context, index) {
-          final userResult = resultUsers[index];
-          final accountStatusConfig =
-              StatusConfig.getStatusConfig(userResult.accountStatus);
+    return SliverList.builder(
+      itemCount: resultUsers.length,
+      itemBuilder: (context, index) {
+        final userResult = resultUsers[index];
+        final accountStatusConfig =
+            StatusConfig.getStatusConfig(userResult.accountStatus);
 
-          final isSelected = userResult.userId == selectedUser?.userId;
-          return ListTile(
+        final isSelected = userResult.userId == selectedUser?.userId;
+        return Skeletonizer(
+          enabled: isLoading,
+          child: ListTile(
             selected: isSelected,
-            selectedTileColor: Colors.blue[600],
+            selectedColor: Colors.green[600],
+            selectedTileColor: accountStatusConfig.secondaryColor.withAlpha(30),
             title: Text(userResult.userName),
             subtitle: Text(userResult.phone),
             leading: CircleAvatar(
               radius: 30,
-              backgroundColor: accountStatusConfig.secondaryColor,
+              backgroundColor: accountStatusConfig.primaryColor,
               child: Icon(
                 accountStatusConfig.icon,
-                color: accountStatusConfig.primaryColor,
+                color: Colors.white,
               ),
             ),
             trailing: isSelected ? const Icon(Icons.check_circle) : null,
             onTap: () => ref
                 .read(adminStoresControllerProvider.notifier)
                 .selectUser(userResult),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
