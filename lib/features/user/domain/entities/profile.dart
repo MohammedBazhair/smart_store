@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:equatable/equatable.dart';
-
 import 'account_status.dart';
 
 class ProfileEntity extends Equatable {

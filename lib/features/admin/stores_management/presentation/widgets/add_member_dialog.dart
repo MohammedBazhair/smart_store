@@ -4,10 +4,11 @@ import '../../../../../core/shared/presentation/theme/app_theme.dart';
 import '../../../../../core/shared/presentation/widgets/common/loading_widget.dart';
 import '../../../../auth/presentation/widgets/custom_button.dart';
 import '../../../../auth/presentation/widgets/custom_phone_field.dart';
-import '../../../../store/data/models/store_member_key.dart';
 import '../../../../user/domain/entities/role.dart';
+import '../controllers/admin_stores_controller.dart';
 import '../providers/admin_stores_provider.dart';
 import 'role_segmented_button.dart';
+import 'user_results_search_widget.dart';
 
 Future<void> showAddMemberDialog(BuildContext context, String storeId) async {
   await showModalBottomSheet(
@@ -28,10 +29,8 @@ class AddMemberDialog extends ConsumerStatefulWidget {
 
 class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
   final _phoneController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
   Role _memberRole = Role.worker;
-  String? _serverError;
+  String? _error;
 
   @override
   void initState() {
@@ -46,42 +45,26 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
   }
 
   Future<void> submit() async {
-    final isValid = _formKey.currentState?.validate() ?? false;
-    if (!isValid) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    final memberKey = StoreMemberKey(
+    final error = await adminStoresController.addSelectedUserToStore(
       storeId: widget.storeId,
-      memberPhone: _phoneController.text.replaceAll(' ', ''),
+      role: _memberRole,
     );
-
-    final error =
-        await ref.read(adminStoresControllerProvider.notifier).addMemberToStore(
-              memberKey: memberKey,
-              role: _memberRole,
-            );
 
     if (!mounted) return;
 
     setState(() {
-      _isLoading = false;
-    });
-
-    if (error == null) {
-      Navigator.pop(context);
-      return;
-    }
-
-    setState(() {
-      _serverError = error;
+      _error = error;
     });
   }
 
+  AdminStoresController get adminStoresController =>
+      ref.read(adminStoresControllerProvider.notifier);
+
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(
+      adminStoresControllerProvider.select((s) => s.isLoading),
+    );
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: 24,
@@ -106,18 +89,11 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
           const SizedBox(height: 20),
 
           // حقل النص
-          Form(
-            key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: CustomPhoneField(
-              _phoneController,
-              validator: (_) => _serverError,
-              errorMaxLines: 2,
-              onChanged: (_) {
-                if (_serverError == null) return;
-                setState(() => _serverError = null);
-              },
-            ),
+          CustomPhoneField(
+            _phoneController,
+            validator: (_) => _error,
+            errorMaxLines: 2,
+            onChanged: adminStoresController.searchMembersByPhone,
           ),
           const SizedBox(height: 25),
           RoleSegmentedButton(
@@ -126,17 +102,22 @@ class _AddMemberDialogState extends ConsumerState<AddMemberDialog> {
           ),
           const SizedBox(height: 25),
 
+          const SizedBox(
+            height: 300,
+            child: UserResultsSearchWidget(),
+          ),
+
           // الأزرار
           Row(
             spacing: 15,
             children: [
               Expanded(
                 child: CustomButton(
-                  onPressed: _isLoading ? null : submit,
+                  onPressed: isLoading ? null : submit,
                   buttonStyle: ElevatedButton.styleFrom(
                     elevation: 5,
                   ),
-                  child: _isLoading
+                  child: isLoading
                       ? const LoadingWidget()
                       : const Text(
                           'إضافة',

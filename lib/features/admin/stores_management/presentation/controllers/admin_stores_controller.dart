@@ -4,16 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/constants/log.dart';
 import '../../../../../core/shared/presentation/controllers/app_ui_event_controller.dart';
 import '../../../../../core/shared/providers/ui_providers.dart';
+import '../../../../../core/utils/debouncer.dart';
 import '../../../../store/data/models/store_member_key.dart';
 import '../../../../store/domain/entities/store.dart';
 import '../../../../store/domain/entities/store_member.dart';
 import '../../../../store/presentation/controller/store_state.dart';
 import '../../../../user/domain/entities/role.dart';
 import '../../data/admin_store_repository.dart';
+import '../../domain/entities/user_search_result.dart';
 import '../providers/admin_stores_provider.dart';
 import 'admin_stores_state.dart';
 
 class AdminStoresController extends Notifier<AdminStoresState> {
+  final _searchDebounce = Debouncer(milliseconds: 300);
+
   AdminStoreRepository get _repository =>
       ref.read(adminStoreRepositoryProvider);
 
@@ -86,11 +90,19 @@ class AdminStoresController extends Notifier<AdminStoresState> {
     }
   }
 
-  Future<String?> addMemberToStore({
-    required StoreMemberKey memberKey,
+  Future<String?> addSelectedUserToStore({
+    required String storeId,
     required Role role,
   }) async {
     try {
+      final selected = state.selectedUser;
+      if (selected == null) return 'لم يتم تحديد مستخدم بعد';
+
+      state = state.copyWith(isLoading: true);
+
+      final memberKey =
+          StoreMemberKey(storeId: storeId, memberPhone: selected.phone);
+
       await _repository.insertMember(memberKey, role);
 
       _uiEvent.showSuccess('تم إضافة العضو إلى المتجر بنجاح');
@@ -98,6 +110,26 @@ class AdminStoresController extends Notifier<AdminStoresState> {
     } catch (e) {
       Logger.debugLog(error: e);
       return e.toString();
+    } finally {
+      state = state.copyWith(isLoading: false);
     }
+  }
+
+  void selectUser(UserSearchResult userResult) {
+    if (userResult.userId == state.selectedUser?.userId) return;
+    state = state.copyWith(selectedUser: userResult);
+  }
+
+  void searchMembersByPhone(String queryPhone) {
+    state = state.copyWith(isLoading: true);
+    _searchDebounce.dispose();
+
+    _searchDebounce.run(() async {
+      final results = await _repository.searchUsers(queryPhone);
+
+      if (!ref.mounted) return;
+      state = state.copyWith(resultsUsersSearch: results);
+      state = state.copyWith(isLoading: false);
+    });
   }
 }

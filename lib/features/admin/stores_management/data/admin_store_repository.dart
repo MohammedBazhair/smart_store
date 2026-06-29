@@ -7,6 +7,7 @@ import '../../../store/data/models/store_model.dart';
 import '../../../store/domain/entities/store.dart';
 import '../../../store/domain/entities/store_member.dart';
 import '../../../user/domain/entities/role.dart';
+import '../domain/entities/user_search_result.dart';
 
 class AdminStoreRepository {
   AdminStoreRepository(this._remoteDatabase, this._storeRemoteDataSource);
@@ -61,5 +62,16 @@ class AdminStoreRepository {
       updatedAt: DateTime.now(),
     );
     await _storeRemoteDataSource.addMember(member);
+  }
+
+  Future<List<UserSearchResult>> searchUsers(String queryPhone) async {
+    final rows = await _remoteDatabase.searchByQuery(
+      table: AppConstants.profilesTable,
+      column: 'phone',
+      query: queryPhone,
+      columnsSelect: UserSearchResult.dbColumns,
+    );
+
+    return rows.map(UserSearchResult.fromMap).toList();
   }
 }
