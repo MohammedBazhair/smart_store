@@ -4,8 +4,8 @@ import '../../../store/data/datasource/store_remote_data_source.dart';
 import '../../../store/data/models/store_member_key.dart';
 import '../../../store/data/models/store_member_model.dart';
 import '../../../store/data/models/store_model.dart';
-import '../../../store/domain/entities/store.dart';
 import '../../../store/domain/entities/store_member.dart';
+import '../../../store/presentation/controller/store_state.dart';
 import '../../../user/domain/entities/role.dart';
 import '../domain/entities/user_search_result.dart';
 
@@ -15,28 +15,51 @@ class AdminStoreRepository {
   final RemoteDatabaseService _remoteDatabase;
   final StoreRemoteDataSource _storeRemoteDataSource;
 
-  Stream<Map<String, Store>> getAllStores() {
-    final response =
-        _remoteDatabase.readRowsRealTime(table: 'stores', primaryKey: ['id']);
-    return response.map(
-      (rows) {
-        final entries = rows.map((map) {
+  Future<Map<String, StoreWithMembers>> getStoresWithMembers() async {
+    final response = await _remoteDatabase.readRows(table: 'stores');
+
+    final storeMembers = await _getAllMembers();
+
+    final result = <String, StoreWithMembers>{};
+
+    await Future.wait(
+      response.map(
+        (map) async {
           final store = StoreModel.fromMap(map);
-
-          return MapEntry(store.id!, store);
-        });
-
-        return Map.fromEntries(entries);
-      },
+          final storeFull = StoreWithMembers(
+            store: store,
+            members: storeMembers[store.id!] ?? {},
+          );
+          result[store.id!] = storeFull;
+        },
+      ),
     );
+
+    return result;
   }
 
-  Stream<List<StoreMember>> getAllMembers() {
-    final response = _remoteDatabase.readRowsRealTime(
+  Future<Map<String, Set<StoreMember>>> _getAllMembers() async {
+    final response = await _remoteDatabase.readRows(
       table: 'store_members',
-      primaryKey: ['store_id', 'member_phone'],
     );
-    return response.map((m) => m.map(StoreMemberModel.fromMap).toList());
+
+    final result = <String, Set<StoreMember>>{};
+
+    await Future.wait(
+      response.map((map) async {
+        final member = StoreMemberModel.fromMap(map);
+
+        result.update(
+          member.primaryKey.storeId,
+          (members) {
+            return {...members, member};
+          },
+          ifAbsent: () => {member},
+        );
+      }),
+    );
+
+    return result;
   }
 
   Future<void> deleteStore(String storeId) async {
