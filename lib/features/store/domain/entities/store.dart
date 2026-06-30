@@ -1,7 +1,8 @@
 import '../../../settings/domain/entities/currence_code.dart';
+import '../../presentation/controller/store_state.dart';
 
 class Store {
-  Store({
+  const Store({
     this.id,
     required this.name,
     required this.currency,
@@ -32,6 +33,11 @@ class Store {
 
   static List<Store> get fakeStoresList =>
       List.generate(5, (_) => Store.empty());
+
+  static List<StoreWithMembers> get fakeStoresWithMembersList => List.generate(
+        5,
+        (_) => StoreWithMembers(store: Store.empty(), members: {}),
+      );
 
   Store copyWith({
     String? id,

@@ -15,7 +15,7 @@ abstract interface class RemoteDatabaseService {
   });
 
   Future<Map<String, dynamic>> readRow({
-    required String id,
+    required dynamic value,
     required String column,
     required String table,
     List<String> selectColumns = const ['*'],
@@ -24,9 +24,13 @@ abstract interface class RemoteDatabaseService {
   Future<List<Map<String, dynamic>>> readRowsWhere({
     required String table,
     required Map<String, Object> filters,
+    List<String> selectColumns = const ['*'],
   });
 
-  Future<List<Map<String, dynamic>>> readRows({required String table});
+  Future<List<Map<String, dynamic>>> readRows({
+    required String table,
+    List<String> selectColumns = const ['*'],
+  });
 
   Stream<RowList> readRowsRealTime({
     required String table,
@@ -68,6 +72,13 @@ abstract interface class RemoteDatabaseService {
     required Map<String, dynamic> row,
     String? onConflict,
   });
+
+  Future<List<Map<String, dynamic>>> searchByQuery({
+    required String table,
+    required String column,
+    required String query,
+    List<String> columnsSelect = const ['*'],
+  });
 }
 
 class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
@@ -91,18 +102,27 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
 
   @override
   Future<Map<String, dynamic>> readRow({
-    required String id,
+    required dynamic value,
     required String column,
     required String table,
     List<String> selectColumns = const ['*'],
   }) {
     final columnsString = _listToSelectColumns(selectColumns);
-    return _client.from(table).select(columnsString).eq(column, id).single();
+    return _client
+        .from(table)
+        .select(columnsString)
+        .eq(column, value)
+        .limit(1)
+        .single();
   }
 
   @override
-  Future<List<Map<String, dynamic>>> readRows({required String table}) {
-    return _client.from(table).select();
+  Future<List<Map<String, dynamic>>> readRows({
+    required String table,
+    List<String> selectColumns = const ['*'],
+  }) {
+    final columnsString = _listToSelectColumns(selectColumns);
+    return _client.from(table).select(columnsString);
   }
 
   @override
@@ -159,9 +179,12 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
   Future<List<Map<String, dynamic>>> readRowsWhere({
     required String table,
     required Map<String, Object> filters,
+    List<String> selectColumns = const ['*'],
   }) {
+    final columnsString = _listToSelectColumns(selectColumns);
+
     try {
-      return _client.from(table).select().match(filters);
+      return _client.from(table).select(columnsString).match(filters);
     } catch (e) {
       debugPrint(e.toString());
       return Future.value(<Map<String, dynamic>>[]);
@@ -178,6 +201,25 @@ class RemoteDatabaseServiceImpl implements RemoteDatabaseService {
     try {
       final columnsString = _listToSelectColumns(columnsSelect);
       return _client.from(table).select(columnsString).inFilter(column, values);
+    } catch (e) {
+      debugPrint(e.toString());
+      return Future.value([]);
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> searchByQuery({
+    required String table,
+    required String column,
+    required String query,
+    List<String> columnsSelect = const ['*'],
+  }) {
+    try {
+      final columnsString = _listToSelectColumns(columnsSelect);
+      return _client
+          .from(table)
+          .select(columnsString)
+          .ilike(column, '%$query%');
     } catch (e) {
       debugPrint(e.toString());
       return Future.value([]);
