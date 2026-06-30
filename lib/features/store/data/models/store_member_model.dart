@@ -9,7 +9,7 @@ class StoreMemberModel extends StoreMember {
     required super.role,
     required super.createdAt,
     required super.updatedAt,
-    required super.isDeleted,
+     super.isDeleted,
   });
 
   factory StoreMemberModel.fromEntity(StoreMember member) {

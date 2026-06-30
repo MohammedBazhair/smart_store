@@ -1,23 +1,28 @@
-# 📘 دليل تشغيل تطبيقين Flutter (Client + Admin)
+````md
+# 📘 دليل تشغيل وإصدار تطبيقين Flutter (Client + Admin)
 
 ## 🎯 الفكرة
-لدينا تطبيق واحد Flutter، لكن نريد تشغيله كتطبيقين منفصلين:
+
+لدينا مشروع Flutter واحد يحتوي على Flavorين:
 
 - 🟢 Client App (تطبيق المستخدم)
 - 🔴 Admin App (تطبيق الإدارة)
 
-كل واحد:
+لكل تطبيق:
+
 - اسم مختلف
-- Package مختلف
-- إصدار مختلف
+- Application ID مختلف
+- إصدار (Version) مستقل
 - يمكن تثبيتهما معًا على نفس الجهاز
+- Release مستقل عبر GitHub Actions
 
 ---
 
-## 1️⃣ إنشاء flavors
+# 1️⃣ إنشاء Flavors
 
-في ملف:
-android/app/build.gradle.kts
+في الملف:
+
+`android/app/build.gradle.kts`
 
 ```gradle
 flavorDimensions += "app"
@@ -37,16 +42,18 @@ productFlavors {
         applicationId = "com.example.smart_store_admin"
         versionCode = 1
         versionName = "1.0.0"
-        resValue("string", "app_name", "المتجر الذكي - ادارة")
+        resValue("string", "app_name", "المتجر الذكي - إدارة")
     }
 }
 ```
 
 ---
 
-## 2️⃣ تعديل اسم التطبيق
+# 2️⃣ تعديل اسم التطبيق
 
-android/app/src/main/AndroidManifest.xml
+في:
+
+`android/app/src/main/AndroidManifest.xml`
 
 ```xml
 android:label="@string/app_name"
@@ -54,63 +61,206 @@ android:label="@string/app_name"
 
 ---
 
-## 3️⃣ ملفات التشغيل
+# 3️⃣ ملفات التشغيل
 
-lib/
+داخل مجلد `lib`
 
-- main_client.dart
-- main_admin.dart
+```
+main_client.dart
+main_admin.dart
+```
 
 ---
 
-## 4️⃣ التشغيل
+# 4️⃣ تشغيل التطبيق
 
-### Client
+## Client
+
 ```bash
-flutter run --flavor client -t lib/main.dart
+flutter run --flavor client -t lib/main_client.dart
 ```
 
-### Admin
+## Admin
+
 ```bash
 flutter run --flavor admin -t lib/main_admin.dart
 ```
 
 ---
 
-## 5️⃣ تشغيل على جهاز محدد
+# 5️⃣ التشغيل على جهاز محدد
 
 ```bash
 flutter devices
+```
+
+ثم
+
+```bash
 flutter run -d DEVICE_ID --flavor admin -t lib/main_admin.dart
 ```
 
 ---
 
-## 6️⃣ بناء APK
+# 6️⃣ بناء APK
 
-### Client
+## Client
+
 ```bash
-flutter build apk --flavor client -t lib/main_client.dart
+flutter build apk --release --flavor client -t lib/main_client.dart
 ```
 
-### Admin
+## Admin
+
 ```bash
-flutter build apk --flavor admin -t lib/main_admin.dart
+flutter build apk --release --flavor admin -t lib/main_admin.dart
 ```
 
 ---
 
-## 7️⃣ ملاحظات مهمة
+# 7️⃣ GitHub Actions (CI/CD)
 
-- pubspec.yaml لا يتحكم بإصدارات flavors
-- كل تطبيق يمكن تثبيته بشكل مستقل
-- applicationId هو ما يفرق بين التطبيقات
+يستخدم المشروع GitHub Actions لإنشاء Release تلقائيًا.
+
+ملف الـ Workflow موجود في:
+
+```
+.github/workflows/flutter_release.yml
+```
+
+ويتم تشغيله **عند إنشاء Git Tag**.
 
 ---
 
-## 🚀 خلاصة
+# 8️⃣ إنشاء Release
 
-✔ تطبيق واحد  
-✔ تطبيقين منفصلين  
-✔ إعداد flavors  
-✔ تشغيل وبناء مستقل لكل تطبيق  
+## إصدار نسخة العميل
+
+```bash
+git tag client-v1.0.0
+git push origin client-v1.0.0
+```
+
+سيقوم GitHub Actions تلقائيًا بـ:
+
+- بناء Flavor `client`
+- إنشاء Release باسم
+
+```
+client-v1.0.0
+```
+
+- رفع ملف APK إلى صفحة Releases.
+
+---
+
+## إصدار نسخة الإدارة
+
+```bash
+git tag admin-v1.0.0
+git push origin admin-v1.0.0
+```
+
+سيقوم GitHub Actions تلقائيًا بـ:
+
+- بناء Flavor `admin`
+- إنشاء Release باسم
+
+```
+admin-v1.0.0
+```
+
+- رفع ملف APK إلى صفحة Releases.
+
+---
+
+# 9️⃣ تحديث إصدار التطبيق
+
+قبل إنشاء Release جديد يجب تحديث:
+
+```kotlin
+versionCode
+versionName
+```
+
+داخل الـ Flavor المناسب في:
+
+```
+android/app/build.gradle.kts
+```
+
+مثال:
+
+```kotlin
+create("client") {
+    versionCode = 6
+    versionName = "1.0.5"
+}
+```
+
+ثم إنشاء Tag جديد:
+
+```bash
+git tag client-v1.0.5
+git push origin client-v1.0.5
+```
+
+---
+
+# 🔟 ملاحظات مهمة
+
+- `pubspec.yaml` لا يتحكم في إصدار كل Flavor.
+- لكل Flavor إصدار مستقل.
+- لكل Flavor `applicationId` مستقل.
+- يمكن تثبيت التطبيقين معًا على نفس الجهاز.
+- لا يتم إنشاء Release إلا للـ Flavor الموجود في اسم الـ Tag.
+- لا حاجة لإنشاء فرع (`branch`) لكل تطبيق، يكفي استخدام فرع `main`.
+
+---
+
+# 🚀 مثال لسير العمل
+
+تطوير نسخة العميل:
+
+```text
+تعديل الكود
+      │
+      ▼
+Push إلى main
+      │
+      ▼
+git tag client-v1.0.5
+      │
+      ▼
+git push origin client-v1.0.5
+      │
+      ▼
+GitHub Actions
+      │
+      ▼
+Build Client APK
+      │
+      ▼
+Create GitHub Release
+```
+
+أما نسخة الإدارة فتتبع نفس الخطوات باستخدام:
+
+```text
+admin-v1.0.0
+admin-v1.0.1
+admin-v1.1.0
+...
+```
+
+---
+
+# ✅ الخلاصة
+
+- مشروع Flutter واحد.
+- Flavorان (Client + Admin).
+- تشغيل مستقل لكل تطبيق.
+- بناء APK مستقل لكل تطبيق.
+- GitHub Actions يبني التطبيق المناسب تلقائيًا حسب اسم الـ Tag.
+- Releases مستقلة لكل من العميل والإدارة.
+````

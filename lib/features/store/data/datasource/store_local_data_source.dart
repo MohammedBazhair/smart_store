@@ -83,7 +83,6 @@ class StoreLocalDataSourceImpl implements StoreLocalDataSource {
       role: Role.storeOwner,
       createdAt: store.createdAt,
       updatedAt: store.createdAt,
-      isDeleted: false,
     );
 
     try {

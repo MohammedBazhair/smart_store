@@ -10,18 +10,20 @@ class CustomPhoneField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.errorMaxLines = 1,
+     this.autovalidateMode,
   });
   final TextEditingController controller;
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
   final int errorMaxLines;
+  final AutovalidateMode? autovalidateMode ;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       autofillHints: const [AutofillHints.telephoneNumber],
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      autovalidateMode:autovalidateMode?? AutovalidateMode.onUserInteraction,
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.right,
       keyboardType: TextInputType.phone,

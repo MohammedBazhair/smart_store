@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/extensions/extensions.dart';
 import '../../../../store/domain/entities/store.dart';
+import '../../../../store/presentation/controller/store_state.dart';
+import 'members_expansion_tile.dart';
+import 'popup_admin_card.dart';
 
 class StoreAdminCard extends StatelessWidget {
   const StoreAdminCard({
     super.key,
-    required this.store,
-    this.onTap,
-    this.onEdit,
-    this.onDelete,
+    required this.storeWithMembers,
   });
 
-  final Store store;
-  final VoidCallback? onTap;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
+  final StoreWithMembers storeWithMembers;
+  Store get store => storeWithMembers.store;
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +21,8 @@ class StoreAdminCard extends StatelessWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(28),
-      onTap: onTap,
       child: Container(
+        clipBehavior: Clip.hardEdge,
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
@@ -42,30 +40,14 @@ class StoreAdminCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            Positioned(
-              top: -35,
-              left: -35,
-              child: Container(
-                height: 130,
-                width: 130,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.primaryColor.withOpacity(.05),
+            if (store.id != null)
+              Positioned(
+                top: -40,
+                left: -40,
+                child: PopupStoreAdmin(
+                  storeId: store.id!,
                 ),
               ),
-            ),
-            Positioned(
-              bottom: -40,
-              right: -40,
-              child: Container(
-                height: 120,
-                width: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.blue.withOpacity(.03),
-                ),
-              ),
-            ),
             Directionality(
               textDirection: TextDirection.rtl,
               child: Padding(
@@ -74,87 +56,53 @@ class StoreAdminCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     /// TOP
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              colors: [
-                                theme.primaryColor,
-                                theme.primaryColor.withOpacity(.75),
+                    FractionallySizedBox(
+                      widthFactor: 0.75,
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: LinearGradient(
+                                colors: [
+                                  theme.primaryColor,
+                                  theme.primaryColor.withOpacity(.75),
+                                ],
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.storefront_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  store.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  store.ownerPhone,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          child: const Icon(
-                            Icons.storefront_rounded,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                store.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                store.ownerPhone,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          color: Colors.white,
-                          elevation: 8,
-                          iconColor: Colors.black87,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              onEdit?.call();
-                            } else if (value == 'delete') {
-                              onDelete?.call();
-                            }
-                          },
-                          itemBuilder: (_) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_rounded),
-                                  SizedBox(width: 10),
-                                  Text('تعديل'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.delete_rounded),
-                                  SizedBox(width: 10),
-                                  Text('حذف'),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 24),
@@ -204,11 +152,15 @@ class StoreAdminCard extends StatelessWidget {
                         Expanded(
                           child: _BottomInfo(
                             title: 'آخر تحديث',
-                            value: store.updatedAt.formattedTime,
+                            value: store.updatedAt.formattedDate(),
                           ),
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 14),
+
+                    MembersExpansionTile(members: storeWithMembers.members),
                   ],
                 ),
               ),

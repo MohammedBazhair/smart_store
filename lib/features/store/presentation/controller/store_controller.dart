@@ -111,7 +111,6 @@ class StoreController extends Notifier<StoreEventState> {
         role: Role.worker,
         createdAt: now,
         updatedAt: now,
-        isDeleted: false,
       );
 
       await _storeRepo.addStoreMember(member);
@@ -203,7 +202,6 @@ class StoreController extends Notifier<StoreEventState> {
         role: Role.storeOwner,
         createdAt: DateTime.now().toUtc(),
         updatedAt: DateTime.now().toUtc(),
-        isDeleted: false,
       );
 
       final storeWithMembers =

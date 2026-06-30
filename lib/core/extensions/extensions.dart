@@ -82,6 +82,10 @@ extension DateFormating on DateTime {
     return DateFormat('hh:mm a').format(this);
   }
 
+  String get formattedDateTime {
+    return formattedDate() + formattedTime;
+  }
+
   DateTime get toUtcDateOnly => DateTime.utc(year, month, day);
 }
 
