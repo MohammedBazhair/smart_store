@@ -54,12 +54,17 @@ jobs:
             --flavor ${{ steps.flavor.outputs.flavor }} \
             -t ${{ steps.flavor.outputs.target }}
 
+      - name: Rename APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-${{ steps.flavor.outputs.flavor }}-release.apk \
+          build/app/outputs/flutter-apk/${{ steps.flavor.outputs.app_name }}-${{ github.ref_name }}.apk
+
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ steps.flavor.outputs.app_name }} ${{ github.ref_name }}
-          files: build/app/outputs/flutter-apk/app-${{ steps.flavor.outputs.flavor }}-release.apk
+          files: build/app/outputs/flutter-apk/${{ steps.flavor.outputs.app_name }}-${{ github.ref_name }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
