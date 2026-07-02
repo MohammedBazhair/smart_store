@@ -6,6 +6,9 @@ on:
       - "client-v*"
       - "admin-v*"
 
+permissions:
+  contents: write
+  
 jobs:
   build:
     runs-on: ubuntu-latest
